@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonkeyPlayer", "MonkeyPlayer.vcproj", "{8B8ADC12-CE96-4D68-A8BF-CB6695D764FB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4} = {5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonkeyInput", "..\..\..\MonkeyInput\MonkeyInput\MonkeyInput.vcproj", "{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B8ADC12-CE96-4D68-A8BF-CB6695D764FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8B8ADC12-CE96-4D68-A8BF-CB6695D764FB}.Debug|Win32.Build.0 = Debug|Win32
+		{8B8ADC12-CE96-4D68-A8BF-CB6695D764FB}.Release|Win32.ActiveCfg = Release|Win32
+		{8B8ADC12-CE96-4D68-A8BF-CB6695D764FB}.Release|Win32.Build.0 = Release|Win32
+		{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}.Debug|Win32.Build.0 = Debug|Win32
+		{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}.Release|Win32.ActiveCfg = Release|Win32
+		{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

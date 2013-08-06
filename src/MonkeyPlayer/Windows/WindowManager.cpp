@@ -1,0 +1,288 @@
+// WindowManager.cpp
+//
+// (C) 2013 Mike Allgyer.  All Rights Reserved.
+//
+// handles several windows
+
+#include "d3dApp.h"
+#include "Settings.h"
+#include "WindowManager.h"
+
+#include <vector>
+
+WindowManager::WindowManager()
+{
+	std::string fxPath = Settings::instance()->getStringValue(Settings::CONTENT_DIR, "") + "\\Effects\\SimpleSprite.fx";
+
+	ID3DXBuffer* errors = 0;
+	HR(D3DXCreateEffectPool(&mPool));
+	(D3DXCreateEffectFromFile(gDevice, "D:\\programs\\MonkeyPlayer\\Content\\Effects\\SimpleSprite.fx", 
+		0, 0, D3DXSHADER_DEBUG, 0, &mEffect, &errors));
+
+	if (errors)
+	{
+		MessageBox(0, (char*)errors->GetBufferPointer(), 0, 0);
+		PostQuitMessage(1);
+	}
+
+	mTechnique = mEffect->GetTechniqueByName("SpriteTechnique");
+	mScreenWidth = mEffect->GetParameterByName(0, "SCREEN_WIDTH");
+	mScreenHeight = mEffect->GetParameterByName(0, "SCREEN_HEIGHT");
+	mRectHandle = mEffect->GetParameterByName(0, "spriteRect");
+	mTexture = mEffect->GetParameterByName(0, "tex0");
+	mSpriteColor = mEffect->GetParameterByName(0, "spriteColor");
+
+	mProgressBar = snew ProgressBar(0, 0, 100.0f, 100.0f);
+	mProgressBar->setVisible(false);
+	mNumTriangles = 0;
+
+	gInput->addMouseCallback(this, &mouseEventCallback);
+	mFocusWindow = NULL;
+
+	mResized = true;
+}
+WindowManager::~WindowManager()
+{
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		delete mWindows[i];
+	}
+	delete mProgressBar;
+	ReleaseCOM(mEffect);
+}
+void WindowManager::onDeviceLost()
+{
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		mWindows[i]->onDeviceLost();
+	}
+	mProgressBar->onDeviceLost();
+	HR(mEffect->OnLostDevice());
+}
+void WindowManager::onDeviceReset()
+{
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		mWindows[i]->onDeviceReset();
+	}
+	mProgressBar->onDeviceReset();
+	HR(mEffect->OnResetDevice());
+
+	mResized = true;
+}
+
+
+void WindowManager::addWindow(IWindow *win)
+{
+	if (mFocusWindow == NULL)
+	{
+		requestFocusedWindow(win);
+	}
+	mWindows.push_back(win);
+}
+
+void WindowManager::update(float dt)
+{
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		mWindows[i]->update(dt);
+	}
+
+	if (mResized)
+	{
+		RECT r;
+		GetClientRect(gApp->getMainWnd(), &r);
+
+		mProgressBar->setPos(0, (float)(r.bottom - 20), (float)getMainContentWidth(), 20.0f);
+		mResized = false;
+	}
+	mProgressBar->update(dt);
+}
+
+void WindowManager::preRender()
+{
+	// draw bottom to top
+	for (int i = (int)mWindows.size() - 1; i >= 0; i--)
+	{
+		mWindows[i]->preRender();
+	}
+}
+void WindowManager::display()
+{
+	HR(mEffect->SetTechnique(mTechnique));
+
+	mNumTriangles = 0;
+
+	UINT numPasses = 0;
+	HR(mEffect->Begin(&numPasses, 0));
+	for (UINT i = 0; i < numPasses; i++)
+	{
+		HR(mEffect->BeginPass(i));
+
+		HR(mEffect->SetFloat(mScreenWidth, (float)gApp->getWidth()));
+		HR(mEffect->SetFloat(mScreenHeight, (float)gApp->getHeight()));
+		// backwards because "bottom" windows' sizes 
+		// might depend on others
+		for (int j = (int)mWindows.size() - 1; j >= 0; j--)
+		{
+			drawSprites(mWindows[j]->getSprites());
+			drawWidgets(mWindows[j]->getWidgets());
+			mNumTriangles += mWindows[j]->getNumTriangles();
+		}
+		drawSprites(mProgressBar->getSprites());
+		mNumTriangles += mProgressBar->getNumTriangles();
+
+		HR(mEffect->EndPass());
+	}
+	HR(mEffect->End());
+}
+
+void WindowManager::drawSprites(std::vector<Sprite*> sprites)
+{
+	for (unsigned int k = 0; k < sprites.size(); k++)
+	{
+		HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprites[k]->getX(),
+			sprites[k]->getY(),
+			sprites[k]->getWidth(),
+			sprites[k]->getHeight())));
+
+		HR(mEffect->SetTexture(mTexture, sprites[k]->getTexture()));
+		HR(mEffect->SetVector(mSpriteColor, &sprites[k]->getColor()));
+
+		HR(mEffect->CommitChanges());
+
+		HR(gDevice->SetStreamSource(0, sprites[k]->getVertexBuffer(), 0, sprites[k]->getVertexStride()));
+		HR(gDevice->SetIndices(sprites[k]->getIndexBuffer()));
+		HR(gDevice->SetVertexDeclaration(sprites[k]->getVertexDeclaration()));
+
+		HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprites[k]->getNumVertices(), 0, 
+			sprites[k]->getNumTriangles()));
+	}
+}
+// should be called between Begin() and End()
+void WindowManager::drawSprite(Sprite* sprite, float width, float height)
+{
+	HR(mEffect->SetFloat(mScreenWidth, width));
+	HR(mEffect->SetFloat(mScreenHeight, height));
+	
+	HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprite->getX(),
+	sprite->getY(),
+	sprite->getWidth(),
+	sprite->getHeight())));
+
+	HR(mEffect->SetTexture(mTexture, sprite->getTexture()));
+	HR(mEffect->SetVector(mSpriteColor, &sprite->getColor()));
+
+	HR(mEffect->SetTechnique(mTechnique));
+	HR(mEffect->CommitChanges());	
+
+	UINT numPasses = 0;
+	HR(mEffect->Begin(&numPasses, 0));
+	for (UINT i = 0; i < numPasses; i++)
+	{
+		HR(mEffect->BeginPass(i));
+
+		HR(gDevice->SetStreamSource(0, sprite->getVertexBuffer(), 0, sprite->getVertexStride()));
+		HR(gDevice->SetIndices(sprite->getIndexBuffer()));
+		HR(gDevice->SetVertexDeclaration(sprite->getVertexDeclaration()));
+
+		HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprite->getNumVertices(), 0, 
+			sprite->getNumTriangles()));
+		HR(mEffect->EndPass());
+	}
+	HR(mEffect->End());
+}
+void WindowManager::drawWidgets(std::vector<IWidget*> widgets)
+{
+	for (unsigned int k = 0; k < widgets.size(); k++)
+	{
+		drawSprites(widgets[k]->getSprites());
+	}
+	for (unsigned int k = 0; k < widgets.size(); k++)
+	{
+		drawWidgets(widgets[k]->getWidgets());
+	}
+}
+int WindowManager::getNumTriangles()
+{
+	return mNumTriangles;
+}
+bool WindowManager::requestFocusedWindow(IWindow* win)
+{
+	if (mFocusWindow != NULL)
+	{
+		mFocusWindow->onBlur();
+	}
+	mFocusWindow = win;
+	if (mFocusWindow != NULL)
+	{
+		mFocusWindow->onFocus();
+	}
+	return true;
+}
+IWindow* WindowManager::getFocusWindow()
+{
+	return mFocusWindow;
+}
+
+void WindowManager::mouseEventCallback(void* obj, MouseEvent e)
+{
+	((WindowManager*)obj)->onMouseEvent(e);
+}
+void WindowManager::onMouseEvent(MouseEvent e)
+{
+	if (mWindows.size() > 0)
+	{
+		for (unsigned int i = 0; i < mWindows.size(); i++)
+		{
+			if (mWindows[i]->onMouseEvent(e))
+			{
+				if (mFocusWindow != mWindows[i])
+				{
+					requestFocusedWindow(mWindows[i]);
+				}
+				e.setConsumed(true);
+			}
+		}
+	}
+}
+int WindowManager::getMainContentWidth()
+{
+	int width = gApp->getWidth();
+	for (unsigned int i = 0; i < mWindowsBesideMain.size(); i++)
+	{
+		width -= mWindowsBesideMain[i]->getWidth();
+	}
+	return width;
+}
+int WindowManager::getMainContentTop()
+{
+	int height = 0;
+	for (unsigned int i = 0; i < mWindowsAboveMain.size(); i++)
+	{
+		height += mWindowsAboveMain[i]->getHeight();
+	}
+	return height;
+}
+int WindowManager::getMainContentBottom()
+{
+	int height = gApp->getHeight();
+	for (unsigned int i = 0; i < mWindowsBelowMain.size(); i++)
+	{
+		height -= mWindowsBelowMain[i]->getHeight();
+	}
+	return height;
+}
+void WindowManager::addWindowBesideMain(IWindow* win)
+{
+	mWindowsBesideMain.push_back(win);
+}
+void WindowManager::addWindowAboveMain(IWindow* win)
+{
+	mWindowsAboveMain.push_back(win);
+}
+void WindowManager::addWindowBelowMain(IWindow* win)
+{
+	mWindowsBelowMain.push_back(win);
+}
+
