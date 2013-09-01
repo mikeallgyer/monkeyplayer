@@ -44,13 +44,10 @@ PlaylistWindow::PlaylistWindow()
 	mListBox = snew TrackListBox(0, 0, 50.0f, 50.0f,
 		listBox_callback,
 		this);
+
+	mCurrSongIndex = -1;
 	
 //	mListBox->setBgColor(D3DXCOLOR(1.0f, 1.0f, .9f, 1.0f));
-
-	mPlayNextSong = false;
-	
-	// register with SoundManager
-	SoundManager::instance()->addCallback(soundEventCB, this);
 
 	//mListBox->focus();
 
@@ -108,7 +105,6 @@ int PlaylistWindow::getHeight()
 
 void PlaylistWindow::update(float dt)
 {
-
 	if (mResized)
 	{
 		RECT r;
@@ -131,29 +127,6 @@ void PlaylistWindow::update(float dt)
 		mWidgets[i]->update(dt);
 	}
 
-	if (gInput->keyPressed(VK_MEDIA_PLAY_PAUSE))
-	{
-		SoundManager::instance()->setPaused(!SoundManager::instance()->isPaused());
-	}
-
-	if (mPlayNextSong)
-	{
-		mPlayNextSong = false;
-		std::string currFile = SoundManager::instance()->getCurrFile();
-		int currTrackIndex = mListBox->findItem(currFile);
-		if (currTrackIndex > -1)
-		{
-			currTrackIndex++;
-			ListItem* nextItem = mListBox->setHighlightedItem(currTrackIndex);
-			if (nextItem != NULL)
-			{
-				SoundManager::instance()->playFile(
-					((TrackListItem*)nextItem)->getTrack()->Filename.c_str());
-			}
-		}
-
-	}
-
 }
 
 void PlaylistWindow::display()
@@ -172,6 +145,11 @@ std::vector<IWidget*> PlaylistWindow::getWidgets()
 	return mWidgets;
 }
 
+void PlaylistWindow::clearItems()
+{
+	mListBox->clearItems();
+	mCurrSongIndex = -1;
+}
 void PlaylistWindow::addItem(Track *item)
 {
 	mListBox->addItem(snew TrackListItem(item));
@@ -205,25 +183,54 @@ void PlaylistWindow::modifyItems(std::vector<Track*> items)
 		delete trackItems[i];
 	}
 }
+bool PlaylistWindow::playNextSong()
+{
+	if (mCurrSongIndex < (mListBox->getNumItems() - 1))
+	{
+		if (mCurrSongIndex < 0)
+		{
+			mCurrSongIndex = 0;
+		}
+		else 
+		{
+			mCurrSongIndex++;
+		}
+		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
+		mListBox->setCurrentTrack(mCurrSongIndex);
+		return true;
+	}
+	return false;
+}
+bool PlaylistWindow::playPreviousSong()
+{
+	if (mCurrSongIndex > 0)
+	{
+		if (mCurrSongIndex > mListBox->getNumItems() - 1)
+		{
+			mCurrSongIndex = mListBox->getNumItems() - 1;
+		}
+		else 
+		{
+			mCurrSongIndex--;
+		}
+		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
+		mListBox->setCurrentTrack(mCurrSongIndex);
+		return true;
+	}
+	return false;
+}
 
-void PlaylistWindow::onItemSelected(ListItem* item)
+void PlaylistWindow::onItemSelected(ListItem* item, int index)
 {
 	TrackListItem* trackItem = static_cast<TrackListItem*>(item);
 	if (trackItem != NULL)
 	{
 		SoundManager::instance()->playFile(trackItem->getTrack()->Filename.c_str());
-		mListBox->setCurrentTrack(item);
+		mListBox->setCurrentTrack(index);
+		mCurrSongIndex = index;
 	}
 }
 
-void PlaylistWindow::onSoundEvent(SoundManager::SoundEvent ev)
-{
-	if (ev == SoundManager::SOUND_FINISHED_EVENT)
-	{
-		// don't do it in the callback or SM gets confused
-		mPlayNextSong = true;
-	}
-}
 bool PlaylistWindow::onMouseEvent(MouseEvent ev)
 {
 	// if clicked, give widget focus
@@ -269,5 +276,4 @@ void PlaylistWindow::onBlur()
 
 void PlaylistWindow::onFocus()
 {
-
 }

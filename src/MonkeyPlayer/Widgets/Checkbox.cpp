@@ -13,7 +13,7 @@ const int Checkbox::TEXTURE_HOVER = 2;
 const int Checkbox::TEXTURE_CHECKED_UP = 3;
 const int Checkbox::TEXTURE_CHECKED_DOWN = 4;
 const int Checkbox::TEXTURE_CHECKED_HOVER = 5;
-const float Checkbox::CHECKBOX_DIMENSION = 20.0f;
+const float Checkbox::CHECKBOX_DIMENSION = 30.0f;
 
 Checkbox::Checkbox(float x, float y, string text,
 	void (*CheckboxClickedCB)(void* ptrObj, Checkbox* btn), void* callbackObj)
@@ -39,7 +39,7 @@ Checkbox::Checkbox(float x, float y, string text,
 	mCheckboxSprite->addTexture(TEXTURE_CHECKED_DOWN, checkedDownPath.c_str(), false);
 	mCheckboxSprite->addTexture(TEXTURE_CHECKED_HOVER, checkedHoverPath.c_str(), false);
 
-	mLabel = snew Label(mX, mY, mWidth, mHeight, text, 16, DT_VCENTER, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	mLabel = snew Label(mX, mY, mWidth, mHeight, text, 18, DT_VCENTER, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	mLabel->setSizeToFit(true);
 
 	mCallback = CheckboxClickedCB;
@@ -99,6 +99,9 @@ void Checkbox::setPos(float x, float y, float width, float height)
 		mWidth = width;
 		mHeight = height;
 	}
+	mX2 = mX + CHECKBOX_DIMENSION;
+	mY2 = mX + CHECKBOX_DIMENSION;
+
 	mCheckboxSprite->setDest(mX, mY, mWidth, mHeight);
 	mLabel->setPos(mX + mWidth, mY, mWidth, mHeight);
 	mTextChanged = true;
@@ -147,7 +150,7 @@ bool Checkbox::onMouseEvent(MouseEvent e)
 		isPointInside(e.getX(), e.getY()))
 	{
 		mChecked = !mChecked;
-		mCheckboxSprite->setTextureIndex(mChecked ? TEXTURE_CHECKED_UP : TEXTURE_UP);
+		mCheckboxSprite->setTextureIndex(mChecked ? TEXTURE_CHECKED_HOVER : TEXTURE_HOVER);
 		mStartedOnTop = false;
 		if (mCallback != NULL)
 		{

@@ -39,17 +39,20 @@ public:
 	std::vector<Sprite*> getSprites();
 	std::vector<IWidget*> getWidgets();
 
+	void clearItems();
 	void addItem(Track* item);
 	void addItems(std::vector<Track*> items);
 	void modifyItem(Track* item);
 	void modifyItems(std::vector<Track*> items);
+	bool playNextSong();
+	bool playPreviousSong();
 
-	static void listBox_callback(void* obj, ListItem* selItem)
+	static void listBox_callback(void* obj, ItemListBox* listBox)
 	{
 		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
 		if (win)
 		{
-			win->onItemSelected(selItem);
+			win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
 		}
 	}
 
@@ -57,15 +60,6 @@ public:
 
 	void onBlur();
 	void onFocus();
-
-	static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
-	{
-		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
-		if (win)
-		{
-			win->onSoundEvent(ev);
-		}
-	}
 
 private:
 
@@ -80,12 +74,11 @@ private:
 	int mPreferredWidth;
 	int mCurrWidth;
 	bool mResized;
-	bool mPlayNextSong;
+	int mCurrSongIndex;
 
 	static const int MIN_WINDOW_WIDTH;
 
-	void onItemSelected(ListItem* item);
-	void onSoundEvent(SoundManager::SoundEvent ev);
+	void onItemSelected(ListItem* item, int index);
 };
 
 #endif

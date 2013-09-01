@@ -26,10 +26,42 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 
 	mSprites.push_back(mBackground);
 
-	mChk = snew Checkbox(0, 0, "Option Option Option Option Option Option Option ", chk_callback, this);
-	mCombo = snew ComboBox(0, 0, "Selection A", 100.0f, combo_callback, this);
-	mWidgets.push_back(mChk);
-	mWidgets.push_back(mCombo);
+	mTitleLabel = snew Label(0,0, 50.0f, 20.0f, string("Playback Options"), 24, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
+	mTitleLabel->setSizeToFit(true);
+	mWidgets.push_back(mTitleLabel);
+
+	std::string listPath = FileManager::getContentAsset(std::string("Textures\\list_btn.png"));
+	std::string downPath = FileManager::getContentAsset(std::string("Textures\\list_down.png"));
+	std::string hoverPath = FileManager::getContentAsset(std::string("Textures\\list_hover.png"));
+	mCreateListBtn = snew Button(0, 0, 50.0f, 5.0f, listPath, btn_callback, this);
+	mCreateListBtn->setDownTexture(downPath.c_str());
+	mCreateListBtn->setHoverTexture(hoverPath.c_str());
+	mWidgets.push_back(mCreateListBtn);
+
+	mRandomChk = snew Checkbox(0, 0, "Random", chk_callback, this);
+	mStopAfterChk = snew Checkbox(0, 0, "Stop After", chk_callback, this);
+	mOrderByCombo = snew ComboBox(0, 0, "SELECT", 100.0f, combo_callback, this);
+	mStopAfterCombo = snew ComboBox(0, 0, "SELECT", 100.0f, combo_callback, this);
+
+	vector<ListItem*> orderByList;
+	orderByList.push_back(snew SimpleListItem("Songs", (int)SONG));
+	orderByList.push_back(snew SimpleListItem("Albums", (int)ALBUM));
+	orderByList.push_back(snew SimpleListItem("Artists", (int)ARTIST));
+	mOrderByCombo->setList(orderByList);
+	mOrderByCombo->setText(orderByList[0]->toString());
+
+	vector<ListItem*> repeatList;
+	repeatList.push_back(snew SimpleListItem("Song", (int)SONG));
+	repeatList.push_back(snew SimpleListItem("Album", (int)ALBUM));
+	repeatList.push_back(snew SimpleListItem("Artist", (int)ARTIST));
+	repeatList.push_back(snew SimpleListItem("Never", (int)NEVER));
+	mStopAfterCombo->setList(repeatList);
+	mStopAfterCombo->setText(repeatList[0]->toString());
+
+	mWidgets.push_back(mRandomChk);
+	mWidgets.push_back(mStopAfterChk);
+	mWidgets.push_back(mStopAfterCombo);
+	mWidgets.push_back(mOrderByCombo);
 	mX = 0;
 }
 PlaybackOptionsWindow::~PlaybackOptionsWindow()
@@ -86,9 +118,14 @@ void PlaybackOptionsWindow::update(float dt)
 
 		mCurrWidth = gWindowMgr->getMainContentWidth() - mX;
 		mBackground->setDest(mX, 0, mCurrWidth, gWindowMgr->getMainContentTop());
-		
-		mChk->setPos((float)mX, 0);
-		mCombo->setPos((float)mX + mChk->getWidth(), 0);
+		mCreateListBtn->setPos((float)(mX + mCurrWidth - 150), gWindowMgr->getMainContentTop() - 50.0f, 128.0f, 32.0f);
+		mTitleLabel->setPos((float)mX + 10.0f, 5.0f, 0, 20.0f);
+
+		mRandomChk->setPos((float)mX + 15.0f, 40.0f);
+		mOrderByCombo->setPos(mRandomChk->getX() + 140.0f, 40.f);
+
+		mStopAfterChk->setPos((float)mX + 15.0f, 80.0f);
+		mStopAfterCombo->setPos(mRandomChk->getX() + 140.0f, 80.f);
 		
 		mResized = false;
 

@@ -89,6 +89,6 @@ void GfxStats::display()
 	sprintf_s(buffer, "FPS: %.2f\nMilliseconds per frame: %.4f\nNumber of triangles: %d", 
 		mFps, mFrameDuration, mNumTriangles);
 
-	RECT r = { 200, 25, 0, 0 };
+	RECT r = { 0, 0, 0, 0 };
 	HR(mFont->DrawText(0, buffer, -1, &r, DT_NOCLIP, D3DCOLOR_XRGB(255, 0, 0)));
 }

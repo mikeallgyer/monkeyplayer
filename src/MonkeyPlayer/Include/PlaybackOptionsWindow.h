@@ -78,9 +78,14 @@ public:
 private:
 	std::vector<Sprite*> mSprites;
 	std::vector<IWidget*> mWidgets;
+
+	Label* mTitleLabel;
+	Button* mCreateListBtn;
 	Sprite* mBackground;
-	Checkbox* mChk;
-	ComboBox* mCombo;
+	Checkbox* mRandomChk;
+	Checkbox* mStopAfterChk;
+	ComboBox* mOrderByCombo;
+	ComboBox* mStopAfterCombo;
 
 	int mX;
 	int mCurrWidth;
@@ -91,6 +96,8 @@ private:
 	void onBtnPushed(Button* btn);
 	void onChkPushed(Checkbox* btn);
 	void onComboSelected(ComboBox* btn);
+
+	static enum ORDER_BY { SONG, ALBUM, ARTIST, NEVER };
 };
 
 #endif

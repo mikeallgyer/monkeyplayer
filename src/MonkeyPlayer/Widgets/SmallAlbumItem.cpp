@@ -105,9 +105,12 @@ SmallAlbumItem::SmallAlbumItem(float x, float y, Album album,
 	mAlbumCoverFile = FileManager::getContentAsset(std::string("Textures\\UnknownAlbum.jpg"));
 	mAlbumCoverSprite = snew Sprite(mAlbumCoverFile.c_str(), 0, (float)TEXT_MARGIN_TOP, (float)mAlbumDimension, (float)mAlbumDimension);
 
-	std::string selBoxPath= FileManager::getContentAsset(std::string("Textures\\selectedBox.png"));
+	std::string selBoxPath = FileManager::getContentAsset(std::string("Textures\\selectedBox.png"));
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, (float)mTrackTitleWidth + SELECTION_BOX_MARGIN, 
 		(float)TRACK_FONT_HEIGHT + SELECTION_BOX_MARGIN);
+
+	std::string selCDBoxPath = FileManager::getContentAsset(std::string("Textures\\cdHighlight.png"));
+	mCDSelectionSprite = snew Sprite(selCDBoxPath.c_str(), 0, (float)TEXT_MARGIN_TOP, (float)mAlbumDimension, (float)mAlbumDimension);
 
 	setAlbum(album);
 	
@@ -115,6 +118,7 @@ SmallAlbumItem::SmallAlbumItem(float x, float y, Album album,
 	mHighlightedSprite = snew Sprite(whitePath.c_str(), 0, 0, mWidth, mHeight, D3DXVECTOR4(0.0f, 0.0f, 0.85f, 1.0f));
 
 	mCurrSelection = -1;
+	mAlbumSelected = false;
 
 	mCallback = selectedtItemCB;
 	mCallbackObj = callbackObj;
@@ -135,6 +139,7 @@ SmallAlbumItem::~SmallAlbumItem()
 	}
 	delete mAlbumCoverSprite;
 	delete mSelectionSprite;
+	delete mCDSelectionSprite;
 //	ReleaseCOM(mFont);
 
 	delete mTarget;
@@ -157,6 +162,7 @@ void SmallAlbumItem::onDeviceLost()
 	mTarget->onDeviceLost();
 	mHighlightedSprite->onDeviceLost();
 	mSelectionSprite->onDeviceLost();
+	mCDSelectionSprite->onDeviceLost();
 }
 void SmallAlbumItem::onDeviceReset()
 {
@@ -175,6 +181,7 @@ void SmallAlbumItem::onDeviceReset()
 	mTarget->onDeviceReset();
 	mHighlightedSprite->onDeviceReset();
 	mSelectionSprite->onDeviceReset();
+	mCDSelectionSprite->onDeviceReset();
 	recreateTargets();
 }
 void SmallAlbumItem::recreateTargets()
@@ -215,6 +222,10 @@ void SmallAlbumItem::preRender()
 
 		gWindowMgr->drawSprite(mAlbumCoverSprite, mWidth, mHeight);
 
+		if (mAlbumSelected)
+		{
+			gWindowMgr->drawSprite(mCDSelectionSprite, mWidth, mHeight);
+		}
 		// title
 		RECT r = { mAlbumTitleX, mAlbumTitleY, 
 			mAlbumTitleX + (int)mTrackTitleWidth + (int)TRACK_TIME_START + mTrackTimeWidth, 
@@ -242,7 +253,7 @@ void SmallAlbumItem::preRender()
 		for (unsigned int i = 0; i < mTracks.size(); i++)
 		{
 			// draw selection box
-			if (i == mCurrSelection)
+			if (!mAlbumSelected && i == mCurrSelection)
 			{
 				mSelectionSprite->setDest(r.left - SELECTION_BOX_MARGIN, r.top - SELECTION_BOX_MARGIN, 
 					mTrackTitleWidth + TRACK_TIME_START + mTrackTimeWidth + SELECTION_BOX_MARGIN +  SELECTION_BOX_MARGIN,
@@ -285,6 +296,7 @@ void SmallAlbumItem::selectPrevious()
 void SmallAlbumItem::selectNone()
 {
 	mCurrSelection = -1;
+	mAlbumSelected = false;
 	mRedraw = true;
 }
 void SmallAlbumItem::selectFirst()
@@ -374,10 +386,17 @@ bool SmallAlbumItem::onMouseEvent(MouseEvent e)
 				int selTrack = (relY - mTrackTitleY) / TRACK_FONT_HEIGHT;
 				if (selTrack < (int)mTracks.size())
 				{
+					mAlbumSelected = false;
 					mCurrSelection = selTrack;
 					mRedraw = true;
 					return true;
 				}
+			}
+			else if (isPointInsideAlbum(e.getX(), e.getY()))
+			{
+				mAlbumSelected = true;
+				mRedraw = true;
+				return true;
 			}
 		}
 	}
@@ -391,6 +410,17 @@ bool SmallAlbumItem::isPointInside(int x, int y)
 	float y2 = mY + mHeight;
 
 	return !(xPoint < mX || yPoint < mY || xPoint > x2 || yPoint > y2);
+}
+bool SmallAlbumItem::isPointInsideAlbum(int x, int y)
+{
+	float xPoint = (float)x;
+	float yPoint = (float)y;
+	float x1 = (float)mAlbumCoverSprite->getX();
+	float y1 = (float)mAlbumCoverSprite->getY();
+	float x2 = xPoint + mAlbumCoverSprite->getWidth();
+	float y2 = yPoint + mAlbumCoverSprite->getHeight();
+
+	return !(xPoint < x1 || yPoint < y1 || xPoint > x2 || yPoint > y2);
 }
 
 int SmallAlbumItem::getItemAtPos(int x, int y)
@@ -481,7 +511,15 @@ Track* SmallAlbumItem::getSelectedTrack()
 	}
 	return NULL;
 }
-
+bool SmallAlbumItem::getAlbumSelected()
+{
+	return mAlbumSelected;
+}
+void SmallAlbumItem::setAlbumSelected(bool sel)
+{
+	mAlbumSelected = sel;
+	mRedraw = true;
+}
 void SmallAlbumItem::addTrack(Track *track)
 {
 	CSingleLock lock(&mCritSection);

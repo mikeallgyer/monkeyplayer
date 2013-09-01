@@ -7,10 +7,11 @@
 #include <vector>
 
 #include "d3dApp.h"
+#include "CollectionWindow.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
 #include "MetadataReader.h"
-#include "CollectionWindow.h"
+#include "MusicLibrary.h"
 #include "Settings.h"
 #include "SoundManager.h"
 #include "Vertex.h"
@@ -59,6 +60,20 @@ CollectionWindow::CollectionWindow()
 
 	mSprites.push_back(mBackground);
 
+	mAlphabetLabel = snew Label(0, 0, 200.0f, 40.0f, string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 30, DT_CENTER | DT_NOCLIP,
+		D3DCOLOR_XRGB(200, 200, 200), D3DCOLOR_ARGB(0, 0, 0, 0), "COURIER NEW");
+	mAlphabetLabel->setSizeToFit(true);
+	mLetterLabel = snew Label(-1000.0f, 0, 80.0f, 80.0f, string("A"), 40, DT_CENTER | DT_NOCLIP,
+		D3DCOLOR_XRGB(255, 255, 255), D3DCOLOR_ARGB(0, 0, 0, 0), "COURIER NEW");
+	mLetterLabel->setSizeToFit(true);
+
+	mWidgets.push_back(mAlphabetLabel);
+	mWidgets.push_back(mLetterLabel);
+
+	std::string magPath = FileManager::getContentAsset(std::string("Textures\\small_empty.png"));
+	mMagnifier = snew Button(-1000.0f, 0, 40.0f, 40.0f, magPath);
+	mWidgets.push_back(mMagnifier);	
+
 	mCurrStyle = SmallAlbum;
 
 	std::vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
@@ -73,6 +88,8 @@ CollectionWindow::CollectionWindow()
 	mCurrDisplayAlbum = 0.0f;
 	mCurrSelAlbum = -1;
 	setDisplayStyle(SmallAlbum);
+	mMouseAlphabetStartedDown = false;
+	mGoToHover = false;
 }
 CollectionWindow::~CollectionWindow()
 {
@@ -90,6 +107,9 @@ CollectionWindow::~CollectionWindow()
 	{
 		delete mArtistLabels[i];
 	}
+	delete mAlphabetLabel;
+	delete mLetterLabel;
+	delete mMagnifier;
 }
 
 void CollectionWindow::onDeviceLost()
@@ -107,6 +127,9 @@ void CollectionWindow::onDeviceLost()
 	{
 		mArtistLabels[i]->onDeviceLost();
 	}
+	mAlphabetLabel->onDeviceLost();
+	mLetterLabel->onDeviceLost();
+	mMagnifier->onDeviceLost();
 }
 void CollectionWindow::onDeviceReset()
 {
@@ -123,6 +146,9 @@ void CollectionWindow::onDeviceReset()
 	{
 		mArtistLabels[i]->onDeviceReset();
 	}
+	mAlphabetLabel->onDeviceReset();
+	mLetterLabel->onDeviceReset();
+	mMagnifier->onDeviceReset();
 	mResized = true;
 }
 int CollectionWindow::getWidth()
@@ -165,6 +191,9 @@ void CollectionWindow::update(float dt)
 			(r.bottom - gWindowMgr->getMainContentBottom());
 		mBackground->setDest(0, gWindowMgr->getMainContentTop(), mCurrWidth, height);
 
+		mAlphabetLabel->setPos(mCurrWidth / 2.0f - 100.0f, (float)gWindowMgr->getMainContentTop(), 200.0f, 30.0f);
+		mLetterLabel->setPos(-1000.0f, -100.0f, 80.0f, 80.0f);
+		mMagnifier->setPos(-1000.0f, -1000.0f);
 		mResized = false;
 		doRedraw = true;
 	}
@@ -195,6 +224,36 @@ void CollectionWindow::update(float dt)
 			mHoldDelayPassed = false;
 		}
 
+		if (mGoToHover)
+		{
+			for (unsigned int i = 0; i < mSmallItems.size(); i++)
+			{
+				if (mSmallItems[i]->getAlbum().Artist.length() > 0 &&
+					mSmallItems[i]->getAlbum().Artist[0] == mHoverChar)
+				{
+					mUpDownTimer = 0;
+					if (mCurrSelAlbum >= 0 && mCurrSelAlbum < ((int)mSmallItems.size()))
+					{
+						mSmallItems[mCurrSelAlbum]->selectNone();
+					}
+					mSmallItems[i]->selectFirst();
+					mCurrSelAlbum = i;
+					
+					float oldDisplayAlbum = mCurrDisplayAlbum;
+					// moveUp is faster, so try that first
+					moveUpToSmallSelection();
+
+					// if that didn't move it
+					if (oldDisplayAlbum == mCurrDisplayAlbum)
+					{
+						moveDownToSmallSelection();
+					}
+					doRedraw = true;
+					break;
+				}
+			}
+			mGoToHover = false;
+		}
 		// arrow key
 		// user just started pressing
 		if (gInput->keyPressed(VK_DOWN))
@@ -267,16 +326,43 @@ void CollectionWindow::update(float dt)
 				mUpDownTimer -= BUTTON_REPEAT_TIME;
 			}
 		}
+		// left/right
+		if (gInput->keyPressed(VK_RIGHT) || gInput->keyPressed(VK_LEFT))
+		{
+			if (mCurrStyle == SmallAlbum)
+			{
+				if (mCurrSelAlbum >= 0)
+				{
+					mSmallItems[mCurrSelAlbum]->setAlbumSelected(!mSmallItems[mCurrSelAlbum]->getAlbumSelected());
+				}
+			}
+		} //user continuing to hold down
 
 		// home/end
 		if (gInput->keyPressed(VK_END))
 		{
 			mUpDownTimer = 0;
+			if (mCurrSelAlbum >= 0 && mCurrSelAlbum < ((int)mSmallItems.size()))
+			{
+				mSmallItems[mCurrSelAlbum]->selectNone();
+			}
+			mSmallItems[mSmallItems.size() - 1]->selectLast();
+			mCurrSelAlbum = mSmallItems.size() - 1;
+			moveDownToSmallSelection();
+			doRedraw = true;
 			//cursorDelta = mItems.size();
 		}
 		if (gInput->keyPressed(VK_HOME))
 		{
 			mUpDownTimer = 0;
+			if (mCurrSelAlbum >= 0 && mCurrSelAlbum < ((int)mSmallItems.size()))
+			{
+				mSmallItems[mCurrSelAlbum]->selectNone();
+			}
+			mSmallItems[0]->selectFirst();
+			mCurrSelAlbum = 0;
+			moveUpToSmallSelection();
+			doRedraw = true;
 			//cursorDelta = -(int)mItems.size();
 		}
 
@@ -285,8 +371,21 @@ void CollectionWindow::update(float dt)
 		{
 			if (mCurrSelAlbum >= 0)
 			{
-				SoundManager::instance()->playFile(
-					mSmallItems[mCurrSelAlbum]->getSelectedTrack()->Filename.c_str());
+				if (mSmallItems[mCurrSelAlbum]->getAlbumSelected())
+				{
+					vector<Track*> tracks = mSmallItems[mCurrSelAlbum]->getTracks();
+					MusicLibrary::instance()->getPlaylistWindow()->clearItems();
+					for (unsigned int i = 0; i < tracks.size(); i++)
+					{
+						MusicLibrary::instance()->getPlaylistWindow()->addItem(snew Track(*tracks[i]));
+					}
+					MusicLibrary::instance()->playSong(tracks[0]->Filename);
+				}
+				else
+				{
+					SoundManager::instance()->playFile(
+						mSmallItems[mCurrSelAlbum]->getSelectedTrack()->Filename.c_str());
+				}
 			}
 		}
 		if (cursorDelta != 0)
@@ -338,7 +437,17 @@ void CollectionWindow::moveSmallSelection(int cursorDelta)
 				}
 				else 
 				{
-					if (mSmallItems[mCurrSelAlbum]->isLastSelected())
+					if (mSmallItems[mCurrSelAlbum]->getAlbumSelected())
+					{
+						if (mCurrSelAlbum < ((int)mSmallItems.size() - 1))
+						{
+							mSmallItems[mCurrSelAlbum]->selectNone();
+							mCurrSelAlbum++;
+							mSmallItems[mCurrSelAlbum]->selectFirst();
+							mSmallItems[mCurrSelAlbum]->setAlbumSelected(true);
+						}
+					}
+					else if (mSmallItems[mCurrSelAlbum]->isLastSelected())
 					{
 						if (mCurrSelAlbum < ((int)mSmallItems.size() - 1))
 						{
@@ -357,7 +466,17 @@ void CollectionWindow::moveSmallSelection(int cursorDelta)
 			{
 				if (mCurrSelAlbum >= 0)
 				{
-					if (mSmallItems[mCurrSelAlbum]->isFirstSelected())
+					if (mSmallItems[mCurrSelAlbum]->getAlbumSelected())
+					{
+						if (mCurrSelAlbum > 0)
+						{
+							mSmallItems[mCurrSelAlbum]->selectNone();
+							mCurrSelAlbum--;
+							mSmallItems[mCurrSelAlbum]->selectFirst();
+							mSmallItems[mCurrSelAlbum]->setAlbumSelected(true);
+						}
+					}
+					else if (mSmallItems[mCurrSelAlbum]->isFirstSelected())
 					{
 						if (mCurrSelAlbum > 0)
 						{
@@ -444,11 +563,8 @@ void CollectionWindow::moveDownToSmallSelection()
 		}
 	}
 }
-
 void CollectionWindow::display()
 {
-
-
 }
 std::vector<Sprite*> CollectionWindow::getSprites()
 {
@@ -487,7 +603,7 @@ bool CollectionWindow::onMouseEvent(MouseEvent ev)
 			lock.Unlock();
 			return true;
 		}
-	}
+	} // if mousewheel
 	// if clicked, give widget focus
 	if (ev.getEvent() == MouseEvent::LBUTTONDOWN ||
 		ev.getEvent() == MouseEvent::RBUTTONDOWN)
@@ -508,6 +624,39 @@ bool CollectionWindow::onMouseEvent(MouseEvent ev)
 					mWidgets[i]->blur();
 				}
 			}
+		}
+		if (mAlphabetLabel->isPointInside(ev.getX(), ev.getY()))
+		{
+			mMouseAlphabetStartedDown = true;
+		}
+		else
+		{
+			mMouseAlphabetStartedDown = false;
+		}
+	}// if mousedown
+	
+	// go to letter
+	if (ev.getEvent() == MouseEvent::LBUTTONUP && mMouseAlphabetStartedDown &&
+		mAlphabetLabel->isPointInside(ev.getX(), ev.getY()))
+	{
+		mGoToHover = true;
+	}
+
+	if (ev.getEvent() == MouseEvent::MOUSEMOVE)
+	{
+		if (mAlphabetLabel->isPointInside(ev.getX(), ev.getY()))
+		{
+			int index = (int)(((ev.getX() - mAlphabetLabel->getX()) / (mAlphabetLabel->getWidth())) * 26.0f);
+			mHoverChar = (char)(65 + index);
+			mLetterLabel->setString(string(1, mHoverChar));
+			mLetterLabel->setPos(mAlphabetLabel->getX() + (float)index * mAlphabetLabel->getWidth() / 26.0f - 10.0f,
+				mAlphabetLabel->getY(), 80.0f, 80.0f);
+			mMagnifier->setPos(mLetterLabel->getX() - 9.0f, mLetterLabel->getY() + 0.0f);
+		}
+		else if (mLetterLabel->getX() >= 0) // hide
+		{
+			mLetterLabel->setPos(-1000.0f, mAlphabetLabel->getY() - 10.0f, 80.0f, 80.0f);
+			mMagnifier->setPos(-1000.0f, -1000.0f);
 		}
 	}
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
@@ -539,8 +688,22 @@ bool CollectionWindow::onMouseEvent(MouseEvent ev)
 						}
 						if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
 						{
-							SoundManager::instance()->playFile(
-								clickedItem->getSelectedTrack()->Filename.c_str());
+							if (clickedItem->getAlbumSelected())
+							{
+								vector<Track*> tracks = clickedItem->getTracks();
+								MusicLibrary::instance()->getPlaylistWindow()->clearItems();
+								for (unsigned int i = 0; i < tracks.size(); i++)
+								{
+									MusicLibrary::instance()->getPlaylistWindow()->addItem(snew Track(*tracks[i]));
+								}
+								MusicLibrary::instance()->playSong(tracks[0]->Filename);
+
+							}
+							else if (clickedItem->getSelectedTrack() != NULL)
+							{
+								SoundManager::instance()->playFile(
+									clickedItem->getSelectedTrack()->Filename.c_str());
+							}
 						}
 					}
 				}
@@ -645,6 +808,10 @@ void CollectionWindow::updateSmallDisplay()
 			}
 		}
 	}
+	mWidgets.push_back(mAlphabetLabel);
+	mWidgets.push_back(mMagnifier);
+	mWidgets.push_back(mLetterLabel);
+
 	lock.Unlock();
 }
 void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
@@ -685,7 +852,12 @@ void CollectionWindow::doAddAlbum(Album *album)
 			insertIndex = i;
 			for (unsigned int j = i; j < mSmallItems.size() && mSmallItems[j]->getAlbum().Artist == album->Artist; j++)
 			{
-				if (mSmallItems[j]->getAlbum().Title > album->Artist)
+				if (mSmallItems[j]->getAlbum().Title == album->Title)
+				{
+					insertIndex = -1;
+					break;
+				}
+				else if (mSmallItems[j]->getAlbum().Title > album->Title)
 				{
 					insertIndex = j;
 					break;

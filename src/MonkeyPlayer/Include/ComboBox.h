@@ -41,13 +41,14 @@ public:
 	void setDroppedDown(bool droppedDown);
 	bool getDroppedDown();
 	void setText(string text);
+	void setList(vector<ListItem*> list);
 
-	static void listBox_callback(void* obj, ListItem* selItem)
+	static void listBox_callback(void* obj, ItemListBox* listBox)
 	{
 		ComboBox* win = static_cast<ComboBox*>(obj);
 		if (win)
 		{
-			win->onItemSelected(selItem);
+			win->onItemSelected(listBox);
 		}
 	}
 
@@ -74,7 +75,7 @@ protected:
 
 	bool isPointInside(int x, int y);
 
-	void onItemSelected(ListItem* listItem);
+	void onItemSelected(ItemListBox* listBox);
 
 	// callback
 	void (*mCallback)(void* ptrObj, ComboBox* selItem);

@@ -18,7 +18,7 @@ class ItemListBox : public IWidget
 {
 public:
 	ItemListBox(float x, float y, float width, float height,
-		void (*selectedtItemCB)(void* ptrObj, ListItem* selItem) = NULL, void* callbackObj = NULL,
+		void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL,
 		D3DXCOLOR bgColor = D3DCOLOR_RGBA(0, 0, 0, 255), D3DXCOLOR fontColor = D3DCOLOR_XRGB(255, 255, 255),
 		D3DXVECTOR4 highlightColor = D3DXVECTOR4(0.0f, 0.0f, 0.85f, 1.0f));
 	~ItemListBox();
@@ -35,7 +35,6 @@ public:
 	void display() {}
 	void setPos(float x, float y, float width, float height);
 
-
 	std::vector<Sprite*> getSprites();
 	int getNumTriangles();
 	void clearItems();
@@ -50,7 +49,10 @@ public:
 	virtual int findItem(std::string &name);
 	virtual ListItem* setHighlightedItem(std::string &name);
 	virtual ListItem* setHighlightedItem(int index);
+	ListItem* getSelectedItem();
+	int getSelectedIndex();
 	ListItem* getItem(int index);
+	int getNumItems();
 
 	bool getAllowSingleClickSelection();
 	void setAllowSingleClickSelection(bool allow);
@@ -71,7 +73,6 @@ protected:
 	static const int TEXT_MARGIN_BOTTOM;
 	static const int TEXT_MARGIN_LEFT;
 	static const int TEXT_MARGIN_RIGHT;
-
 
 	std::vector<Sprite*> mSprites; 
 	std::vector<ListItem*> mItems;
@@ -106,13 +107,14 @@ protected:
 
 	bool mAllowSingleClickSelection;
 	bool mStartedOnTop;
+	bool mDoRedraw;
 
 	void deleteItems();
 	void updateScrollBar();
 	
 	int getItemAtPos(int x, int y);
 	// callback
-	void (*mCallback)(void* ptrObj, ListItem* selItem);
+	void (*mCallback)(void* ptrObj, ItemListBox* listBox);
 	void *mCallbackObj;
 
 protected:

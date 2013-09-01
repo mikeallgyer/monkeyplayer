@@ -26,7 +26,7 @@ public:
 
 	virtual void preRender();
 	void display() {}
-	void setPos(float x, float y, float width, float height);
+	void setPos(float x, float y, float width = -999.0f, float height = -999.0f);
 	float getX() { return mX; }
 	float getY() { return mY; }
 	float getWidth() { return mWidth; }

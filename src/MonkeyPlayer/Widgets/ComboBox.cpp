@@ -40,13 +40,11 @@ ComboBox::ComboBox(float x, float y, string text, float width,
 	mBackgroundSprite = snew Sprite(bgPath.c_str(), mX, mY, mWidth, mHeight);
 	mBackgroundSprite->addTexture(BACKGROUND_DOWN, bgDownPath.c_str(), false);
 
-	mLabel = snew Label(mX, mY, mWidth, mHeight, text, 16, DT_VCENTER, D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f));
+	mLabel = snew Label(mX + 8.0f, mY, mWidth, mHeight, text, 16, DT_VCENTER, D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f));
 
 	mListBox = snew ItemListBox(mX, mY + COMBOBOX_DIMENSION, getWidth(), 200.0f, listBox_callback, this,
-		D3DCOLOR_XRGB(255, 255, 255), D3DCOLOR_XRGB(0, 0, 0), D3DXVECTOR4(0.7f, 0.7f, 1.0f, 1.0f));
+		 D3DCOLOR_XRGB(50, 50, 50), D3DCOLOR_XRGB(255, 255, 255), D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f));
 	mListBox->setAllowSingleClickSelection(true);
-	mListBox->addItem(snew SimpleListItem("Option A", 1));
-	mListBox->addItem(snew SimpleListItem("Option B", 2));
 
 	mCallback = ComboBoxClickedCB;
 	mCallbackObj = callbackObj;
@@ -127,8 +125,8 @@ void ComboBox::setPos(float x, float y, float width, float height)
 	}
 	mX2 = mX + mWidth + COMBOBOX_DIMENSION;
 	mY2 = mY + mHeight;
-	mLabel->setPos(mX, mY, mWidth, mHeight);
-	mListBox->setPos(mX, mY + COMBOBOX_DIMENSION, getWidth(), 200.0f);
+	mLabel->setPos(mX + 8.0f, mY, mWidth, mHeight);
+	mListBox->setPos(mX, mY + COMBOBOX_DIMENSION, getWidth(), 100.0f);
 
 	mArrowSprite->setDest(mX + mWidth, mY, COMBOBOX_DIMENSION, COMBOBOX_DIMENSION);
 	mBackgroundSprite->setDest(mX, mY, mWidth, mHeight);
@@ -198,7 +196,7 @@ bool ComboBox::onMouseEvent(MouseEvent e)
 		{
 			mListBox->blur();
 		}
-		mArrowSprite->setTextureIndex(ARROW_UP);
+		mArrowSprite->setTextureIndex(ARROW_HOVER);
 		mStartedOnTop = false;
 		mTextChanged = true;
 		if (mCallback != NULL)
@@ -237,6 +235,14 @@ void ComboBox::setDroppedDown(bool droppedDown)
 	mDroppedDown = droppedDown;
 //	mArrowSprite->setTextureIndex(mChecked ? TEXTURE_CHECKED_UP : TEXTURE_UP);
 	mTextChanged = true;
+	if (mDroppedDown)
+	{
+		mListBox->focus();
+	}
+	else
+	{
+		mListBox->blur();
+	}
 }
 bool ComboBox::getDroppedDown()
 {
@@ -249,10 +255,16 @@ void ComboBox::setText(string text)
 	mLabel->setString(text);
 	mTextChanged = true;
 }
+void ComboBox::setList(vector<ListItem*> list)
+{
+	mListBox->clearItems();
+	mListBox->addItems(list);
+}
 
-void ComboBox::onItemSelected(ListItem* listItem)
+void ComboBox::onItemSelected(ItemListBox* listBox)
 {
 	mDroppedDown = false;
-	mLabel->setString(listItem->toString());
+	mLabel->setString(listBox->getSelectedItem()->toString());
 	mTextChanged = true;
+	mListBox->blur();
 }

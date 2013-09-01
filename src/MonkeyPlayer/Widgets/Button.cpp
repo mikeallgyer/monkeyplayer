@@ -62,8 +62,14 @@ void Button::setPos(float x, float y, float width, float height)
 {
 	mX = x;
 	mY = y;
-	mWidth = width;
-	mHeight = height;
+	if (width != -999.0f)
+	{
+		mWidth = width;
+	}
+	if (height != -999.0f)
+	{
+		mHeight = height;
+	}
 	mX2 = mX + mWidth;
 	mY2 = mY + mHeight;
 	mButtonSprite->setDest(mX, mY, mWidth, mHeight);

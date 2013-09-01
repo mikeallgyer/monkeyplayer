@@ -16,8 +16,8 @@ class Label : public IWidget
 {
 public:
 	Label(float x, float y, float width, float height, std::string &label, int fontSize = 16,
-		DWORD format = DT_NOCLIP, D3DXCOLOR textColor = D3DCOLOR_XRGB(0, 0, 0), 
-		D3DXCOLOR bgColor = D3DCOLOR_ARGB(0, 0, 0, 0));
+		DWORD format = DT_NOCLIP, D3DXCOLOR textColor = D3DCOLOR_XRGB(255, 255, 255), 
+		D3DXCOLOR bgColor = D3DCOLOR_ARGB(0, 0, 0, 0), const char* fontName = "Arial Bold");
 	~Label();
 
 	void onDeviceLost();
@@ -43,6 +43,8 @@ public:
 
 	float getHeight() { return mHeight; }
 	float getWidth() { return mWidth; }
+	float getX() { return mX; }
+	float getY() { return mY; }
 	void setSizeToFit(bool fit);
 	void setCallback(void (*cb)(void* objPtr, Label* label), void* objPtr);
 

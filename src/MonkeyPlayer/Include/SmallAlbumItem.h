@@ -52,7 +52,8 @@ public:
 	Album getAlbum() { return mAlbum; }
 	std::vector<Track*> getTracks() { return mTracks; }
 	Track* getSelectedTrack();
-
+	bool getAlbumSelected();
+	void setAlbumSelected(bool sel);
 	void addTrack(Track* track);
 
 protected:
@@ -75,6 +76,7 @@ protected:
 	Sprite* mHighlightedSprite;
 	Sprite* mAlbumCoverSprite;
 	Sprite* mSelectionSprite;
+	Sprite* mCDSelectionSprite;
 
 	int mAlbumTitleX, mAlbumTitleY; 
 	int mTrackTitleX, mTrackTitleY; 
@@ -85,6 +87,7 @@ protected:
 
 	int mAlbumDimension;
 	bool isPointInside(int x, int y);
+	bool isPointInsideAlbum(int x, int y);
 	int getItemAtPos(int x, int y);
 
 	void setAlbum(Album album);
@@ -99,6 +102,8 @@ protected:
 	std::string mYearString;
 
 	bool mRedraw;
+
+	bool mAlbumSelected;
 protected:
 	static int TEXT_MARGIN_LEFT;
 	static int TEXT_MARGIN_RIGHT;

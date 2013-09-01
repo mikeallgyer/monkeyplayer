@@ -16,6 +16,7 @@
 #include "CollectionWindow.h"
 #include "DirectoriesWindow.h"
 #include "MonkeyPlayerApp.h"
+#include "MusicLibrary.h"
 #include "MusicLoader.h"
 #include "NowPlayingWindow.h"
 #include "PlaylistWindow.h"
@@ -49,11 +50,12 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		mgr->addWindow(pl);
 		mgr->requestFocusedWindow(pl);
 		mgr->addWindowBesideMain(pl);
+		MusicLibrary::instance()->setPlaylistWindow(pl);
 		
 		ControlWindow* cw = snew ControlWindow();
 		mgr->addWindow(cw);
 		mgr->addWindowBelowMain(cw);
-		
+
 		NowPlayingWindow* nowPlaying = snew NowPlayingWindow();
 		mgr->addWindow(nowPlaying);
 		mgr->addWindowAboveMain(nowPlaying);
@@ -95,6 +97,7 @@ MonkeyPlayerApp::~MonkeyPlayerApp()
 	SoundManager::shutdown();
 	Settings::destroy();
 	Logger::destroy();
+	MusicLibrary::destroy();
 }
 
 bool MonkeyPlayerApp::checkDeviceCaps()
@@ -212,6 +215,7 @@ void MonkeyPlayerApp::updateScene(float dt)
 	gInput->poll();
 	mStats->update(dt);
 	SoundManager::instance()->update();
+	MusicLibrary::instance()->update(dt);
 	for (unsigned int i = 0; i < mDrawables.size(); i++)
 	{
 		mDrawables[i]->update(dt);

@@ -10,6 +10,7 @@
 #include "DatabaseManager.h"
 #include "FileManager.h"
 #include "MetadataReader.h"
+#include "MusicLibrary.h"
 #include "ControlWindow.h"
 #include "Settings.h"
 #include "SoundManager.h"
@@ -30,7 +31,7 @@ ControlWindow::ControlWindow()
 	mCurrWidth = 0;//gWindowMgr->getMainContentWidth();
 
 	std::string bgPath = FileManager::getContentAsset(std::string("Textures\\white.png"));
-	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mCurrWidth, 300.0f, D3DXVECTOR4(1.0f, 1.0f, 0.9f, 1.0f));
+	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mCurrWidth, 300.0f, D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	mSprites.push_back(mBackground);
 
@@ -374,11 +375,11 @@ void ControlWindow::onBtnPushed(Button* btn)
 	}
 	else if (btn == mNextButton)
 	{
-//		SoundManager::instance()->togglePaused();
+		MusicLibrary::instance()->playNextSong();
 	}
 	else if (btn == mPreviousButton)
 	{
-//		SoundManager::instance()->togglePaused();
+		MusicLibrary::instance()->playPreviousSong();
 	}
 	else if (btn == mMuteButton || btn == mUnmuteButton)
 	{

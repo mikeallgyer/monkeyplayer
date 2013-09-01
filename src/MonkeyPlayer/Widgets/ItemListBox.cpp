@@ -27,22 +27,23 @@ const int ItemListBox::TEXT_MARGIN_RIGHT = 25;
 CCriticalSection ItemListBox::mCritSection;
 
 ItemListBox::ItemListBox(float x, float y, float width, float height,
-		void (*selectedtItemCB)(void* ptrObj, ListItem* selItem), void* callbackObj,
+		void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem), void* callbackObj,
 		D3DXCOLOR bgColor, D3DXCOLOR fontColor, D3DXVECTOR4 highlightColor)
 {
 	D3DXFONT_DESC font;
 	font.Height = 16;
 	font.Width = 0;
-	font.Weight = 0;
+	font.Weight = FW_BOLD;
 	font.MipLevels = 1;
 	font.Italic = false;
 	font.CharSet = DEFAULT_CHARSET;
 	font.OutputPrecision = OUT_DEFAULT_PRECIS;
 	font.Quality = DEFAULT_QUALITY;
 	font.PitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-	_tcscpy_s(font.FaceName, _T("Times New Roman"));
+	_tcscpy_s(font.FaceName, _T("Arial"));
 
 	HR(D3DXCreateFontIndirect(gDevice, &font, &mFont));
+//	D3DXCreateFont( gDevice, 20, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Arial"), &mFont );
 	mFontHeight = 16;
 	mFontColor = fontColor;
 
@@ -88,6 +89,7 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 
 	mListTarget = snew RenderTarget((int)width, (int)height, bgColor, false);
 	blur();
+	mDoRedraw = true;
 }
 ItemListBox::~ItemListBox()
 {
@@ -111,6 +113,7 @@ void ItemListBox::onDeviceLost()
 	HR(mFont->OnLostDevice());
 	mListTarget->onDeviceLost();
 	mHighlightedSprite->onDeviceLost();
+	mDoRedraw = true;
 }
 void ItemListBox::onDeviceReset()
 {
@@ -123,6 +126,7 @@ void ItemListBox::onDeviceReset()
 	mListTarget->onDeviceLost();
 	mHighlightedSprite->onDeviceReset();
 	recreateTargets();
+	mDoRedraw = true;
 }
 void ItemListBox::recreateTargets()
 {
@@ -137,11 +141,12 @@ void ItemListBox::recreateTargets()
 		mListSprite->setDest(mX, mY, mWidth, mHeight);
 		mListSprite->replaceCurrentTexture(mListTarget->getTexture(), false);
 	}
-
+	mDoRedraw = true;
 }
 void ItemListBox::setBgColor(D3DXCOLOR c)
 {
 	mListTarget->setColor(c);
+	mDoRedraw = true;
 }
 void ItemListBox::update(float dt)
 {
@@ -286,13 +291,15 @@ void ItemListBox::update(float dt)
 			mEndDisplayIndex = mCurrSelection;
 			mStartDisplayIndex = max(0, mEndDisplayIndex - getNumItemsDisplayed());
 		}
+		mDoRedraw = true;
 	}
 
 	// item selected by pressing enter
 	if (gInput->keyPressed(VK_RETURN) && mCallback != NULL &&
 		mCurrSelection >= 0 && mCurrSelection < (int)mItems.size())
 	{
-		mCallback(mCallbackObj, mItems[mCurrSelection]);
+		mCallback(mCallbackObj, this);
+		mDoRedraw = true;
 	}
 	lock.Unlock();
 
@@ -316,38 +323,42 @@ void ItemListBox::updateScrollBar()
 }
 void ItemListBox::preRender()
 {
-	CSingleLock lock(&mCritSection, true);
-	mListTarget->beginScene();
-
-	int row = 0;
-	if (mStartDisplayIndex != mEndDisplayIndex)
+	if (mDoRedraw)
 	{
-		for (unsigned int i = mStartDisplayIndex; i <= mEndDisplayIndex && i < mItems.size(); i++)
+		CSingleLock lock(&mCritSection, true);
+		mListTarget->beginScene();
+
+		int row = 0;
+		if (mStartDisplayIndex != mEndDisplayIndex)
 		{
-			bool selected = false;
-			for (unsigned int k = 0; k < mSelectedIndices.size(); k++)
+			for (unsigned int i = mStartDisplayIndex; i <= mEndDisplayIndex && i < mItems.size(); i++)
 			{
-				if (i == mSelectedIndices[k])
+				bool selected = false;
+				for (unsigned int k = 0; k < mSelectedIndices.size(); k++)
 				{
-					selected = true;
-					break;
+					if (i == mSelectedIndices[k])
+					{
+						selected = true;
+						break;
+					}
 				}
-			}
 
-			if (selected)
-			{
-				mHighlightedSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
-				gWindowMgr->drawSprite(mHighlightedSprite, mTextWidth, mTextHeight);
-			}
+				if (selected)
+				{
+					mHighlightedSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
+					gWindowMgr->drawSprite(mHighlightedSprite, mTextWidth, mTextHeight);
+				}
 
-			int y = TEXT_MARGIN_TOP + mFontHeight * row;
-			RECT r = { TEXT_MARGIN_LEFT, y, (int)mTextWidth, y + mFontHeight };
-			HR(mFont->DrawText(0, mItems[i]->toString().c_str(), -1, &r, DT_NOCLIP, mFontColor));
-			row++;
+				int y = TEXT_MARGIN_TOP + mFontHeight * row;
+				RECT r = { TEXT_MARGIN_LEFT, y, (int)mTextWidth, y + mFontHeight };
+				HR(mFont->DrawText(0, mItems[i]->toString().c_str(), -1, &r, DT_NOCLIP, mFontColor));
+				row++;
+			}
 		}
+		mListTarget->endScene();
+		mDoRedraw = false;
+		lock.Unlock();
 	}
-	mListTarget->endScene();
-	lock.Unlock();
 }
 void ItemListBox::setPos(float x, float y, float width, float height)
 {
@@ -367,6 +378,7 @@ void ItemListBox::setPos(float x, float y, float width, float height)
 
 	CSingleLock lock(&mCritSection, true);
 	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mDoRedraw = true;
 	lock.Unlock();
 }
 
@@ -387,6 +399,7 @@ int ItemListBox::getNumTriangles()
 void ItemListBox::clearItems()
 {
 	this->deleteItems();
+	mDoRedraw = true;
 }
 // takes ownership of pointer
 void ItemListBox::setItems(std::vector<ListItem*> items)
@@ -405,7 +418,7 @@ void ItemListBox::setItems(std::vector<ListItem*> items)
 	{
 		mItemMap[mItems[i]->getId()] = mItems[i];
 	}
-
+	mDoRedraw = true;
 	lock.Unlock();
 }
 
@@ -445,6 +458,7 @@ void ItemListBox::addItems(std::vector<ListItem*> items)
 			mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 		}
 	}
+	mDoRedraw = true;
 	lock.Unlock();
 }
 void ItemListBox::addItem(ListItem* item)
@@ -479,6 +493,7 @@ void ItemListBox::addItem(ListItem* item)
 		mItems.push_back(item);
 		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	}
+	mDoRedraw = true;
 	lock.Unlock();
 }
 // does nothing if an item isn't already in the list
@@ -493,6 +508,7 @@ void ItemListBox::modifyItems(std::vector<ListItem*> items)
 			mItemMap[items[i]->getId()]->setData(items[i]);
 		}
 	}
+	mDoRedraw = true;
 	lock.Unlock();
 }
 // does nothing if an item isn't already in the list
@@ -503,6 +519,7 @@ void ItemListBox::modifyItem(ListItem* item)
 	{
 		mItemMap[item->getId()]->setData(item);
 	}
+	mDoRedraw = true;
 	lock.Unlock();
 }
 
@@ -518,6 +535,7 @@ void ItemListBox::deleteItems()
 	{
 		delete mItems[i];
 	}
+	mDoRedraw = true;
 	mItems.clear();
 }
 
@@ -540,6 +558,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 				mStartDisplayIndex = max(0, (int)mStartDisplayIndex - scrollAmt);
 				mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 			}
+			mDoRedraw = true;
 			lock.Unlock();
 			updateScrollBar();
 			return true;
@@ -564,7 +583,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 				{
 					if (mCallback != NULL)
 					{
-						mCallback(mCallbackObj, mItems[mCurrSelection]);
+						mCallback(mCallbackObj, this);
 					}
 				}
 				else 
@@ -572,6 +591,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 					mStartedOnTop = true;
 				}
 			}
+			mDoRedraw = true;
 			return true;
 		}
 		else if ((e.getEvent() == MouseEvent::LBUTTONUP)
@@ -594,11 +614,12 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 					}
 					if (mCallback != NULL)
 					{
-						mCallback(mCallbackObj, mItems[mCurrSelection]);
+						mCallback(mCallbackObj, this);
 					}
 				}
 				mStartedOnTop = false;
 			}
+			mDoRedraw = true;
 			return true;
 		}
 	}
@@ -629,6 +650,7 @@ ListItem* ItemListBox::setHighlightedItem(std::string &name)
 			return mItems[i];;
 		}
 	}
+	mDoRedraw = true;
 	lock.Unlock();
 	return NULL;
 }
@@ -636,9 +658,18 @@ ListItem* ItemListBox::setHighlightedItem(int index)
 {
 	return getItem(index);
 }
+ListItem* ItemListBox::getSelectedItem()
+{
+	return getItem(mCurrSelection);
+}
+int ItemListBox::getSelectedIndex()
+{
+	return mCurrSelection;
+}
 ListItem* ItemListBox::getItem(int index)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	if (index >= 0 && index < (int)mItems.size())
 	{
 		lock.Unlock();
@@ -646,6 +677,10 @@ ListItem* ItemListBox::getItem(int index)
 	}
 	lock.Unlock();
 	return NULL;
+}
+int ItemListBox::getNumItems()
+{
+	return mItems.size();
 }
 
 bool ItemListBox::isPointInside(int x, int y)

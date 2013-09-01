@@ -14,18 +14,19 @@ class TrackListBox : public ItemListBox
 {
 public:
 	TrackListBox(float x, float y, float width, float height,
-		void (*selectedtItemCB)(void* ptrObj, ListItem* selItem) = NULL, void* callbackObj = NULL);
+		void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL);
 
 	void preRender();
-	void setCurrentTrack(ListItem* track);
+	void setCurrentTrack(int index);
 
 	virtual int findItem(std::string &name);
 	virtual ListItem* setHighlightedItem(std::string &name);
 	virtual ListItem* setHighlightedItem(int index);
+	virtual int getHighlightedIndex();
 
 private:
 	int mTimeWidth;
-	ListItem* mCurrPlaying;
+	int mHighightedIndex;
 };
 
 #endif

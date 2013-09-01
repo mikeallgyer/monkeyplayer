@@ -74,9 +74,9 @@ void D3DApp::initMainWindow()
 	}
 
 	RECT R = {0, 0, Settings::instance()->getIntValue("width", 800), Settings::instance()->getIntValue("height", 600)};
-	AdjustWindowRect(&R, WS_TILED, false);
+	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE);
 	mHwnd = CreateWindow("D3DWndClassName", mCaption.c_str(), WS_OVERLAPPEDWINDOW | CS_DBLCLKS,
-		100, 100, R.right, R.bottom, 0, 0, mHAppInstance, 0);
+		100, 100, R.right - R.left, R.bottom - R.top, 0, 0, mHAppInstance, 0);
 
 	if (!mHwnd)
 	{

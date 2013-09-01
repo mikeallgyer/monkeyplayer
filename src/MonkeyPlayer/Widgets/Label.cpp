@@ -7,7 +7,7 @@
 #include "Label.h"
 
 Label::Label(float x, float y, float width, float height, std::string &label, int fontSize,
-				 DWORD format, D3DXCOLOR textColor, D3DXCOLOR bgColor)
+				 DWORD format, D3DXCOLOR textColor, D3DXCOLOR bgColor,  const char* fontName)
 {
 	D3DXFONT_DESC font;
 	font.Height = fontSize;
@@ -17,9 +17,9 @@ Label::Label(float x, float y, float width, float height, std::string &label, in
 	font.Italic = false;
 	font.CharSet = DEFAULT_CHARSET;
 	font.OutputPrecision = OUT_DEFAULT_PRECIS;
-	font.Quality = DEFAULT_QUALITY;
+	font.Quality = ANTIALIASED_QUALITY;//DEFAULT_QUALITY;
 	font.PitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-	_tcscpy_s(font.FaceName, _T("Times New Roman"));
+	_tcscpy_s(font.FaceName, _T(fontName));
 
 	HR(D3DXCreateFontIndirect(gDevice, &font, &mFont));
 	mFormat = format;

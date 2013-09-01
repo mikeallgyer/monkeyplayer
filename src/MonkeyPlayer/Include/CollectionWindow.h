@@ -5,6 +5,7 @@
 // contains a collection of songs
 
 
+#include "Button.h"
 #include "d3dUtil.h"
 #include "ItemListBox.h"
 #include "IWidget.h"
@@ -75,6 +76,9 @@ private:
 	std::vector<SmallAlbumItem*> mSmallItems;
 	std::vector<Label*> mArtistLabels;
 
+	Label* mAlphabetLabel;
+	Label* mLetterLabel;
+	Button* mMagnifier;
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;
 
@@ -89,6 +93,9 @@ private:
 	bool mHoldDelayPassed;
 
 	bool mHasFocus;
+	bool mMouseAlphabetStartedDown;
+	char mHoverChar;
+	bool mGoToHover;
 
 protected:
 	// synchronization
