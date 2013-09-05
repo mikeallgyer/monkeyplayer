@@ -41,6 +41,9 @@ public:
 	void setDroppedDown(bool droppedDown);
 	bool getDroppedDown();
 	void setText(string text);
+	string getText();
+	ListItem* getSelectedItem();
+	void setSelectedIndex(int index);
 	void setList(vector<ListItem*> list);
 
 	static void listBox_callback(void* obj, ItemListBox* listBox)

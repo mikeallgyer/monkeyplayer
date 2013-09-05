@@ -31,6 +31,7 @@ FMOD: Thread::callback               : * FMOD stream thread started
 FMOD: Thread::initThread             : done.
 FMOD: SystemI::init                  : done
 
+FMOD: OutputWASAPI::feederUpdate     : Starvation detected in WASAPI output buffer!
 FMOD: SystemI::close                 : 
 FMOD: SystemI::close                 : Stop all sounds
 FMOD: Thread::callback               : * FMOD stream thread finished

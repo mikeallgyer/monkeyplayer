@@ -255,6 +255,22 @@ void ComboBox::setText(string text)
 	mLabel->setString(text);
 	mTextChanged = true;
 }
+string ComboBox::getText()
+{
+	return mText;
+}
+ListItem* ComboBox::getSelectedItem()
+{
+	return mListBox->getSelectedItem();
+}
+	
+void ComboBox::setSelectedIndex(int index)
+{
+	mListBox->setSelectedIndex(index);
+	mLabel->setString(mListBox->getSelectedItem()->toString());
+	mTextChanged = true;
+}
+
 void ComboBox::setList(vector<ListItem*> list)
 {
 	mListBox->clearItems();

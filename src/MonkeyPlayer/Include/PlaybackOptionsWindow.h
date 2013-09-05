@@ -80,11 +80,13 @@ private:
 	std::vector<IWidget*> mWidgets;
 
 	Label* mTitleLabel;
+	Label* mPlayModeLabel;
 	Button* mCreateListBtn;
 	Sprite* mBackground;
 	Checkbox* mRandomChk;
 	Checkbox* mStopAfterChk;
 	ComboBox* mOrderByCombo;
+	Checkbox* mRepeatChk;
 	ComboBox* mStopAfterCombo;
 
 	int mX;

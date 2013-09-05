@@ -33,6 +33,18 @@ namespace Vertex
 		VertexPosTex(float x, float y, float z, float u, float v) : Pos(x, y, z), UVs(u, v) {}
 		VertexPosTex(D3DXVECTOR3 v, D3DXVECTOR2 uv) : Pos(v), UVs(uv) {}
 	};
+	struct VertexPosTexNormal
+	{
+		D3DXVECTOR3 Pos;
+		D3DXVECTOR2 UVs;
+		D3DXVECTOR3 Normal;
+		static IDirect3DVertexDeclaration9* Decl;
+
+		VertexPosTexNormal() : Pos(0, 0, 0), UVs(0, 0), Normal(0, 1, 0) {}
+		VertexPosTexNormal(float x, float y, float z, float u, float v, float nX, float nY, float nZ)
+			: Pos(x, y, z), UVs(u, v), Normal(nX, nY, nZ) {}
+		VertexPosTexNormal(D3DXVECTOR3 v, D3DXVECTOR2 uv, D3DXVECTOR2 norm) : Pos(v), UVs(uv), Normal(norm) {}
+	};
 }
 
 #endif

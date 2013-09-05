@@ -25,6 +25,9 @@ public:
 
 	void beginTransaction();
 	void endTransaction();
+
+	vector<string> getAllArtists();
+	
 	// genres
 	void getGenre(int id, Genre* genre);
 	void getGenre(string title, Genre *genre);
@@ -33,7 +36,9 @@ public:
 	// tracks
 	void getTrack(int id, Track* track);
 	void getTrack(string &filename, Track* track);
+	vector<Track*> getAllTracksVector();
 	vector<Track*> getTracks(Album& album);
+	vector<Track*> getTracks(string &artist);
 	map<string, Track*> getAllTracks();
 	void addTrack(Track &track);
 	bool modifyTrack(Track &track);
@@ -43,6 +48,7 @@ public:
 	void getAlbum(string title, int year, Album* album);
 	void addAlbum(Album &album);
 	vector<Album*> getAllAlbums();
+	vector<Album*> getAllAlbums(string artist);
 
 	// directories
 	void addDir(std::string &path);

@@ -50,6 +50,7 @@ public:
 	virtual ListItem* setHighlightedItem(std::string &name);
 	virtual ListItem* setHighlightedItem(int index);
 	ListItem* getSelectedItem();
+	void setSelectedIndex(int index);
 	int getSelectedIndex();
 	ListItem* getItem(int index);
 	int getNumItems();

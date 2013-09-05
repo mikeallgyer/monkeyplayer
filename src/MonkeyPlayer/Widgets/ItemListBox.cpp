@@ -662,6 +662,19 @@ ListItem* ItemListBox::getSelectedItem()
 {
 	return getItem(mCurrSelection);
 }
+void ItemListBox::setSelectedIndex(int index)
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	if (index >= 0 && index < (int)mItems.size())
+	{
+		mCurrSelection = index;
+		mSelectedIndices.clear();
+		mSelectedIndices.push_back(index);
+		mDoRedraw = true;
+	}
+	lock.Unlock();
+}
 int ItemListBox::getSelectedIndex()
 {
 	return mCurrSelection;

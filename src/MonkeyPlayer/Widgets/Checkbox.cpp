@@ -100,7 +100,7 @@ void Checkbox::setPos(float x, float y, float width, float height)
 		mHeight = height;
 	}
 	mX2 = mX + CHECKBOX_DIMENSION;
-	mY2 = mX + CHECKBOX_DIMENSION;
+	mY2 = mY + CHECKBOX_DIMENSION;
 
 	mCheckboxSprite->setDest(mX, mY, mWidth, mHeight);
 	mLabel->setPos(mX + mWidth, mY, mWidth, mHeight);

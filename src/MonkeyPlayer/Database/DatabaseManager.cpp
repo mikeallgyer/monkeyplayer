@@ -227,6 +227,26 @@ void DatabaseManager::endTransaction()
 		mInTransaction = false;
 	}
 }
+vector<string> DatabaseManager::getAllArtists()
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT DISTINCT ARTIST FROM ALBUMS ORDER BY ARTIST", -1, &stmt, NULL);
+
+	vector<string> albums;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		albums.push_back(getStringColumn(stmt, 0));
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return albums;
+}
 
 void DatabaseManager::getGenre(int id, Genre* genre)
 {
@@ -399,6 +419,43 @@ vector<Track*> DatabaseManager::getTracks(Album &album)
 	lock.Unlock();
 	return tracks;
 }
+vector<Track*> DatabaseManager::getTracks(string &artist)
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ARTIST=? ORDER BY ALBUM, TRACK_NUMBER", -1, &stmt, NULL);
+	
+	sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
+	
+	vector<Track*> tracks;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Track* track = snew Track();
+		track->Id = getIntColumn(stmt, 0);
+		track->Filename = getStringColumn(stmt, 1);
+		track->Title = getStringColumn(stmt, 2);
+		track->Artist = getStringColumn(stmt, 3);
+		track->TrackNumber = getIntColumn(stmt, 4);
+		track->AlbumId = getIntColumn(stmt, 5);
+		track->Length = getIntColumn(stmt, 6);
+		track->DateAdded = getLongColumn(stmt, 7);
+		track->Ignored = getBoolColumn(stmt, 8);
+		track->Genre = getIntColumn(stmt, 9);
+		track->DateUsed = getLongColumn(stmt, 10);
+		track->NumPlayed = getIntColumn(stmt, 11);
+
+		tracks.push_back(track);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return tracks;
+}
 
 map<string, Track*> DatabaseManager::getAllTracks()
 {
@@ -428,6 +485,41 @@ map<string, Track*> DatabaseManager::getAllTracks()
 		track->NumPlayed = getIntColumn(stmt, 11);
 
 		tracks[track->Filename] = track;
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return tracks;
+}
+vector<Track*> DatabaseManager::getAllTracksVector()
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS", -1, &stmt, NULL);
+
+	vector<Track*> tracks;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Track* track = snew Track();
+		track->Id = getIntColumn(stmt, 0);
+		track->Filename = getStringColumn(stmt, 1);
+		track->Title = getStringColumn(stmt, 2);
+		track->Artist = getStringColumn(stmt, 3);
+		track->TrackNumber = getIntColumn(stmt, 4);
+		track->AlbumId = getIntColumn(stmt, 5);
+		track->Length = getIntColumn(stmt, 6);
+		track->DateAdded = getLongColumn(stmt, 7);
+		track->Ignored = getBoolColumn(stmt, 8);
+		track->Genre = getIntColumn(stmt, 9);
+		track->DateUsed = getLongColumn(stmt, 10);
+		track->NumPlayed = getIntColumn(stmt, 11);
+
+		tracks.push_back(track);
 
 		result = sqlite3_step(stmt);
 	}
@@ -650,7 +742,7 @@ vector<Album*> DatabaseManager::getAllAlbums()
 	CSingleLock lock(&mCritSection, true);
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
 
 	vector<Album*> albums;
 	int result = sqlite3_step(stmt); 
@@ -663,6 +755,34 @@ vector<Album*> DatabaseManager::getAllAlbums()
 		album->Title = getStringColumn(stmt, 2);
 		album->Year = getIntColumn(stmt, 3);
 		album->Artist = getStringColumn(stmt, 4);
+		
+		albums.push_back(album);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return albums;
+}
+vector<Album*> DatabaseManager::getAllAlbums(string artist)
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR FROM ALBUMS WHERE ARTIST=? ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
+	sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
+
+	vector<Album*> albums;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Album* album = snew Album();
+		album->Id = getIntColumn(stmt, 0);
+		album->NumTracks = getIntColumn(stmt, 1);
+		album->Title = getStringColumn(stmt, 2);
+		album->Year = getIntColumn(stmt, 3);
+		album->Artist = artist;
 		
 		albums.push_back(album);
 
