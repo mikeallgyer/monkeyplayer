@@ -9,6 +9,7 @@
 const int Button::TEXTURE_UP = 0;
 const int Button::TEXTURE_HOVER = 1;
 const int Button::TEXTURE_DOWN = 2;
+const int Button::TEXTURE_TOGGLED = 3;
 
 Button::Button(float x, float y, float width, float height, std::string &texture,
 	void (*buttonClickedCB)(void* ptrObj, Button* btn), void* callbackObj)
@@ -25,6 +26,8 @@ Button::Button(float x, float y, float width, float height, std::string &texture
 	mCallback = buttonClickedCB;
 	mCallbackObj = callbackObj;
 	mStartedOnTop = false;
+	mIsToggle = false;
+	mToggled = false;
 }
 
 Button::~Button()
@@ -86,6 +89,10 @@ void Button::setDownTexture(const char* texture)
 {
 	mButtonSprite->addTexture(TEXTURE_DOWN, texture, false);
 }
+void Button::setToggledTexture(const char* texture)
+{
+	mButtonSprite->addTexture(TEXTURE_TOGGLED, texture, false);
+}
 
 std::vector<Sprite*> Button::getSprites()
 {
@@ -116,9 +123,17 @@ bool Button::onMouseEvent(MouseEvent e)
 				mButtonSprite->setTextureIndex(TEXTURE_HOVER);
 			}
 		}
-		else if (mButtonSprite->getCurrentIndex() != TEXTURE_UP)
+		else if (mButtonSprite->getCurrentIndex() != TEXTURE_UP &&
+			!(mIsToggle && mToggled && mButtonSprite->getCurrentIndex() == TEXTURE_TOGGLED))
 		{
-			mButtonSprite->setTextureIndex(TEXTURE_UP);
+			if (!mIsToggle || !mToggled)
+			{
+				mButtonSprite->setTextureIndex(TEXTURE_UP);
+			}
+			else
+			{
+				mButtonSprite->setTextureIndex(TEXTURE_TOGGLED);
+			}
 		}
 	}
 	else if (!e.getConsumed() && e.getEvent() == MouseEvent::LBUTTONDOWN &&
@@ -131,6 +146,10 @@ bool Button::onMouseEvent(MouseEvent e)
 		isPointInside(e.getX(), e.getY()))
 	{
 		mButtonSprite->setTextureIndex(TEXTURE_HOVER);
+		if (mIsToggle)
+		{
+			setToggled(!mToggled);
+		}
 		mStartedOnTop = false;
 		if (mCallback != NULL)
 		{
@@ -147,6 +166,32 @@ void Button::refresh()
 	MouseEvent ev(MouseEvent::MOUSEMOVE, gInput->currMouseX(), gInput->currMouseY(), 0, 0);
 	onMouseEvent(ev);
 }
+
+void Button::setIsToggle(bool isToggle)
+{
+	mIsToggle = isToggle;
+}
+bool Button::getIsToggle()
+{
+	return mIsToggle;
+}
+void Button::setToggled(bool toggled)
+{
+	mToggled = toggled;
+	if (mToggled)
+	{
+		mButtonSprite->setTextureIndex(TEXTURE_TOGGLED);
+	}
+	else
+	{
+		mButtonSprite->setTextureIndex(TEXTURE_UP);
+	}
+}
+bool Button::getToggled()
+{
+	return mToggled;
+}
+
 bool Button::isPointInside(int x, int y)
 {
 	float xPoint = (float)x;

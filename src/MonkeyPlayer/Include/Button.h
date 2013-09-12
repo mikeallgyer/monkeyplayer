@@ -35,23 +35,31 @@ public:
 	void setUpTexture(const char* texture);
 	void setHoverTexture(const char* texture);
 	void setDownTexture(const char* texture);
+	void setToggledTexture(const char* texture);
 
 	std::vector<Sprite*> getSprites();
 	int getNumTriangles();
 	virtual bool onMouseEvent(MouseEvent e);
 	virtual void refresh();
 
+	void setIsToggle(bool isToggle);
+	bool getIsToggle();
+	void setToggled(bool toggled);
+	bool getToggled();
 
 protected:
 
 	static const int TEXTURE_UP;
 	static const int TEXTURE_HOVER;
 	static const int TEXTURE_DOWN;
+	static const int TEXTURE_TOGGLED;
 	std::vector<Sprite*> mSprites; 
 
 	float mX, mY, mWidth, mHeight, mX2, mY2;
 	Sprite*  mButtonSprite;
 	bool mStartedOnTop;
+	bool mIsToggle;
+	bool mToggled;
 
 	bool isPointInside(int x, int y);
 

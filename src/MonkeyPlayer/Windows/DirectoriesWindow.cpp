@@ -18,8 +18,7 @@ DirectoriesWindow::DirectoriesWindow()
 {
 	std::string bgPath = FileManager::getContentAsset(std::string("Textures\\white.png"));
 
-	mWidth = WINDOW_WIDTH;
-	mWidth = Settings::instance()->getIntValue("PLAYLIST_WIDTH", WINDOW_WIDTH);
+	mWidth = (float)Settings::instance()->getIntValue("PLAYLIST_WIDTH", (int)WINDOW_WIDTH);
 
 	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mWidth, 300.0f, D3DXVECTOR4(0,0,0,1.0f));
 	mSprites.push_back(mBackground);

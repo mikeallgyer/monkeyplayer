@@ -16,7 +16,7 @@ WindowManager::WindowManager()
 
 	ID3DXBuffer* errors = 0;
 	HR(D3DXCreateEffectPool(&mPool));
-	(D3DXCreateEffectFromFile(gDevice, "D:\\programs\\MonkeyPlayer\\Content\\Effects\\SimpleSprite.fx", 
+	(D3DXCreateEffectFromFile(gDevice, fxPath.c_str(), 
 		0, 0, D3DXSHADER_DEBUG, 0, &mEffect, &errors));
 
 	if (errors)

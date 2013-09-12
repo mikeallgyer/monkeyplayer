@@ -233,6 +233,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Widgets\LargeAlbumItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Widgets\LargeAlbumWidget.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Utilities\Logger.cpp"
 				>
 			</File>
@@ -278,6 +286,10 @@
 			</File>
 			<File
 				RelativePath=".\Widgets\SmallAlbumItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Widgets\SmallAlbumManager.cpp"
 				>
 			</File>
 			<File
@@ -379,6 +391,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\LargeAlbumItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\LargeAlbumWidget.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Include\ListItem.h"
 				>
 			</File>
@@ -436,6 +456,10 @@
 			</File>
 			<File
 				RelativePath=".\Include\SmallAlbumItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\SmallAlbumManager.h"
 				>
 			</File>
 			<File

@@ -45,7 +45,7 @@ public:
 	static void getAppDataPath(TCHAR* outPath, TCHAR* filename);
 	static const string WHITESPACE;
 	static const string CONTENT_DIR;
-
+	static const string OPT_DISPLAY_TYPE;
 private:
 	Settings();
 	~Settings();

@@ -56,7 +56,6 @@ Sprite::~Sprite()
 		ReleaseCOM(mVertexBuffer);
 		ReleaseCOM(mIndexBuffer);
 	}
-
 }
 void Sprite::createBuffers()
 {

@@ -447,7 +447,7 @@ void SmallAlbumItem::setAlbum(Album album)
 
 void SmallAlbumItem::getAlbumInfo()
 {
-		// get cover art 
+	// get cover art 
 	AlbumArt *art = NULL;
 	for (unsigned int i = 0; i < mTracks.size(); i++)
 	{

@@ -24,6 +24,8 @@ Settings* Settings::mInstance = NULL;
 const string Settings::WHITESPACE = "\t\n\r ";
 const string Settings::CONTENT_DIR = "ContentDir";
 
+const string Settings::OPT_DISPLAY_TYPE = "DisplayType";
+
 Settings::Settings()
 {
 #ifdef _DEBUG

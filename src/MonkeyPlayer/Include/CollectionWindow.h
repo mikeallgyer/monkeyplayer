@@ -11,7 +11,8 @@
 #include "IWidget.h"
 #include "IWindow.h"
 #include "Label.h"
-#include "SmallAlbumItem.h"
+#include "LargeAlbumWidget.h"
+#include "SmallAlbumManager.h"
 #include "Sprite.h"
 #include "TrackListBox.h"
 
@@ -25,7 +26,7 @@
 class CollectionWindow : public IWindow
 {
 public:
-	enum DISPLAY_STYLE { LargeAlbum, SmallAlbum, UNDEFINED };
+	enum DISPLAY_STYLE { LargeAlbum, SmallAlbum, UNDEFINED_STYLE };
 
 	CollectionWindow();
 	~CollectionWindow();
@@ -48,45 +49,46 @@ public:
 	void onBlur();
 	void onFocus();
 
-	void updateSmallDisplay();
 	void setDisplayStyle(DISPLAY_STYLE style);
 
 	void addAlbum(Album* album);
 	void addTrack(Track* track);
+
+	static void btn_callback(void* obj, Button* btn)
+	{
+		CollectionWindow* win = static_cast<CollectionWindow*>(obj);
+		if (win)
+		{
+			win->onBtnPushed(btn);
+		}
+	}
 private:
-	// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
-	static const float BUTTON_REPEAT_TIME;
-	// upon first holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
-	static const float BUTTON_REPEAT_DELAY;
-	// speed to scroll when using page up/page down
-	static const int NUM_PAGING_ITEMS;
-	// magic scroll speed
-	static const float SCROLL_SPEED;
+	
+	void onBtnPushed(Button* btn);
+	
 	// size of artist label
 	static const float ARTIST_LABEL_SIZE;
-
-	void doAddAlbum(Album* album);
-	void doAddTrack(Track* track);
 
 	ID3DXFont* mFont;
 
 	std::vector<Sprite*> mSprites;
 	std::vector<IWidget*> mWidgets;
+	std::vector<IWidget*> mWidgetsToDraw;
 	Sprite* mBackground;
-	std::vector<SmallAlbumItem*> mSmallItems;
 	std::vector<Label*> mArtistLabels;
+	LargeAlbumWidget* mLargeAlbumWidget;
+	SmallAlbumManager* mSmallAlbumManager;
 
 	Label* mAlphabetLabel;
 	Label* mLetterLabel;
 	Button* mMagnifier;
+	Button* mSmallAlbumBtn;
+	Button* mLargeAlbumBtn;
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;
 
 	int mCurrWidth;
 	bool mResized;
-
-	float mCurrDisplayAlbum;  // album displayed at top of this window
-	int mCurrSelAlbum;  // album containing current selection
 
 	float mUpDownTimer;
 	float mPageTimer;
@@ -98,14 +100,12 @@ private:
 	bool mGoToHover;
 
 protected:
+
+	void setDrawableWidgets();
+
 	// synchronization
 	static CCriticalSection mCritSection;
 	DISPLAY_STYLE mCurrStyle;
-
-	void moveSmallSelection(int cursorDelta);
-	void moveUpToSmallSelection();
-	void moveDownToSmallSelection();
-
 };
 
 #endif
