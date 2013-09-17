@@ -38,6 +38,13 @@ public:
 	// get value with given name.
 	// if name doesn't exist, default value is
 	// saved and returned
+	bool getBoolValue(string name, bool defaultValue);
+	// set (and save) value
+	void setValue(string name, bool value);
+
+	// get value with given name.
+	// if name doesn't exist, default value is
+	// saved and returned
 	float getFloatValue(string name, float defaultValue);
 	// set (and save) value
 	void setValue(string name, float value);
@@ -46,6 +53,11 @@ public:
 	static const string WHITESPACE;
 	static const string CONTENT_DIR;
 	static const string OPT_DISPLAY_TYPE;
+	static const string OPT_RANDOM_ON;
+	static const string OPT_ORDER_BY;
+	static const string OPT_STOP_AFTER;
+	static const string OPT_STOP_AFTER_ON;
+	static const string OPT_GO_TO_SONG;
 private:
 	Settings();
 	~Settings();

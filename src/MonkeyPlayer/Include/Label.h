@@ -29,7 +29,7 @@ public:
 
 	virtual void preRender();
 	void display() {}
-	void setPos(float x, float y, float width, float height);
+	void setPos(float x, float y, float width = 0, float height = 0);
 	void setFormat(DWORD format);
 	void setTextColor(D3DXCOLOR color);
 

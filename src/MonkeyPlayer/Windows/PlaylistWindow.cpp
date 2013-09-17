@@ -148,6 +148,7 @@ std::vector<IWidget*> PlaylistWindow::getWidgets()
 void PlaylistWindow::clearItems()
 {
 	mListBox->clearItems();
+	mListBox->setHighlightedItem(-1);
 	mCurrSongIndex = -1;
 }
 void PlaylistWindow::addItem(Track *item)

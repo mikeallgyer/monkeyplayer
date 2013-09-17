@@ -51,7 +51,8 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 
 	D3DXMatrixIdentity(&mWorld);
 	mDiffuseColor = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-	mCamPos = D3DXVECTOR3(0, 0, -10.0f);
+	mCamPos = D3DXVECTOR3(0, -1.0f, -10.0f);
+	mLookAt = D3DXVECTOR3(0, -0.5f, 0.0f);
 	mLightColor = D3DXVECTOR4(.5f, .5f, .5f, 1.0f);
 	mAmbient = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
 	mSpecularPower = 33.0f;
@@ -86,9 +87,8 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 		mLargeAlbums[i - midPos]->setVisible(true);
 	}
 
-	D3DXVECTOR3 at(0,0,0);
 	D3DXVECTOR3 up(0,1,0);
-	D3DXMatrixLookAtLH(&mView, &mCamPos, &at, &up);
+	D3DXMatrixLookAtLH(&mView, &mCamPos, &mLookAt, &up);
 	D3DXMatrixPerspectiveFovLH(&mProjection, 3.14159f*.25f, mWidth / mHeight, .1f, 100.0f);
 
 	mResized = true;
@@ -96,11 +96,16 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mX = mY;
 	mWidth = 100.0f;
 	mHeight = 500.0f;
+	mX2 = mX + mWidth;
+	mY2 = mY + mHeight;
 
 	mTarget = snew RenderTarget((int)mWidth, (int)mHeight, D3DCOLOR_XRGB(0, 0, 0), false);
 
 	mTargetSprite = NULL;
 
+	mTrackBox = snew TrackListBox(mX, mY, 200.0, 200.0f, NULL, NULL);
+	mWidgets.push_back(mTrackBox);
+	setTracks();
 	createBuffers();
 }
 LargeAlbumWidget::~LargeAlbumWidget()
@@ -114,6 +119,10 @@ LargeAlbumWidget::~LargeAlbumWidget()
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		delete mLargeAlbums[i];
+	}
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	{
+		delete mWidgets[i];
 	}
 	ReleaseCOM(mVertexBuffer);
 	ReleaseCOM(mIndexBuffer);
@@ -133,6 +142,10 @@ void LargeAlbumWidget::onDeviceLost()
 	{
 		mLargeAlbums[i]->onDeviceLost();
 	}
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	{
+		mWidgets[i]->onDeviceLost();
+	}
 	HR(mEffect->OnLostDevice());
 	mTarget->onDeviceLost();
 	lock.Unlock();
@@ -148,6 +161,10 @@ void LargeAlbumWidget::onDeviceReset()
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		mLargeAlbums[i]->onDeviceReset();
+	}
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	{
+		mWidgets[i]->onDeviceReset();
 	}
 	HR(mEffect->OnResetDevice());
 	mTarget->onDeviceReset();
@@ -192,29 +209,49 @@ void LargeAlbumWidget::update(float dt)
 	{
 		mLargeAlbums[i]->update(dt);
 	}
-	if (gInput->keyPressed(VK_LEFT))
+
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{
-		int mid = mPositions.size() / 2;
-		mAlbumIndex--;
-		for (unsigned int i = 0; i < mPositions.size(); i++)
+		mWidgets[i]->update(dt);
+	}
+
+	if (mFocused)
+	{
+		if (gInput->keyPressed(VK_LEFT))
 		{
-			int index = mAlbumIndex - mid + i;
-			if (index >= 0 && index < (int)mLargeAlbums.size())
+			int mid = mPositions.size() / 2;
+			mAlbumIndex--;
+			if (mAlbumIndex < 0)
 			{
-				mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+				mAlbumIndex = 0;
+			}
+
+			setTracks();
+			for (unsigned int i = 0; i < mPositions.size(); i++)
+			{
+				int index = mAlbumIndex - mid + i;
+				if (index >= 0 && index < (int)mLargeAlbums.size())
+				{
+					mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+				}
 			}
 		}
-	}
-	else if (gInput->keyPressed(VK_RIGHT))
-	{
-		int mid = mPositions.size() / 2;
-		mAlbumIndex++;
-		for (unsigned int i = 0; i < mPositions.size(); i++)
+		else if (gInput->keyPressed(VK_RIGHT))
 		{
-			int index = mAlbumIndex - mid + i;
-			if (index >= 0 && index < (int)mLargeAlbums.size())
+			int mid = mPositions.size() / 2;
+			mAlbumIndex++;
+			if (mAlbumIndex >= (int)mLargeAlbums.size())
 			{
-				mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+				mAlbumIndex = mLargeAlbums.size() - 1;
+			}
+			setTracks();
+			for (unsigned int i = 0; i < mPositions.size(); i++)
+			{
+				int index = mAlbumIndex - mid + i;
+				if (index >= 0 && index < (int)mLargeAlbums.size())
+				{
+					mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+				}
 			}
 		}
 	}
@@ -377,9 +414,12 @@ void LargeAlbumWidget::setPos(float x, float y, float width, float height)
 		mHeight = height;
 	}
 
-	D3DXVECTOR3 at(0,0,0);
+	mX2 = mX + mWidth;
+	mY2 = mY + mHeight;
+
+	mTrackBox->setPos(mX + (mX2 - mX) * .5f - 200.0f, mY + 80.0f, 400.0f, 200.0f);
 	D3DXVECTOR3 up(0,1,0);
-	D3DXMatrixLookAtLH(&mView, &mCamPos, &at, &up);
+	D3DXMatrixLookAtLH(&mView, &mCamPos, &mLookAt, &up);
 	D3DXMatrixPerspectiveFovLH(&mProjection, 3.14159f*.25f, mWidth / mHeight, .1f, 100.0f);
 	recreateTargets();
 }
@@ -388,13 +428,44 @@ std::vector<Sprite*> LargeAlbumWidget::getSprites()
 {
 	return mSprites;
 }
+std::vector<IWidget*> LargeAlbumWidget::getWidgets()
+{
+	return mWidgets;
+}
 int LargeAlbumWidget::getNumTriangles()
 {
-	return 2;
+	return mNumTriangles;
 }
-bool LargeAlbumWidget::onMouseEvent(MouseEvent e)
+bool LargeAlbumWidget::onMouseEvent(MouseEvent ev)
 {
-	return false;
+	// if clicked, give widget focus
+	if (ev.getEvent() == MouseEvent::LBUTTONDOWN ||
+		ev.getEvent() == MouseEvent::RBUTTONDOWN)
+	{
+		bool found = false;
+		for (unsigned int i = 0; i < mWidgets.size(); i++)
+		{
+			if (!found && mWidgets[i]->isPointInside(ev.getX(), ev.getY()))
+			{
+				found = true;
+				mWidgets[i]->focus();
+			}
+			else if (!mWidgets[i]->getIsFocused())
+			{
+				mWidgets[i]->blur();
+			}
+		}
+	}
+	bool consumed = false;
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	{
+		if (mWidgets[i]->onMouseEvent(ev))
+		{
+			consumed = true;
+			break;
+		}
+	}
+	return consumed;
 }
 void LargeAlbumWidget::refresh()
 {
@@ -413,8 +484,41 @@ void LargeAlbumWidget::goToChar(char c)
 
 	if (index >= 0 && index != mAlbumIndex)
 	{
+		goToAlbum(index);
+	}
+}
+void LargeAlbumWidget::goToSong(Album a, Track t)
+{
+	int index = -1;
+	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
+	{
+		if (mLargeAlbums[i]->getAlbum().Id == a.Id)
+		{
+			index = (int)i;
+			break;
+		}
+	}
+
+	if (index >= 0)
+	{
+		goToAlbum(index);
+		for (unsigned int i = 0; i < mLargeAlbums[mAlbumIndex]->getTracks().size(); i++)
+		{
+			if (mLargeAlbums[mAlbumIndex]->getTracks()[i]->Id == t.Id)
+			{
+				mTrackBox->setHighlightedItem(i);
+			}
+		}
+	}
+}
+
+void LargeAlbumWidget::goToAlbum(int index)
+{
+	if (index >= 0 && index != mAlbumIndex)
+	{
 		int currAlbum = mAlbumIndex;
 		mAlbumIndex = index;
+		setTracks();
 
 		int mid = (int)mPositions.size() / 2;
 		if (index > currAlbum)
@@ -441,7 +545,7 @@ void LargeAlbumWidget::goToChar(char c)
 				for (int j = i; j > index - mid && j >= 0; j--)
 				{
 					int posIndex = max(0, min((int)mPositions.size() - 1, (int)mPositions.size() - i + j));
-					if (j < mLargeAlbums.size())
+					if (j < (int)mLargeAlbums.size())
 					{
 						mLargeAlbums[j]->addDest(mPositions[posIndex].xPos,
 							mPositions[posIndex].yRotation,
@@ -456,7 +560,32 @@ void LargeAlbumWidget::goToChar(char c)
 
 bool LargeAlbumWidget::isPointInside(int x, int y)
 {
-	return false;
+	float xPoint = (float)x;
+	float yPoint = (float)y;
+
+	return !(xPoint < mX || yPoint < mY
+		|| xPoint > mX2 || yPoint > mY2);
+}
+void LargeAlbumWidget::setTracks()
+{
+	mTrackBox->clearItems();
+	vector<Track*> tracks = mLargeAlbums[mAlbumIndex]->getTracks();
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		mTrackBox->addItem(snew TrackListItem(tracks[i], false));
+	}
+}
+void LargeAlbumWidget::focus()
+{
+	mFocused = true;
+}
+void LargeAlbumWidget::blur()
+{
+	mFocused = false;
+	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	{
+		mWidgets[i]->blur();
+	}
 }
 void LargeAlbumWidget::addAlbum(Album *album)
 {

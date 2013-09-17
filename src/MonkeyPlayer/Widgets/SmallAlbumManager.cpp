@@ -66,6 +66,11 @@ SmallAlbumManager::SmallAlbumManager()
 
 	mGoToChar = false;
 	mChar = 'A';
+
+	mGoToSong = false;
+	mGoToAlbumId = -1;
+	mGoToSongId = -1;
+
 	mDoRedraw = false;
 	mAlbumsChanged = false;
 }
@@ -210,6 +215,42 @@ void SmallAlbumManager::update(float dt)
 			}
 		}
 		mGoToChar = false;
+		mAlbumsChanged = true;
+	}
+	else if (mGoToSong)
+	{
+		for (unsigned int i = 0; i < mSmallItems.size(); i++)
+		{
+			if (mSmallItems[i]->getAlbum().Id == mGoToAlbumId)
+			{
+				mUpDownTimer = 0;
+				if (mCurrSelAlbum >= 0 && mCurrSelAlbum < ((int)mSmallItems.size()))
+				{
+					mSmallItems[mCurrSelAlbum]->selectNone();
+				}
+				mSmallItems[i]->selectFirst();
+				mCurrSelAlbum = i;
+				
+				float oldDisplayAlbum = mCurrDisplayAlbum;
+				// moveUp is faster, so try that first
+				moveUpToSmallSelection();
+
+				for (unsigned int j = 0; j < mSmallItems[j]->getTracks().size(); j++)
+				{
+					if (mSmallItems[i]->getTracks()[j]->Id == mGoToSongId)
+					{
+						break;
+					}
+					mSmallItems[i]->selectNext();;
+				}
+				moveDownToSmallSelection();
+				doRedraw = true;
+				break;
+			}
+		}
+		mGoToSong = false;
+		mGoToAlbumId = -1;
+		mGoToSongId = -1;
 		mAlbumsChanged = true;
 	}
 
@@ -677,6 +718,14 @@ void SmallAlbumManager::goToChar(char c)
 	mGoToChar = true;
 	mChar = c;
 }
+
+void SmallAlbumManager::goToSong(Album a, Track t)
+{
+	mGoToAlbumId = a.Id;
+	mGoToSongId = t.Id;
+	mGoToSong = true;
+}
+
 void SmallAlbumManager::updateSmallDisplay()
 {
 	CSingleLock lock(&mCritSection);

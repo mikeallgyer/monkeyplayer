@@ -63,12 +63,12 @@ public:
 			win->onChkPushed(btn);
 		}
 	}
-	static void combo_callback(void* obj, ComboBox* box)
+	static void combo_callback(void* obj, ComboBox* combo)
 	{
 		PlaybackOptionsWindow* win = static_cast<PlaybackOptionsWindow*>(obj);
 		if (win)
 		{
-			win->onComboSelected(box);
+			win->onComboSelected(combo);
 		}
 	}
 
@@ -97,7 +97,7 @@ private:
 
 	void onBtnPushed(Button* btn);
 	void onChkPushed(Checkbox* btn);
-	void onComboSelected(ComboBox* btn);
+	void onComboSelected(ComboBox* combo);
 
 	static enum ORDER_BY { SONG, ALBUM, ARTIST, NEVER };
 };

@@ -6,6 +6,7 @@
 
 
 #include "Button.h"
+#include "Checkbox.h"
 #include "d3dUtil.h"
 #include "ItemListBox.h"
 #include "IWidget.h"
@@ -13,6 +14,7 @@
 #include "Label.h"
 #include "LargeAlbumWidget.h"
 #include "SmallAlbumManager.h"
+#include "SoundManager.h"
 #include "Sprite.h"
 #include "TrackListBox.h"
 
@@ -62,9 +64,27 @@ public:
 			win->onBtnPushed(btn);
 		}
 	}
+	static void chk_callback(void* obj, Checkbox* btn)
+	{
+		CollectionWindow* win = static_cast<CollectionWindow*>(obj);
+		if (win)
+		{
+			win->onChkPushed(btn);
+		}
+	}
+	static void sound_callback(void* obj, SoundManager::SoundEvent ev)
+	{
+		CollectionWindow* win = static_cast<CollectionWindow*>(obj);
+		if (win)
+		{
+			win->onSoundEvent(ev);
+		}
+	}
 private:
-	
+	void goToSong();
 	void onBtnPushed(Button* btn);
+	void onChkPushed(Checkbox* chk);
+	void onSoundEvent(SoundManager::SoundEvent ev);
 	
 	// size of artist label
 	static const float ARTIST_LABEL_SIZE;
@@ -84,9 +104,12 @@ private:
 	Button* mMagnifier;
 	Button* mSmallAlbumBtn;
 	Button* mLargeAlbumBtn;
+	Label* mLargeAlbumLbl;
+	Checkbox* mGoToSongChk;
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;
 
+	float mX, mY;
 	int mCurrWidth;
 	bool mResized;
 

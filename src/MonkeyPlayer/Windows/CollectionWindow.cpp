@@ -15,7 +15,6 @@
 #include "MusicLibrary.h"
 #include "Settings.h"
 #include "SmallAlbumManager.h"
-#include "SoundManager.h"
 #include "Vertex.h"
 
 const float CollectionWindow::ARTIST_LABEL_SIZE = 26.0f;
@@ -41,6 +40,8 @@ CollectionWindow::CollectionWindow()
 
 	std::string bgPath = FileManager::getContentAsset(std::string("Textures\\white.png"));
 
+	mX = 0;
+	mY = 0;
 	mCurrWidth = 60;
 
 	mUpDownTimer = 0;
@@ -72,6 +73,11 @@ CollectionWindow::CollectionWindow()
 	mMagnifier = snew Button(-1000.0f, 0, 40.0f, 40.0f, magPath);
 	mWidgets.push_back(mMagnifier);	
 
+	mGoToSongChk = snew Checkbox(0, 0, "Go to current song", chk_callback, this);
+	mGoToSongChk->setChecked(Settings::instance()->getBoolValue(Settings::OPT_GO_TO_SONG, false));
+
+	mWidgets.push_back(mGoToSongChk);
+
 	std::string smallBtnPath = FileManager::getContentAsset(std::string("Textures\\small_album.png"));
 	std::string smallBtnHoverPath = FileManager::getContentAsset(std::string("Textures\\small_album_hover.png"));
 	std::string smallBtnDownPath = FileManager::getContentAsset(std::string("Textures\\small_album_down.png"));
@@ -96,6 +102,10 @@ CollectionWindow::CollectionWindow()
 	mLargeAlbumBtn->setIsToggle(true);
 	mLargeAlbumBtn->setToggled(displayType == LargeAlbum);
 
+	mLargeAlbumLbl = snew Label(0, 0, 200.0f, 100.0f, string("hello"), 32, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
+	mLargeAlbumLbl->setSizeToFit(true);
+	mWidgets.push_back(mLargeAlbumLbl);
+	
 	mWidgets.push_back(mSmallAlbumBtn);
 	mWidgets.push_back(mLargeAlbumBtn);
 
@@ -103,9 +113,12 @@ CollectionWindow::CollectionWindow()
 	setDisplayStyle((DISPLAY_STYLE)displayType);
 	mMouseAlphabetStartedDown = false;
 	mGoToHover = false;
+
+	SoundManager::instance()->addCallback(sound_callback, this);
 }
 CollectionWindow::~CollectionWindow()
 {
+	SoundManager::instance()->removeCallback(this);
 	ReleaseCOM(mFont);
 
 	for (unsigned int i = 0; i < mSprites.size(); i++)
@@ -119,8 +132,12 @@ CollectionWindow::~CollectionWindow()
 	delete mAlphabetLabel;
 	delete mLetterLabel;
 	delete mMagnifier;
+	delete mGoToSongChk;
 	delete mSmallAlbumManager;
 	delete mLargeAlbumWidget;
+	delete mSmallAlbumBtn;
+	delete mLargeAlbumBtn;
+	delete mLargeAlbumLbl;
 }
 
 void CollectionWindow::onDeviceLost()
@@ -179,19 +196,30 @@ void CollectionWindow::update(float dt)
 		GetClientRect(gApp->getMainWnd(), &r);
 
 		mCurrWidth = gWindowMgr->getMainContentWidth();
-		int height = r.bottom - gWindowMgr->getMainContentTop() - 
+		mY = (float)gWindowMgr->getMainContentTop();
+		int height = r.bottom - (int)mY - 
 			(r.bottom - gWindowMgr->getMainContentBottom());
-		mBackground->setDest(0, gWindowMgr->getMainContentTop(), mCurrWidth, height);
+		mBackground->setDest(0, (int)mY, mCurrWidth, height);
 
 		mAlphabetLabel->setPos(mCurrWidth / 2.0f - 100.0f, (float)gWindowMgr->getMainContentTop(), 200.0f, 30.0f);
 		mLetterLabel->setPos(-1000.0f, -100.0f, 80.0f, 80.0f);
 		mMagnifier->setPos(-1000.0f, -1000.0f);
+		mGoToSongChk->setPos(mCurrWidth - 200.0f, mY + 75.0f, 100.0f);
 
 		mSmallAlbumBtn->setPos(mCurrWidth - 90.0f, (float)gWindowMgr->getMainContentTop() + 20.0f);
 		mLargeAlbumBtn->setPos(mCurrWidth - 150.0f, (float)gWindowMgr->getMainContentTop() + 20.0f);
 
 		mSmallAlbumManager->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
 		mLargeAlbumWidget->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
+
+		if (mCurrStyle == SmallAlbum)
+		{
+			mLargeAlbumLbl->setPos(0.0f, mY + 20.0f);
+		}
+		else if (mCurrStyle == LargeAlbum)
+		{
+			mLargeAlbumLbl->setPos(mCurrWidth / 2.0f, mY + 40.0f);
+		}
 		mResized = false;
 		doRedraw = true;
 	}
@@ -217,9 +245,13 @@ void CollectionWindow::update(float dt)
 	mAlphabetLabel->update(dt);
 	mLetterLabel->update(dt);
 	mMagnifier->update(dt);
+	mGoToSongChk->update(dt);
+	mSmallAlbumManager->update(dt);
+	mLargeAlbumWidget->update(dt);
+	mLargeAlbumLbl->update(dt);
+
 	if (mCurrStyle == SmallAlbum)
 	{
-		mSmallAlbumManager->update(dt);
 		if (mSmallAlbumManager->getAlbumsChanged())
 		{
 			setDrawableWidgets();
@@ -227,7 +259,6 @@ void CollectionWindow::update(float dt)
 	}
 	else if (mCurrStyle == LargeAlbum)
 	{
-		mLargeAlbumWidget->update(dt);
 	}
 }
 
@@ -345,11 +376,21 @@ bool CollectionWindow::isPointInside(int x, int y)
 void CollectionWindow::onBlur()
 {
 	mHasFocus = false;
+	mSmallAlbumManager->onBlur();
+	mLargeAlbumWidget->blur();
 }
 
 void CollectionWindow::onFocus()
 {
 	mHasFocus = true;
+	if (mCurrStyle == SmallAlbum)
+	{
+		mSmallAlbumManager->onFocus();
+	}
+	else if (mCurrStyle == LargeAlbum)
+	{
+		mLargeAlbumWidget->focus();
+	}
 }
 
 void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
@@ -365,6 +406,7 @@ void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
 				mSmallAlbumManager->onFocus();
 			}
 			mLargeAlbumWidget->blur();
+			mLargeAlbumLbl->setPos(-999.0f, 0.0f);
 		}
 		else if (mCurrStyle == LargeAlbum)
 		{
@@ -373,6 +415,7 @@ void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
 				mLargeAlbumWidget->focus();
 			}
 			mSmallAlbumManager->onBlur();
+			mLargeAlbumLbl->setPos(mCurrWidth / 2.0f, mY + 40.0f);
 		}
 
 		setDrawableWidgets();
@@ -412,13 +455,19 @@ void CollectionWindow::setDrawableWidgets()
 		mSmallAlbumManager->onBlur();
 
 		mWidgetsToDraw.push_back(mLargeAlbumWidget);
+		for (unsigned int i = 0; i < mLargeAlbumWidget->getWidgets().size(); i++)
+		{
+			mWidgetsToDraw.push_back(mLargeAlbumWidget->getWidgets()[i]);
+		}
 	}
 
 	mWidgetsToDraw.push_back(mAlphabetLabel);
 	mWidgetsToDraw.push_back(mMagnifier);
 	mWidgetsToDraw.push_back(mLetterLabel);
+	mWidgetsToDraw.push_back(mGoToSongChk);
 	mWidgetsToDraw.push_back(mSmallAlbumBtn);
 	mWidgetsToDraw.push_back(mLargeAlbumBtn);
+	mWidgetsToDraw.push_back(mLargeAlbumLbl);
 	lock.Unlock();
 }
 
@@ -447,5 +496,47 @@ void CollectionWindow::onBtnPushed(Button* btn)
 		{
 			btn->setToggled(true);
 		}
+	}
+}
+void CollectionWindow::goToSong()
+{
+	if (SoundManager::instance()->isPlaying())
+	{
+		string file = SoundManager::instance()->getCurrFile();
+
+		if (file.length() > 0)
+		{
+			Track track;
+			Album album;
+			DatabaseManager::instance()->getTrack(file, &track);
+			if (track.Id != DatabaseStructs::INVALID_ID)
+			{
+				DatabaseManager::instance()->getAlbum(track.AlbumId, &album);
+
+				if (album.Id != DatabaseStructs::INVALID_ID)
+				{
+					mLargeAlbumWidget->goToSong(album, track);
+					mSmallAlbumManager->goToSong(album, track);
+				}
+			}
+		}
+	}
+}
+void CollectionWindow::onChkPushed(Checkbox* chk)
+{
+	if (chk == mGoToSongChk)
+	{
+		if (mGoToSongChk->getChecked())
+		{
+			goToSong();
+		}
+		Settings::instance()->setValue(Settings::OPT_GO_TO_SONG, mGoToSongChk->getChecked());
+	}
+}
+void CollectionWindow::onSoundEvent(SoundManager::SoundEvent ev)
+{
+	if (mGoToSongChk->getChecked() && ev == SoundManager::START_EVENT)
+	{
+		goToSong();
 	}
 }

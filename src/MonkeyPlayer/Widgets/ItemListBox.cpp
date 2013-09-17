@@ -592,6 +592,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 				}
 			}
 			mDoRedraw = true;
+			e.setConsumed(true);
 			return true;
 		}
 		else if ((e.getEvent() == MouseEvent::LBUTTONUP)
@@ -620,6 +621,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 				mStartedOnTop = false;
 			}
 			mDoRedraw = true;
+			e.setConsumed(true);
 			return true;
 		}
 	}

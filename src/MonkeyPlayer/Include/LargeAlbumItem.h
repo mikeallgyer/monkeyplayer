@@ -40,6 +40,7 @@ public:
 	void setVisible(bool vis);
 	bool getVisible();
 	Album getAlbum();
+	vector<Track*> getTracks();
 	D3DXMATRIX getWorld();
 	bool isMoving();
 	void setPosition(float x, float yRot);

@@ -99,6 +99,7 @@ int TrackListBox::findItem(std::string &name)
 }
 ListItem* TrackListBox::setHighlightedItem(std::string &name)
 {
+	setCurrentTrack(-1);
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		if (((TrackListItem*)mItems[i])->getTrack()->Filename == name)
@@ -112,6 +113,7 @@ ListItem* TrackListBox::setHighlightedItem(std::string &name)
 }
 ListItem* TrackListBox::setHighlightedItem(int index)
 {
+	setCurrentTrack(-1);
 	if (index >= 0 && index < (int)mItems.size())
 	{
 		setCurrentTrack(index);

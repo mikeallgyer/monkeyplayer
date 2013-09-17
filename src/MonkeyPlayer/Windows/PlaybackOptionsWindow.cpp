@@ -47,9 +47,12 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 	mWidgets.push_back(mCreateListBtn);
 
 	mRandomChk = snew Checkbox(0, 0, "Random", chk_callback, this);
+	mRandomChk->setChecked(Settings::instance()->getBoolValue(Settings::OPT_RANDOM_ON, false));
 	mStopAfterChk = snew Checkbox(0, 0, "Stop After", chk_callback, this);
-	mStopAfterChk->setChecked(true);
+	mStopAfterChk->setChecked(Settings::instance()->getBoolValue(Settings::OPT_STOP_AFTER_ON, false));
 	mRepeatChk = snew Checkbox(0, 0, "Repeat", chk_callback, this);
+	mRepeatChk->setChecked(!mStopAfterChk->getChecked());
+
 	mOrderByCombo = snew ComboBox(0, 0, "SELECT", 100.0f, combo_callback, this);
 	mStopAfterCombo = snew ComboBox(0, 0, "SELECT", 100.0f, combo_callback, this);
 
@@ -58,7 +61,7 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 	orderByList.push_back(snew SimpleListItem("Albums", (int)ALBUM));
 	orderByList.push_back(snew SimpleListItem("Artists", (int)ARTIST));
 	mOrderByCombo->setList(orderByList);
-	mOrderByCombo->setSelectedIndex(0);
+	mOrderByCombo->setSelectedIndex(Settings::instance()->getIntValue(Settings::OPT_ORDER_BY, 0));
 
 	vector<ListItem*> repeatList;
 	repeatList.push_back(snew SimpleListItem("Song", (int)SONG));
@@ -67,6 +70,7 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 	repeatList.push_back(snew SimpleListItem("Never", (int)NEVER));
 	mStopAfterCombo->setList(repeatList);
 	mStopAfterCombo->setText(repeatList[0]->toString());
+	mStopAfterCombo->setSelectedIndex(Settings::instance()->getIntValue(Settings::OPT_STOP_AFTER, 3));
 
 	mWidgets.push_back(mRandomChk);
 	mWidgets.push_back(mStopAfterChk);
@@ -196,7 +200,7 @@ bool PlaybackOptionsWindow::onMouseEvent(MouseEvent ev)
 		}
 	}
 	bool consumed = false;
-	for (unsigned int i = 0; i < mWidgets.size(); i++)
+	for (int i = (int)mWidgets.size() - 1; i >= 0; i--)
 	{
 		if (mWidgets[i]->onMouseEvent(ev))
 		{
@@ -238,7 +242,6 @@ void PlaybackOptionsWindow::onBtnPushed(Button* btn)
 			{
 				std::random_shuffle(albums.begin(), albums.end());
 			}
-			std::random_shuffle(albums.begin(), albums.end());
 			for (unsigned int i = 0; i < albums.size(); i++)
 			{
 				vector<Track*> tracks = DatabaseManager::instance()->getTracks(*albums[i]);
@@ -276,6 +279,7 @@ void PlaybackOptionsWindow::onChkPushed(Checkbox *btn)
 {
 	if (btn == mStopAfterChk)
 	{
+		Settings::instance()->setValue(Settings::OPT_STOP_AFTER_ON, mStopAfterChk->getChecked());
 		if (mStopAfterChk->getChecked())
 		{
 			mRepeatChk->setChecked(false);
@@ -289,6 +293,7 @@ void PlaybackOptionsWindow::onChkPushed(Checkbox *btn)
 	}
 	else if (btn == mRepeatChk)
 	{
+		Settings::instance()->setValue(Settings::OPT_STOP_AFTER_ON, mStopAfterChk->getChecked());
 		if (mRepeatChk->getChecked())
 		{
 			mStopAfterChk->setChecked(false);
@@ -300,7 +305,19 @@ void PlaybackOptionsWindow::onChkPushed(Checkbox *btn)
 			mStopAfterCombo->setPos(mStopAfterCombo->getX(), mRepeatChk->getY());
 		}
 	}
+	else if (btn == mRandomChk)
+	{
+		Settings::instance()->setValue(Settings::OPT_RANDOM_ON, mRandomChk->getChecked());
+	}
 }
-void PlaybackOptionsWindow::onComboSelected(ComboBox *btn)
+void PlaybackOptionsWindow::onComboSelected(ComboBox *combo)
 {
+	if (combo == mStopAfterCombo)
+	{
+		Settings::instance()->setValue(Settings::OPT_STOP_AFTER, mStopAfterCombo->getSelectedIndex());
+	}
+	else if (combo == mOrderByCombo)
+	{
+		Settings::instance()->setValue(Settings::OPT_ORDER_BY, mOrderByCombo->getSelectedIndex());
+	}
 }

@@ -43,6 +43,7 @@ public:
 	void setText(string text);
 	string getText();
 	ListItem* getSelectedItem();
+	int getSelectedIndex();
 	void setSelectedIndex(int index);
 	void setList(vector<ListItem*> list);
 

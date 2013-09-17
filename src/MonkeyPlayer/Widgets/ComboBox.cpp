@@ -182,6 +182,7 @@ bool ComboBox::onMouseEvent(MouseEvent e)
 	{
 		mArrowSprite->setTextureIndex(ARROW_DOWN);
 		mStartedOnTop = true;
+		e.setConsumed(true);
 	}
 	else if (mStartedOnTop && !e.getConsumed() && e.getEvent() == MouseEvent::LBUTTONUP &&
 		isPointInside(e.getX(), e.getY()))
@@ -199,10 +200,7 @@ bool ComboBox::onMouseEvent(MouseEvent e)
 		mArrowSprite->setTextureIndex(ARROW_HOVER);
 		mStartedOnTop = false;
 		mTextChanged = true;
-		if (mCallback != NULL)
-		{
-			mCallback(mCallbackObj, this);
-		}
+		e.setConsumed(true);
 	}
 	
 	if (mDroppedDown && e.getEvent() == MouseEvent::LBUTTONDOWN &&
@@ -211,6 +209,7 @@ bool ComboBox::onMouseEvent(MouseEvent e)
 		mDroppedDown = false;
 		mTextChanged = true;
 		mListBox->blur();
+		e.setConsumed(true);
 	}
 
 	return false;
@@ -263,6 +262,10 @@ ListItem* ComboBox::getSelectedItem()
 {
 	return mListBox->getSelectedItem();
 }
+int ComboBox::getSelectedIndex()
+{
+	return mListBox->getSelectedIndex();
+}
 	
 void ComboBox::setSelectedIndex(int index)
 {
@@ -283,4 +286,8 @@ void ComboBox::onItemSelected(ItemListBox* listBox)
 	mLabel->setString(listBox->getSelectedItem()->toString());
 	mTextChanged = true;
 	mListBox->blur();
+	if (mCallback != NULL)
+	{
+		mCallback(mCallbackObj, this);
+	}
 }

@@ -10,6 +10,7 @@
 #include "LargeAlbumItem.h"
 #include "RenderTarget.h"
 #include "Sprite.h"
+#include "TrackListBox.h"
 
 #ifndef LARGE_ALBUM_WIDGET_H
 #define LARGE_ALBUM_WIDGET_H
@@ -36,10 +37,14 @@ public:
 	float getHeight() { return mHeight; }
 
 	std::vector<Sprite*> getSprites();
+	std::vector<IWidget*> getWidgets();
 	int getNumTriangles();
-	virtual bool onMouseEvent(MouseEvent e);
+	virtual bool onMouseEvent(MouseEvent ev);
+	void focus();
+	void blur();
 	virtual void refresh();
 	void goToChar(char c);
+	void goToSong(Album a, Track t);
 
 	static const float ALBUM_WIDTH;
 	static const float ALBUM_HEIGHT;
@@ -47,14 +52,19 @@ public:
 
 	void addAlbum(Album* album);
 	void addTrack(Track* track);
+
 protected:
+	void goToAlbum(int index);
 
 	void doAddAlbum(Album* album);
 	void doAddTrack(Track* track);
 
 	vector<AlbumPos> mPositions;
 	std::vector<Sprite*> mSprites; 
+	vector<IWidget*> mWidgets;
 	Sprite* mTargetSprite;
+	TrackListBox* mTrackBox;
+
 	vector<LargeAlbumItem*> mLargeAlbums;
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;
@@ -64,11 +74,13 @@ protected:
 	float mX, mY, mWidth, mHeight, mX2, mY2;
 	bool mResized;
 	bool mStartedOnTop;
-	float mNumTriangles;
+	int mNumTriangles;
+	bool mHasFocus;
 
 	void createBuffers();
 
 	bool isPointInside(int x, int y);
+	void setTracks();
 
 	ID3DXEffectPool* mPool;
 	ID3DXEffect* mEffect;
@@ -94,6 +106,7 @@ protected:
 	D3DXVECTOR4 mLightColor;
 	D3DXVECTOR4 mAmbient;
 	D3DXVECTOR3 mCamPos;
+	D3DXVECTOR3 mLookAt;
 	float mSpecularPower;
 	D3DXVECTOR3 mSpecularColor;
 	D3DXVECTOR3 mLightPos;

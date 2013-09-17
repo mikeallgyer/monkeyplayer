@@ -25,6 +25,11 @@ const string Settings::WHITESPACE = "\t\n\r ";
 const string Settings::CONTENT_DIR = "ContentDir";
 
 const string Settings::OPT_DISPLAY_TYPE = "DisplayType";
+const string Settings::OPT_RANDOM_ON = "RandomOn";
+const string Settings::OPT_ORDER_BY = "OrderBy";
+const string Settings::OPT_STOP_AFTER = "StopAfter";
+const string Settings::OPT_STOP_AFTER_ON = "StopAfterOn";
+const string Settings::OPT_GO_TO_SONG = "GoToSong";
 
 Settings::Settings()
 {
@@ -107,6 +112,18 @@ void Settings::setValue(string name, int value)
 	sstream << value;
 	mValues[name] = sstream.str();
 	writeValues();
+}
+// get value with given name.
+// if name doesn't exist, default value is
+// saved and returned
+bool Settings::getBoolValue(string name, bool defaultValue)
+{
+	return getIntValue(name, defaultValue ? 1 : 0) != 0;
+}
+// set (and save) value
+void Settings::setValue(string name, bool value)
+{
+	setValue(name, value ? 1 : 0);
 }
 
 // get value with given name.

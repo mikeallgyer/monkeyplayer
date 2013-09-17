@@ -52,6 +52,7 @@ public:
 	void updateSmallDisplay();
 
 	void goToChar(char c);
+	void goToSong(Album a, Track t);
 
 	void addAlbum(Album* album);
 	void addTrack(Track* track);
@@ -98,6 +99,10 @@ private:
 
 	bool mGoToChar;
 	char mChar;
+
+	bool mGoToSong;
+	int mGoToAlbumId;
+	int mGoToSongId;
 
 protected:
 	// synchronization

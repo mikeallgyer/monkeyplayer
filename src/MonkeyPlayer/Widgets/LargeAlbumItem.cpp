@@ -37,6 +37,7 @@ LargeAlbumItem::LargeAlbumItem(Album album) : mCurrDestination(0, 0, true, .5f)
 	if (art != NULL)
 	{
 		HRESULT hr = D3DXCreateTextureFromFileInMemory(gDevice, art->data, art->length, &mTexture);
+		delete art;
 	}
 	else
 	{
@@ -123,6 +124,10 @@ bool LargeAlbumItem::getVisible()
 Album LargeAlbumItem::getAlbum()
 {
 	return mAlbum;
+}
+vector<Track*> LargeAlbumItem::getTracks()
+{
+	return mTracks;
 }
 D3DXMATRIX LargeAlbumItem::getWorld()
 {

@@ -108,15 +108,21 @@ void Label::preRender()
 
 	mTarget->endScene();
 }
-void Label::setPos(float x, float y, float width = 0, float height = 0)
+void Label::setPos(float x, float y, float width, float height)
 {
 	mX = floor(x);
 	mY = floor(y);
-	mHeight = height;
 
-	if (!mSizeToFit)
+	if (!mSizeToFit || width != mWidth || height != mHeight)
 	{
-		mWidth = width;
+		if (height > 0)
+		{
+			mHeight = height;
+		}
+		if (width > 0)
+		{
+			mWidth = width;
+		}
 		mTarget->setDimensions((int)mWidth, (int)mHeight);
 	}
 	recreateTargets();

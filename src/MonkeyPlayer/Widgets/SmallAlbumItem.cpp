@@ -427,7 +427,6 @@ int SmallAlbumItem::getItemAtPos(int x, int y)
 {
 	int itemIndex = -1;
 
-
 	return itemIndex;
 }
 
