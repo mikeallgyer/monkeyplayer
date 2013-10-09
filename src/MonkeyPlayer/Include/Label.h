@@ -62,6 +62,7 @@ protected:
 	D3DXCOLOR mTextColor;
 	float mFontSize;
 	bool mSizeToFit;
+	bool mRedraw;
 
 	// callback
 	void (*mCallback)(void* ptrObj, Label* label);

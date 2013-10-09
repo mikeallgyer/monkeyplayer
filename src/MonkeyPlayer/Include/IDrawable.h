@@ -14,6 +14,8 @@
 #ifndef IDRAWABLE_H
 #define IDRAWABLE_H
 
+class ItemListBox;
+
 class IDrawable
 {
 public:
@@ -26,6 +28,7 @@ public:
 	virtual void preRender() {}
 	virtual void display() {}
 	virtual int getNumTriangles() = 0;
+	virtual void onContextMenuSelected(ItemListBox* menu) {}
 };
 
 #endif

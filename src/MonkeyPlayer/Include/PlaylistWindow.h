@@ -5,6 +5,7 @@
 // contains a playlist of songs
 
 
+#include "Button.h"
 #include "d3dUtil.h"
 #include "ItemListBox.h"
 #include "IWidget.h"
@@ -46,13 +47,21 @@ public:
 	void modifyItems(std::vector<Track*> items);
 	bool playNextSong();
 	bool playPreviousSong();
-
 	static void listBox_callback(void* obj, ItemListBox* listBox)
 	{
 		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
 		if (win)
 		{
 			win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
+		}
+	}
+
+	static void button_callback(void* obj, Button* btn)
+	{
+		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
+		if (win)
+		{
+			win->onBtnClicked(btn);
 		}
 	}
 
@@ -70,6 +79,7 @@ private:
 	Sprite* mBackground;
 
 	TrackListBox *mListBox;
+	Button *mShuffleBtn;
 
 	int mPreferredWidth;
 	int mCurrWidth;
@@ -79,6 +89,7 @@ private:
 	static const int MIN_WINDOW_WIDTH;
 
 	void onItemSelected(ListItem* item, int index);
+	void onBtnClicked(Button* btn);
 };
 
 #endif

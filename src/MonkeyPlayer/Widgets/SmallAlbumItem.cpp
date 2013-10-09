@@ -415,10 +415,10 @@ bool SmallAlbumItem::isPointInsideAlbum(int x, int y)
 {
 	float xPoint = (float)x;
 	float yPoint = (float)y;
-	float x1 = (float)mAlbumCoverSprite->getX();
-	float y1 = (float)mAlbumCoverSprite->getY();
-	float x2 = xPoint + mAlbumCoverSprite->getWidth();
-	float y2 = yPoint + mAlbumCoverSprite->getHeight();
+	float x1 = (float)mAlbumCoverSprite->getX() + mX;
+	float y1 = (float)mAlbumCoverSprite->getY() + mY;
+	float x2 = x1 + mAlbumCoverSprite->getWidth();
+	float y2 = y1 + mAlbumCoverSprite->getHeight();
 
 	return !(xPoint < x1 || yPoint < y1 || xPoint > x2 || yPoint > y2);
 }

@@ -685,11 +685,23 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 									clickedItem->getSelectedTrack()->Filename.c_str());
 							}
 						}
+						break;
+					}
+					if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK && mWidgets[i]->isPointInside(ev.getX(), ev.getY()))
+					{
+						Label* clickedLabel = dynamic_cast<Label*>(mWidgets[i]);
+						if (clickedLabel != NULL)
+						{
+							vector<Track*> tracks = DatabaseManager::instance()->getTracks(clickedLabel->getString());
+							MusicLibrary::instance()->getPlaylistWindow()->clearItems();
+							MusicLibrary::instance()->getPlaylistWindow()->addItems(tracks);
+							MusicLibrary::instance()->getPlaylistWindow()->playNextSong();
+							break;
+						}
 					}
 				}
 				catch (std::bad_cast e) {}
 			}
-			break;
 		}
 	}
 	return consumed;

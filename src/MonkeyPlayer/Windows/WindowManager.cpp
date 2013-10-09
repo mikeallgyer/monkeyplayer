@@ -34,6 +34,10 @@ WindowManager::WindowManager()
 
 	mProgressBar = snew ProgressBar(0, 0, 100.0f, 100.0f);
 	mProgressBar->setVisible(false);
+
+	mContextMenu = snew ItemListBox(-999.0f, -999.0f, 150.0f, 50.0, contextMenu_callback, this, D3DCOLOR_XRGB(116, 116, 64));
+	mContextMenuOwner = NULL;
+
 	mNumTriangles = 0;
 
 	gInput->addMouseCallback(this, &mouseEventCallback);
@@ -48,6 +52,7 @@ WindowManager::~WindowManager()
 		delete mWindows[i];
 	}
 	delete mProgressBar;
+	delete mContextMenu;
 	ReleaseCOM(mEffect);
 }
 void WindowManager::onDeviceLost()
@@ -57,6 +62,7 @@ void WindowManager::onDeviceLost()
 		mWindows[i]->onDeviceLost();
 	}
 	mProgressBar->onDeviceLost();
+	mContextMenu->onDeviceLost();
 	HR(mEffect->OnLostDevice());
 }
 void WindowManager::onDeviceReset()
@@ -66,6 +72,7 @@ void WindowManager::onDeviceReset()
 		mWindows[i]->onDeviceReset();
 	}
 	mProgressBar->onDeviceReset();
+	mContextMenu->onDeviceReset();
 	HR(mEffect->OnResetDevice());
 
 	mResized = true;
@@ -87,7 +94,7 @@ void WindowManager::update(float dt)
 	{
 		mWindows[i]->update(dt);
 	}
-
+	mContextMenu->update(dt);
 	if (mResized)
 	{
 		RECT r;
@@ -106,6 +113,7 @@ void WindowManager::preRender()
 	{
 		mWindows[i]->preRender();
 	}
+	mContextMenu->preRender();
 }
 void WindowManager::display()
 {
@@ -130,7 +138,9 @@ void WindowManager::display()
 			mNumTriangles += mWindows[j]->getNumTriangles();
 		}
 		drawSprites(mProgressBar->getSprites());
+		drawSprites(mContextMenu->getSprites());
 		mNumTriangles += mProgressBar->getNumTriangles();
+		mNumTriangles += mContextMenu->getNumTriangles();
 
 		HR(mEffect->EndPass());
 	}
@@ -231,6 +241,22 @@ void WindowManager::mouseEventCallback(void* obj, MouseEvent e)
 }
 void WindowManager::onMouseEvent(MouseEvent e)
 {
+	if ((mContextMenu->onMouseEvent(e) || (!mContextMenu->isPointInside(e.getX(), e.getY()) && 
+		(e.getEvent() == MouseEvent::LBUTTONDOWN || e.getEvent() == MouseEvent::RBUTTONDOWN))) &&
+		e.getEvent() != MouseEvent::MOUSEWHEEL)
+	{
+		mContextMenu->setPos(-999.0f, -999.0f, 50.0f, 50.0f);
+		mContextMenu->blur();
+		mContextMenuOwner = NULL;
+		if (mFocusWindow != NULL)
+		{
+			mFocusWindow->onFocus();
+		}
+	}
+	if (mContextMenu->onMouseEvent(e))
+	{
+		e.setConsumed(true);
+	}
 	if (mWindows.size() > 0)
 	{
 		for (unsigned int i = 0; i < mWindows.size(); i++)
@@ -284,5 +310,51 @@ void WindowManager::addWindowAboveMain(IWindow* win)
 void WindowManager::addWindowBelowMain(IWindow* win)
 {
 	mWindowsBelowMain.push_back(win);
+}
+
+void WindowManager::openContextMenu(float mouseX, float mouseY, vector<ListItem*> items, IDrawable* owner)
+{
+	mContextMenu->setItems(items);
+	mContextMenu->setSelectedIndex(-1);
+	float width = mContextMenu->getWidthToFit();
+	float height = mContextMenu->getHeightToFit();
+
+	float x = mouseX;
+	if ((gApp->getWidth() - mouseX) < width)
+	{
+		x = mouseX - width;
+	}
+	
+	float y = mouseY;
+	float maxHeight = gApp->getHeight() - mouseY;
+	if (maxHeight < height)
+	{
+		y = mouseY - (height - maxHeight);
+	}
+	mContextMenu->setPos(x, y, width, height);
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		mWindows[i]->onBlur();
+	}
+	mContextMenu->focus();
+	mContextMenuOwner = owner;
+}
+/*static*/ void WindowManager::contextMenu_callback(void* obj, ItemListBox* listBox)
+{
+	WindowManager* win = static_cast<WindowManager*>(obj);
+	if (win)
+	{
+		if (win->mContextMenuOwner != NULL)
+		{
+			win->mContextMenuOwner->onContextMenuSelected(listBox);
+		}
+		win->mContextMenu->setPos(-999.0f, -999.0f, 50.0f, 50.0f);
+		win->mContextMenuOwner = NULL;
+		win->mContextMenu->blur();
+		if (win->mFocusWindow != NULL)
+		{
+			win->mFocusWindow->onFocus();
+		}
+	}
 }
 

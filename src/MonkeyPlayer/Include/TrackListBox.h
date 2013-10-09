@@ -19,6 +19,7 @@ public:
 	void preRender();
 	void setCurrentTrack(int index);
 
+	virtual void shuffleItems();
 	virtual int findItem(std::string &name);
 	virtual ListItem* setHighlightedItem(std::string &name);
 	virtual ListItem* setHighlightedItem(int index);

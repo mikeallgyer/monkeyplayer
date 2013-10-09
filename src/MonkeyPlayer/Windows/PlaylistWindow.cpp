@@ -37,13 +37,22 @@ PlaylistWindow::PlaylistWindow()
 
 	mCurrWidth = mPreferredWidth = Settings::instance()->getIntValue("PLAYLIST_WIDTH", 350);
 
-	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mCurrWidth, 300.0f, D3DXVECTOR4(1.0f, 1.0f,0.9f,1.0f));
+	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mCurrWidth, 300.0f, D3DXVECTOR4(0, 0, 0, 1.0f));//1.0f, 1.0f, 0.9f, 1.0f));
 
 	mSprites.push_back(mBackground);
 	
 	mListBox = snew TrackListBox(0, 0, 50.0f, 50.0f,
 		listBox_callback,
 		this);
+	mListBox->setBgColor(D3DCOLOR_XRGB(50, 50, 50));
+
+	std::string shuffleUp = FileManager::getContentAsset(std::string("Textures\\shuffle_up.png"));
+	std::string shuffleDown = FileManager::getContentAsset(std::string("Textures\\shuffle_down.png"));
+	std::string shuffleHover = FileManager::getContentAsset(std::string("Textures\\shuffle_hover.png"));
+
+	mShuffleBtn = snew Button(0, 0, 50.0f, 50.0f, shuffleUp, button_callback, this);
+	mShuffleBtn->setDownTexture(shuffleDown.c_str());
+	mShuffleBtn->setHoverTexture(shuffleHover.c_str());
 
 	mCurrSongIndex = -1;
 	
@@ -52,7 +61,7 @@ PlaylistWindow::PlaylistWindow()
 	//mListBox->focus();
 
 	mWidgets.push_back(mListBox);
-	gInput->registerGlobalKey(VK_MEDIA_PLAY_PAUSE);
+	mWidgets.push_back(mShuffleBtn);
 }
 PlaylistWindow::~PlaylistWindow()
 {
@@ -118,7 +127,10 @@ void PlaylistWindow::update(float dt)
 		mListBox->setPos(mBackground->getX() + 5,
 			mBackground->getY() + 5,
 			mBackground->getWidth() - 10,
-			mBackground->getHeight() - 10);
+			mBackground->getHeight() - 80);
+
+		mShuffleBtn->setPos(mBackground->getX() + 5,
+			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
 		mResized = false;
 	}
@@ -232,6 +244,13 @@ void PlaylistWindow::onItemSelected(ListItem* item, int index)
 	}
 }
 
+void PlaylistWindow::onBtnClicked(Button* btn)
+{
+	if (btn == mShuffleBtn)
+	{
+		mListBox->shuffleItems();
+	}
+}
 bool PlaylistWindow::onMouseEvent(MouseEvent ev)
 {
 	// if clicked, give widget focus

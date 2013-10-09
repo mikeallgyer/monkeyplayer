@@ -24,7 +24,7 @@ float4 calcPhong(float3 worldPos, float3 wNormal, float4 diffuseColor)
 	
 	float3 refl = normalize(reflect(-lightDir, wNormal));
 	outColor += pow(saturate(dot(refl, viewDir)), specularPower) * float4(specularColor, 1.0) 
-				* lightColor * diffuseColor;
+				* lightColor;// * diffuseColor;
 
 	outColor.a = diffuseColor.a;
 	

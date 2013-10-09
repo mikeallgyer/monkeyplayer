@@ -5,7 +5,7 @@
 // contains playback options
 
 #include <vector>
-#include <algorithm>    // std::move_backward
+#include <algorithm>    // std::random_shuffle
 //#include <random>       // std::default_random_engine
 //#include <chrono>       // std::chrono::system_clock
 

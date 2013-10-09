@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "IWidget.h"
+#include "Label.h"
 #include "LargeAlbumItem.h"
 #include "RenderTarget.h"
 #include "Sprite.h"
@@ -19,6 +20,10 @@
 class LargeAlbumWidget : public IWidget
 {
 public:
+	static const float ALBUM_WIDTH;
+	static const float ALBUM_HEIGHT;
+	static const float ALBUM_DEPTH;
+
 	LargeAlbumWidget(float x, float y, float width, float height);
 	~LargeAlbumWidget();
 
@@ -45,16 +50,24 @@ public:
 	virtual void refresh();
 	void goToChar(char c);
 	void goToSong(Album a, Track t);
-
-	static const float ALBUM_WIDTH;
-	static const float ALBUM_HEIGHT;
-	static const float ALBUM_DEPTH;
+	void onContextMenuSelected(ItemListBox* menu);
 
 	void addAlbum(Album* album);
 	void addTrack(Track* track);
 
+	static void listBox_callback(void* obj, ItemListBox* listBox)
+	{
+		LargeAlbumWidget* win = static_cast<LargeAlbumWidget*>(obj);
+		if (win)
+		{
+			win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
+		}
+	}
+
 protected:
+	enum SELECTED_THING { ARTIST, TRACK, ALBUM };
 	void goToAlbum(int index);
+	void queueThing(SELECTED_THING thing);
 
 	void doAddAlbum(Album* album);
 	void doAddTrack(Track* track);
@@ -64,6 +77,9 @@ protected:
 	vector<IWidget*> mWidgets;
 	Sprite* mTargetSprite;
 	TrackListBox* mTrackBox;
+	Label* mLargeAlbumLbl;
+	Label* mArtistLbl;
+	Sprite* mSelectionSprite;
 
 	vector<LargeAlbumItem*> mLargeAlbums;
 	std::vector<Album*> mAlbumsToAdd;
@@ -76,11 +92,15 @@ protected:
 	bool mStartedOnTop;
 	int mNumTriangles;
 	bool mHasFocus;
+	int mPlayingTrack;
+	int mPlayingAlbum;
+	SELECTED_THING mSelectedThing;
 
 	void createBuffers();
 
 	bool isPointInside(int x, int y);
 	void setTracks();
+	void onItemSelected(ListItem* item, int index);
 
 	ID3DXEffectPool* mPool;
 	ID3DXEffect* mEffect;

@@ -104,7 +104,6 @@ private:
 	Button* mMagnifier;
 	Button* mSmallAlbumBtn;
 	Button* mLargeAlbumBtn;
-	Label* mLargeAlbumLbl;
 	Checkbox* mGoToSongChk;
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;

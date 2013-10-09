@@ -5,12 +5,13 @@
 // interface for any widget containable
 // in an IWindow (think Control in C#)
 
-#include "IDrawable.h"
-#include "Sprite.h"
 #include <vector>
 
 #ifndef I_WIDGET_H
 #define I_WIDGET_H
+
+#include "IDrawable.h"
+#include "Sprite.h"
 
 class IWidget : public IDrawable
 {

@@ -4,6 +4,7 @@
 //
 // A box with selectable tracks
 
+#include <algorithm>    // std::random_shuffle
 #include "d3dApp.h"
 #include "ItemListBox.h"
 #include "Settings.h"
@@ -36,7 +37,7 @@ void TrackListBox::preRender()
 		if (mStartDisplayIndex != mEndDisplayIndex)
 		{
 			D3DCOLOR defColor = D3DCOLOR_XRGB(255, 255, 255);
-			D3DCOLOR selColor = D3DCOLOR_XRGB(175, 175, 0);
+			D3DCOLOR selColor = D3DCOLOR_XRGB(195, 222, 165);
 			D3DCOLOR currColor = defColor;
 			for (unsigned int i = mStartDisplayIndex; i <= mEndDisplayIndex && i < mItems.size(); i++)
 			{
@@ -54,6 +55,12 @@ void TrackListBox::preRender()
 				{
 					mHighlightedSprite->setDest(ItemListBox::TEXT_MARGIN_LEFT, ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
 					gWindowMgr->drawSprite(mHighlightedSprite, mWidth, mHeight);
+				}
+				else if (mHoverItems.find(i) != mHoverItems.end())
+				{
+					mHoverSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
+					mHoverSprite->setColor(D3DXVECTOR4(0.35f, 0.35f, 0.6f, mHoverItems[i] / HOVER_DURATION));
+					gWindowMgr->drawSprite(mHoverSprite, mTextWidth, mTextHeight);
 				}
 				currColor = (i == mHighightedIndex) ? selColor : defColor;
 				int y = ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row;
@@ -74,6 +81,25 @@ void TrackListBox::preRender()
 
 	}
 }
+void TrackListBox::shuffleItems()
+{
+	CSingleLock lock(&mCritSection, true);
+	ListItem* highlighted = getItem(getHighlightedIndex());
+	setHighlightedItem(-1);
+	std::random_shuffle(mItems.begin(), mItems.end());
+
+	for (unsigned int i = 0; i < mItems.size(); i++)
+	{
+		if (mItems[i] == highlighted)
+		{
+			setHighlightedItem(i);
+			break;
+		}
+	}
+	mDoRedraw = true;
+	lock.Unlock();
+}
+
 void TrackListBox::setCurrentTrack(int index)
 {
 	if (index >= 0 && index < (int)mItems.size())

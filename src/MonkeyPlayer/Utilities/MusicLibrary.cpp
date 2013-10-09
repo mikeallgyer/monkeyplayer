@@ -19,6 +19,10 @@ MusicLibrary::MusicLibrary()
 	SoundManager::instance()->addCallback(soundEventCB, this);
 	mPlayNextSong = false;
 	mPlayPreviousSong = false;
+	gInput->registerGlobalKey(VK_MEDIA_PLAY_PAUSE);
+	gInput->registerGlobalKey(VK_MEDIA_STOP);
+	gInput->registerGlobalKey(VK_MEDIA_NEXT_TRACK);
+	gInput->registerGlobalKey(VK_MEDIA_PREV_TRACK);
 }
 void MusicLibrary::update(float dt)
 {

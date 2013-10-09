@@ -3,6 +3,7 @@
 // (C) 2013 Mike Allgyer.  All Rights Reserved.
 //
 // A box with selectable items
+#include <algorithm>    // std::random_shuffle
 
 #include "d3dApp.h"
 #include "ItemListBox.h"
@@ -22,6 +23,8 @@ const int ItemListBox::TEXT_MARGIN_TOP = 0;
 const int ItemListBox::TEXT_MARGIN_BOTTOM = 0;
 const int ItemListBox::TEXT_MARGIN_LEFT = 5;
 const int ItemListBox::TEXT_MARGIN_RIGHT = 25;
+
+const float ItemListBox::HOVER_DURATION = 0.5f;
 
 // used for synchronization
 CCriticalSection ItemListBox::mCritSection;
@@ -74,9 +77,12 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 
 	std::string scrollPath = FileManager::getContentAsset(std::string("Textures\\scrollHandle.png"));
 	mScrollHandle = snew Sprite(scrollPath.c_str(), mX + mWidth - 15.0f, 0.0f, 7.0f, 14.0f);
-	
+
 	// do this later so it's drawn on top
 	//mSprites.push_back(mScrollHandle);
+	
+	mHoverSprite = snew Sprite(whitePath.c_str(), 0, 0, mWidth, mHeight, highlightColor);
+	mCurrHoverIndex = -1;
 
 	mCurrSelection = -1;
 
@@ -102,6 +108,7 @@ ItemListBox::~ItemListBox()
 
 	delete mListTarget;
 	delete mHighlightedSprite;
+	delete mHoverSprite;
 }
 
 void ItemListBox::onDeviceLost()
@@ -113,6 +120,7 @@ void ItemListBox::onDeviceLost()
 	HR(mFont->OnLostDevice());
 	mListTarget->onDeviceLost();
 	mHighlightedSprite->onDeviceLost();
+	mHoverSprite->onDeviceLost();
 	mDoRedraw = true;
 }
 void ItemListBox::onDeviceReset()
@@ -123,8 +131,9 @@ void ItemListBox::onDeviceReset()
 	}
 	HR(mFont->OnResetDevice());
 
-	mListTarget->onDeviceLost();
+	mListTarget->onDeviceReset();
 	mHighlightedSprite->onDeviceReset();
+	mHoverSprite->onDeviceReset();
 	recreateTargets();
 	mDoRedraw = true;
 }
@@ -154,6 +163,28 @@ void ItemListBox::update(float dt)
 
 	int cursorDelta = 0;
 
+	if (mHoverItems.size() > 0)
+	{
+		for (map<int, float>::iterator iter = mHoverItems.begin(); iter != mHoverItems.end();)
+		{
+			if (iter->first != mCurrHoverIndex)
+			{
+				iter->second -= dt;
+			}
+			if (iter->second <= 0)
+			{
+				mHoverItems.erase(iter++);
+			}
+			else
+			{
+				if (iter->first != mCurrHoverIndex)
+				{
+					mDoRedraw = true;
+				}
+				++iter;
+			}
+		}
+	}
 	if (getIsFocused())
 	{	
 		if ((gInput->isKeyDown(VK_UP) || gInput->isKeyDown(VK_DOWN) ||
@@ -295,7 +326,7 @@ void ItemListBox::update(float dt)
 	}
 
 	// item selected by pressing enter
-	if (gInput->keyPressed(VK_RETURN) && mCallback != NULL &&
+	if (getIsFocused() && gInput->keyPressed(VK_RETURN) && mCallback != NULL &&
 		mCurrSelection >= 0 && mCurrSelection < (int)mItems.size())
 	{
 		mCallback(mCallbackObj, this);
@@ -310,7 +341,7 @@ void ItemListBox::update(float dt)
 void ItemListBox::updateScrollBar()
 {
 	float y = mY + TEXT_MARGIN_TOP;
-	if ((mEndDisplayIndex - mStartDisplayIndex) < mItems.size())
+	if (getNumItemsDisplayed() < mItems.size())
 	{
 		float numDisplayed = (float)(mEndDisplayIndex - mStartDisplayIndex + 1);
 		float halfDisplayed = numDisplayed * .5f;
@@ -318,6 +349,10 @@ void ItemListBox::updateScrollBar()
 		float currPos = ((float)mEndDisplayIndex + (float)mStartDisplayIndex + 1) * .5f - halfDisplayed;
 		float percent = (currPos) / ((float)mItems.size() - (float)(numDisplayed));
 		y += percent * scrollHeight;
+	}
+	else 
+	{
+		y = -999.0f;
 	}
 	mScrollHandle->setDest(mX + mWidth - TEXT_MARGIN_RIGHT * .5f, y, mScrollBarWidth, mScrollBarHeight);
 }
@@ -347,6 +382,12 @@ void ItemListBox::preRender()
 				{
 					mHighlightedSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
 					gWindowMgr->drawSprite(mHighlightedSprite, mTextWidth, mTextHeight);
+				}
+				else if (mHoverItems.find(i) != mHoverItems.end())
+				{
+					mHoverSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
+					mHoverSprite->setColor(D3DXVECTOR4(0.35f, 0.35f, 0.6f, mHoverItems[i] / HOVER_DURATION));
+					gWindowMgr->drawSprite(mHoverSprite, mTextWidth, mTextHeight);
 				}
 
 				int y = TEXT_MARGIN_TOP + mFontHeight * row;
@@ -381,6 +422,39 @@ void ItemListBox::setPos(float x, float y, float width, float height)
 	mDoRedraw = true;
 	lock.Unlock();
 }
+void ItemListBox::setPos(float x, float y, bool autoSize)
+{
+	if (autoSize)
+	{
+		setPos(x, y, getWidthToFit(), getHeightToFit());
+	}
+	else
+	{
+		setPos(x, y, (float)mWidth, mHeight);
+	}
+}
+float ItemListBox::getWidthToFit()
+{
+	int maxWidth = TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT;
+	CSingleLock lock(&mCritSection, true);
+	for (unsigned int i = 0; i < mItems.size(); i++)
+	{
+		RECT r = { 0, 0, (int)100, mFontHeight };
+		HR(mFont->DrawText(0, mItems[i]->toString().c_str(), -1, &r, DT_NOCLIP | DT_CALCRECT, D3DCOLOR_XRGB(255, 255, 0)));
+		int width = (int)(r.right - r.left);
+		if (width > maxWidth)
+		{
+			maxWidth = width;
+		}
+	}
+	lock.Unlock();
+	maxWidth += (float)(TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT);
+	return (float)maxWidth;
+}
+float ItemListBox::getHeightToFit()
+{
+	return (float)(TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + mFontHeight * (int)mItems.size());
+}
 
 std::vector<Sprite*> ItemListBox::getSprites()
 {
@@ -400,6 +474,13 @@ void ItemListBox::clearItems()
 {
 	this->deleteItems();
 	mDoRedraw = true;
+}
+void ItemListBox::shuffleItems()
+{
+	CSingleLock lock(&mCritSection, true);
+	std::random_shuffle(mItems.begin(), mItems.end());
+	mDoRedraw = true;
+	lock.Unlock();
 }
 // takes ownership of pointer
 void ItemListBox::setItems(std::vector<ListItem*> items)
@@ -543,7 +624,7 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 {
 	if (getIsFocused()) //isPointInside(e.getX(), e.getY()))
 	{
-		if (e.getEvent() == MouseEvent::MOUSEWHEEL)
+		if (e.getEvent() == MouseEvent::MOUSEWHEEL && mItems.size() > getNumItemsDisplayed())
 		{
 			int scrollAmt = Settings::instance()->getIntValue("SCROLL_SPEED", NUM_SCROLLING_ITEMS);
 			CSingleLock lock(&mCritSection, true);
@@ -625,6 +706,31 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 			return true;
 		}
 	}
+	if (e.getEvent() == MouseEvent::MOUSEMOVE && isPointInside(e.getX(), e.getY()))
+	{
+		int index = getItemAtPos(e.getX(), e.getY());
+		if (index >= 0)
+		{
+			if (mHoverItems.find(index) != mHoverItems.end())
+			{
+				mHoverItems[index] = HOVER_DURATION;
+			}
+			else
+			{
+				mHoverItems.insert(pair<int, float>(index, HOVER_DURATION));
+			}
+			mCurrHoverIndex = index;
+			mDoRedraw = true;
+		}
+		else
+		{
+			mCurrHoverIndex = -1;
+		}
+	}
+	else
+	{
+		mCurrHoverIndex = -1;
+	}
 	return false;
 }
 int ItemListBox::findItem(std::string &name)
@@ -668,7 +774,7 @@ void ItemListBox::setSelectedIndex(int index)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
-	if (index >= 0 && index < (int)mItems.size())
+	if (index < (int)mItems.size())
 	{
 		mCurrSelection = index;
 		mSelectedIndices.clear();
@@ -692,6 +798,10 @@ ListItem* ItemListBox::getItem(int index)
 	}
 	lock.Unlock();
 	return NULL;
+}
+vector<ListItem*> ItemListBox::getItems()
+{
+	return mItems;
 }
 int ItemListBox::getNumItems()
 {

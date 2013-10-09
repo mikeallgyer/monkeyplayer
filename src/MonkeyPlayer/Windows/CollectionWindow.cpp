@@ -102,10 +102,7 @@ CollectionWindow::CollectionWindow()
 	mLargeAlbumBtn->setIsToggle(true);
 	mLargeAlbumBtn->setToggled(displayType == LargeAlbum);
 
-	mLargeAlbumLbl = snew Label(0, 0, 200.0f, 100.0f, string("hello"), 32, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
-	mLargeAlbumLbl->setSizeToFit(true);
-	mWidgets.push_back(mLargeAlbumLbl);
-	
+
 	mWidgets.push_back(mSmallAlbumBtn);
 	mWidgets.push_back(mLargeAlbumBtn);
 
@@ -137,7 +134,6 @@ CollectionWindow::~CollectionWindow()
 	delete mLargeAlbumWidget;
 	delete mSmallAlbumBtn;
 	delete mLargeAlbumBtn;
-	delete mLargeAlbumLbl;
 }
 
 void CollectionWindow::onDeviceLost()
@@ -212,14 +208,6 @@ void CollectionWindow::update(float dt)
 		mSmallAlbumManager->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
 		mLargeAlbumWidget->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
 
-		if (mCurrStyle == SmallAlbum)
-		{
-			mLargeAlbumLbl->setPos(0.0f, mY + 20.0f);
-		}
-		else if (mCurrStyle == LargeAlbum)
-		{
-			mLargeAlbumLbl->setPos(mCurrWidth / 2.0f, mY + 40.0f);
-		}
 		mResized = false;
 		doRedraw = true;
 	}
@@ -248,7 +236,6 @@ void CollectionWindow::update(float dt)
 	mGoToSongChk->update(dt);
 	mSmallAlbumManager->update(dt);
 	mLargeAlbumWidget->update(dt);
-	mLargeAlbumLbl->update(dt);
 
 	if (mCurrStyle == SmallAlbum)
 	{
@@ -406,7 +393,6 @@ void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
 				mSmallAlbumManager->onFocus();
 			}
 			mLargeAlbumWidget->blur();
-			mLargeAlbumLbl->setPos(-999.0f, 0.0f);
 		}
 		else if (mCurrStyle == LargeAlbum)
 		{
@@ -415,7 +401,6 @@ void CollectionWindow::setDisplayStyle(DISPLAY_STYLE style)
 				mLargeAlbumWidget->focus();
 			}
 			mSmallAlbumManager->onBlur();
-			mLargeAlbumLbl->setPos(mCurrWidth / 2.0f, mY + 40.0f);
 		}
 
 		setDrawableWidgets();
@@ -467,7 +452,6 @@ void CollectionWindow::setDrawableWidgets()
 	mWidgetsToDraw.push_back(mGoToSongChk);
 	mWidgetsToDraw.push_back(mSmallAlbumBtn);
 	mWidgetsToDraw.push_back(mLargeAlbumBtn);
-	mWidgetsToDraw.push_back(mLargeAlbumLbl);
 	lock.Unlock();
 }
 

@@ -39,6 +39,7 @@ Label::Label(float x, float y, float width, float height, std::string &label, in
 
 	mCallback = NULL;
 	mCallbackObj = NULL;
+	mRedraw = true;
 }
 Label::~Label()
 {
@@ -92,6 +93,7 @@ void Label::recreateTargets()
 		mSprite->setDest(mX, mY, mWidth, mHeight);
 		mSprite->replaceCurrentTexture(mTarget->getTexture(), false);
 	}
+	mRedraw = true;
 }
 
 void Label::update(float dt)
@@ -100,13 +102,17 @@ void Label::update(float dt)
 
 void Label::preRender()
 {
-	mTarget->beginScene();
+	if  (mRedraw)
+	{
+		mTarget->beginScene();
 
-	RECT r = { 0, 0, (int)mWidth, (int)mHeight };
+		RECT r = { 0, 0, (int)mWidth, (int)mHeight };
 
-	HR(mFont->DrawText(0, mText.c_str(), -1, &r, mFormat, mTextColor));
+		HR(mFont->DrawText(0, mText.c_str(), -1, &r, mFormat, mTextColor));
 
-	mTarget->endScene();
+		mTarget->endScene();
+		mRedraw = false;
+	}
 }
 void Label::setPos(float x, float y, float width, float height)
 {
@@ -131,16 +137,23 @@ void Label::setPos(float x, float y, float width, float height)
 void Label::setFormat(DWORD format)
 {
 	mFormat = format;
+	mRedraw = true;
 }
 
 void Label::setTextColor(D3DXCOLOR color)
 {
 	mTextColor = color;
+	mRedraw = true;
 }
 
 void Label::setString(std::string &str)
 {
 	mText = str;
+	mRedraw = true;
+	if (mSizeToFit)
+	{
+		recreateTargets();
+	}
 }
 std::string Label::getString()
 {
@@ -163,13 +176,20 @@ int Label::getNumTriangles()
 }
 bool Label::onMouseEvent(MouseEvent e)
 {
-	if (e.getEvent() == MouseEvent::LBUTTONUP && isPointInside(e.getX(), e.getY()))
+	if (isPointInside(e.getX(), e.getY()))
 	{
-		if (mCallback != NULL)
+		if (e.getEvent() == MouseEvent::LBUTTONUP)
 		{
-			mCallback(mCallbackObj, this);
+			if (mCallback != NULL)
+			{
+				mCallback(mCallbackObj, this);
+			}
+			return true;
 		}
-		return true;
+		if (e.getEvent() == MouseEvent::LBUTTONDBLCLK)
+		{
+			return true;
+		}
 	}
 	return false;
 }
@@ -186,6 +206,8 @@ void Label::setSizeToFit(bool fit)
 {
 	mSizeToFit = fit;
 	setPos(mX, mY);
+	mRedraw = true;
+	recreateTargets();
 }
 
 void Label::setCallback(void (*cb)(void* objPtr, Label* label), void* objPtr)

@@ -6,13 +6,13 @@
 #include <map>
 #include <vector>
 
+#ifndef ITEM_LIST_BOX_H
+#define ITEM_LIST_BOX_H
+
 #include "IWidget.h"
 #include "ListItem.h"
 #include "RenderTarget.h"
 #include "Sprite.h"
-
-#ifndef ITEM_LIST_BOX_H
-#define ITEM_LIST_BOX_H
 
 class ItemListBox : public IWidget
 {
@@ -34,10 +34,14 @@ public:
 	virtual void preRender();
 	void display() {}
 	void setPos(float x, float y, float width, float height);
+	void setPos(float x, float y, bool autoSize);
+	float getWidthToFit();
+	float getHeightToFit();
 
 	std::vector<Sprite*> getSprites();
 	int getNumTriangles();
 	void clearItems();
+	virtual void shuffleItems();
 	void setItems(std::vector<ListItem*> items);
 	void addItems(std::vector<ListItem*> items);
 	void addItem(ListItem* item);
@@ -53,6 +57,7 @@ public:
 	void setSelectedIndex(int index);
 	int getSelectedIndex();
 	ListItem* getItem(int index);
+	vector<ListItem*> getItems();
 	int getNumItems();
 
 	bool getAllowSingleClickSelection();
@@ -75,9 +80,13 @@ protected:
 	static const int TEXT_MARGIN_LEFT;
 	static const int TEXT_MARGIN_RIGHT;
 
+	static const float HOVER_DURATION;
+
 	std::vector<Sprite*> mSprites; 
 	std::vector<ListItem*> mItems;
 	std::map<int, ListItem*> mItemMap;
+	map<int, float> mHoverItems;
+	int mCurrHoverIndex;
 	Sprite* mScrollbar;
 
 	ID3DXFont* mFont;
@@ -94,7 +103,8 @@ protected:
 	// main list area
 	RenderTarget* mListTarget;
 	Sprite* mListSprite;
-	Sprite*  mHighlightedSprite;
+	Sprite* mHighlightedSprite;
+	Sprite* mHoverSprite;
 
 	// scrolling area
 	Sprite* mScrollHandle;

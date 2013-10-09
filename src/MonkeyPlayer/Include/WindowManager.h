@@ -10,6 +10,7 @@
 
 #include "d3dUtil.h"
 #include "IDrawable.h"
+#include "ItemListBox.h"
 #include "IWindow.h"
 #include "ProgressBar.h"
 #include <MonkeyInput.h>
@@ -48,6 +49,9 @@ public:
 	void addWindowBelowMain(IWindow* win);
 	ProgressBar* getProgressBar() { return mProgressBar; }
 
+	void openContextMenu(float mouseX, float mouseY, vector<ListItem*> items, IDrawable* owner);
+	static void contextMenu_callback(void* obj, ItemListBox* listBox);
+
 private:
 	void drawSprites(std::vector<Sprite*> sprites);
 	void drawWidgets(std::vector<IWidget*> widgets);
@@ -74,6 +78,8 @@ private:
 
 	ProgressBar* mProgressBar;
 
+	ItemListBox* mContextMenu;
+	IDrawable* mContextMenuOwner;
 	bool mResized;
 };
 
