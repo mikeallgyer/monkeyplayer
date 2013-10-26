@@ -22,7 +22,9 @@
 #ifndef SMALL_ALBUM_MANAGER_H
 #define SMALL_ALBUM_MANAGER_H
 
-class SmallAlbumManager
+#include "CollectionWindow.h"
+
+class SmallAlbumManager : IDrawable
 {
 public:
 
@@ -40,6 +42,7 @@ public:
 	void update(float dt);
 
 	void display();
+	int getNumTriangles();
 
 	std::vector<Sprite*> getSprites();
 	std::vector<IWidget*> getWidgets();
@@ -51,11 +54,13 @@ public:
 
 	void updateSmallDisplay();
 
+	void getDrawableRange(int &topIndex, int &bottomIndex, float &fractPart);
 	void goToChar(char c);
 	void goToSong(Album a, Track t);
 
 	void addAlbum(Album* album);
 	void addTrack(Track* track);
+	void onContextMenuSelected(ItemListBox* menu);
 private:
 	// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
 	static const float BUTTON_REPEAT_TIME;
@@ -103,6 +108,13 @@ private:
 	bool mGoToSong;
 	int mGoToAlbumId;
 	int mGoToSongId;
+
+	CollectionWindow::SELECTED_THING mSelectedThing;
+
+	CollectionWindow::RIGHT_CLICKED_ITEM mRightClicked;
+	int mRightClickedTrack;
+	SmallAlbumItem* mRightClickedAlbum;
+	string mRightClickedArtist;
 
 protected:
 	// synchronization

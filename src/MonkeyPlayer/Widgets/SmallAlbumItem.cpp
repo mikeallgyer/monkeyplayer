@@ -374,7 +374,7 @@ bool SmallAlbumItem::onMouseEvent(MouseEvent e)
 	if (getIsFocused()) //isPointInside(e.getX(), e.getY()))
 	{
 		if ((e.getEvent() == MouseEvent::LBUTTONDOWN ||
-			 e.getEvent() == MouseEvent::RBUTTONDOWN ||
+			 e.getEvent() == MouseEvent::RBUTTONDOWN || e.getEvent() == MouseEvent::RBUTTONUP ||
 			 e.getEvent() == MouseEvent::LBUTTONDBLCLK) && isPointInside(e.getX(), e.getY()))
 		{
 			int relX = e.getX() - (int)mX;
@@ -426,7 +426,18 @@ bool SmallAlbumItem::isPointInsideAlbum(int x, int y)
 int SmallAlbumItem::getItemAtPos(int x, int y)
 {
 	int itemIndex = -1;
+	int relX = x - (int)mX;
+	int relY = y - (int)mY;
 
+
+	if (relX >= mTrackTitleX && relY >= mTrackTitleY)
+	{
+		int selTrack = (relY - mTrackTitleY) / TRACK_FONT_HEIGHT;
+		if (selTrack < (int)mTracks.size())
+		{
+			itemIndex = selTrack;
+		}
+	}
 	return itemIndex;
 }
 

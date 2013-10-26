@@ -448,7 +448,7 @@ float ItemListBox::getWidthToFit()
 		}
 	}
 	lock.Unlock();
-	maxWidth += (float)(TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT);
+	maxWidth += (TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT);
 	return (float)maxWidth;
 }
 float ItemListBox::getHeightToFit()
@@ -488,17 +488,12 @@ void ItemListBox::setItems(std::vector<ListItem*> items)
 	CSingleLock lock(&mCritSection, true);
 	deleteItems();
 	mItems.clear();
-	mItemMap.clear();
 
 	mItems = items;
 
 	mStartDisplayIndex = 0;
 	mEndDisplayIndex = min(mItems.size(), getNumItemsDisplayed());
 
-	for (unsigned int i = 0; i < mItems.size(); i++)
-	{
-		mItemMap[mItems[i]->getId()] = mItems[i];
-	}
 	mDoRedraw = true;
 	lock.Unlock();
 }
@@ -509,35 +504,8 @@ void ItemListBox::addItems(std::vector<ListItem*> items)
 	
 	for (unsigned int i = 0; i < items.size(); i++)
 	{
-		bool added = false;
-		// already exists, so delete old
-		if (mItemMap.find(items[i]->getId()) != mItemMap.end())
-		{
-			int currIndex = -1;
-			for (unsigned int k = 0; k < mItems.size(); k++)
-			{
-				if (mItems[k] == items[i])
-				{
-					currIndex = k;
-					break;
-				}
-			}
-			// found old!
-			if (currIndex != -1)
-			{
-				delete mItems[currIndex];
-				mItems[currIndex] = items[i];
-				mItemMap[items[i]->getId()] = items[i];
-				added = true;
-			}
-		}
-
-		if (!added)
-		{
-			mItemMap[items[i]->getId()] = items[i];
-			mItems.push_back(items[i]);
-			mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
-		}
+		mItems.push_back(items[i]);
+		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	}
 	mDoRedraw = true;
 	lock.Unlock();
@@ -545,35 +513,41 @@ void ItemListBox::addItems(std::vector<ListItem*> items)
 void ItemListBox::addItem(ListItem* item)
 {
 	CSingleLock lock(&mCritSection, true);
-	bool added = false;
-	// already exists, so delete old
-	if (mItemMap.find(item->getId()) != mItemMap.end())
+	mItems.push_back(item);
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	
+	mDoRedraw = true;
+	lock.Unlock();
+}
+void ItemListBox::addItem(ListItem* item, unsigned int index)
+{
+	if (index >= mItems.size())
 	{
-		int currIndex = -1;
-		for (unsigned int k = 0; k < mItems.size(); k++)
-		{
-			if (mItems[k] == item)
-			{
-				currIndex = k;
-				break;
-			}
-		}
-		// found old!
-		if (currIndex != -1)
-		{
-			delete mItems[currIndex];
-			mItems[currIndex] = item;
-			mItemMap[item->getId()] = item;
-			added = true;
-		}
+		addItem(item);
+		return;
 	}
+	CSingleLock lock(&mCritSection, true);
+	
+	vector<ListItem*>::iterator iter = mItems.begin() + index;
 
-	if (!added)
+	mItems.insert(iter, item);
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mDoRedraw = true;
+	lock.Unlock();
+}
+void ItemListBox::addItems(std::vector<ListItem*> items, unsigned int index)
+{
+	if (index >= mItems.size())
 	{
-		mItemMap[item->getId()] = item;
-		mItems.push_back(item);
-		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+		addItems(items);
+		return;
 	}
+	CSingleLock lock(&mCritSection, true);
+	
+	vector<ListItem*>::iterator iter = mItems.begin() + index;
+
+	mItems.insert(iter, items.begin(), items.end());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	mDoRedraw = true;
 	lock.Unlock();
 }
@@ -582,11 +556,14 @@ void ItemListBox::modifyItems(std::vector<ListItem*> items)
 {
 	CSingleLock lock(&mCritSection, true);
 	
-	for (unsigned int i = 0; i < items.size(); i++)
+	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
-		if (mItemMap.find(items[i]->getId()) != mItemMap.end())
+		for (unsigned int j = 0; j < items.size(); j++)
 		{
-			mItemMap[items[i]->getId()]->setData(items[i]);
+			if (mItems[i]->getId() == items[j]->getId())
+			{
+				mItems[i]->setData(items[j]);
+			}
 		}
 	}
 	mDoRedraw = true;
@@ -596,9 +573,12 @@ void ItemListBox::modifyItems(std::vector<ListItem*> items)
 void ItemListBox::modifyItem(ListItem* item)
 {
 	CSingleLock lock(&mCritSection, true);
-	if (mItemMap.find(item->getId()) != mItemMap.end())
+	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
-		mItemMap[item->getId()]->setData(item);
+		if (mItems[i]->getId() == item->getId())
+		{
+			mItems[i]->setData(item);
+		}
 	}
 	mDoRedraw = true;
 	lock.Unlock();
@@ -644,42 +624,9 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 			updateScrollBar();
 			return true;
 		}
-		else if ((e.getEvent() == MouseEvent::LBUTTONDOWN || e.getEvent() == MouseEvent::LBUTTONDBLCLK)
-			&& isPointInside(e.getX(), e.getY()))
+		else if (isPointInside(e.getX(), e.getY()))
 		{
-			int selected = getItemAtPos(e.getX(), e.getY());
-			if (selected >= 0)
-			{
-				if (mSelectedIndices.size() < 1)
-				{
-					mCurrSelection = selected;
-					mSelectedIndices.push_back(mCurrSelection);
-				}
-				else
-				{
-					mCurrSelection = selected;
-					mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
-				}
-				if (e.getEvent() == MouseEvent::LBUTTONDBLCLK)
-				{
-					if (mCallback != NULL)
-					{
-						mCallback(mCallbackObj, this);
-					}
-				}
-				else 
-				{
-					mStartedOnTop = true;
-				}
-			}
-			mDoRedraw = true;
-			e.setConsumed(true);
-			return true;
-		}
-		else if ((e.getEvent() == MouseEvent::LBUTTONUP)
-			&& isPointInside(e.getX(), e.getY()))
-		{
-			if (mAllowSingleClickSelection && mStartedOnTop)
+			if (e.getEvent() == MouseEvent::LBUTTONDBLCLK)
 			{
 				int selected = getItemAtPos(e.getX(), e.getY());
 				if (selected >= 0)
@@ -699,37 +646,85 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 						mCallback(mCallbackObj, this);
 					}
 				}
-				mStartedOnTop = false;
+				mDoRedraw = true;
+				e.setConsumed(true);
+				return true;
 			}
-			mDoRedraw = true;
-			e.setConsumed(true);
-			return true;
-		}
-	}
-	if (e.getEvent() == MouseEvent::MOUSEMOVE && isPointInside(e.getX(), e.getY()))
-	{
-		int index = getItemAtPos(e.getX(), e.getY());
-		if (index >= 0)
-		{
-			if (mHoverItems.find(index) != mHoverItems.end())
+			else if (e.getEvent() == MouseEvent::LBUTTONDOWN)
 			{
-				mHoverItems[index] = HOVER_DURATION;
+				int selected = getItemAtPos(e.getX(), e.getY());
+				if (selected >= 0)
+				{
+					if (mSelectedIndices.size() < 1)
+					{
+						mCurrSelection = selected;
+						mSelectedIndices.push_back(mCurrSelection);
+					}
+					else
+					{
+						mCurrSelection = selected;
+						mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
+					}
+					mStartedOnTop = true;
+				}
+				mDoRedraw = true;
+				e.setConsumed(true);
+				return true;
 			}
-			else
+			else if (e.getEvent() == MouseEvent::LBUTTONUP)
 			{
-				mHoverItems.insert(pair<int, float>(index, HOVER_DURATION));
+				if (mAllowSingleClickSelection && mStartedOnTop)
+				{
+					int selected = getItemAtPos(e.getX(), e.getY());
+					if (selected >= 0)
+					{
+						if (mSelectedIndices.size() < 1)
+						{
+							mCurrSelection = selected;
+							mSelectedIndices.push_back(mCurrSelection);
+						}
+						else
+						{
+							mCurrSelection = selected;
+							mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
+						}
+						if (mCallback != NULL)
+						{
+							mCallback(mCallbackObj, this);
+						}
+					}
+					mStartedOnTop = false;
+				}
+				mDoRedraw = true;
+				e.setConsumed(true);
+				return true;
 			}
-			mCurrHoverIndex = index;
-			mDoRedraw = true;
+			else if (e.getEvent() == MouseEvent::MOUSEMOVE)
+			{
+				int index = getItemAtPos(e.getX(), e.getY());
+				if (index >= 0)
+				{
+					if (mHoverItems.find(index) != mHoverItems.end())
+					{
+						mHoverItems[index] = HOVER_DURATION;
+					}
+					else
+					{
+						mHoverItems.insert(pair<int, float>(index, HOVER_DURATION));
+					}
+					mCurrHoverIndex = index;
+					mDoRedraw = true;
+				}
+				else
+				{
+					mCurrHoverIndex = -1;
+				}
+			}
 		}
 		else
 		{
 			mCurrHoverIndex = -1;
 		}
-	}
-	else
-	{
-		mCurrHoverIndex = -1;
 	}
 	return false;
 }

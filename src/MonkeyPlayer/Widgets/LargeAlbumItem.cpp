@@ -62,7 +62,7 @@ void LargeAlbumItem::onDeviceReset()
 
 void LargeAlbumItem::update(float dt)
 {
-	if (isMoving())
+	if (false && isMoving())
 	{
 		mCurrTime += dt;
 		if (mCurrTime > mCurrDestination.time)

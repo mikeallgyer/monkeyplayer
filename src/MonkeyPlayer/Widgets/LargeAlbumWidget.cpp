@@ -16,6 +16,9 @@
 const float LargeAlbumWidget::ALBUM_WIDTH = 4.0f;
 const float LargeAlbumWidget::ALBUM_HEIGHT = 3.88f;
 const float LargeAlbumWidget::ALBUM_DEPTH = .2f;
+const float LargeAlbumWidget::SLOW_SCROLL_SPEED = 2.0f;
+const float LargeAlbumWidget::FAST_SCROLL_SPEED = 6.0f;
+const float LargeAlbumWidget::FAST_SCROLL_DELAY = 1.0f;
 
 // used for synchronization
 CCriticalSection LargeAlbumWidget::mCritSection;
@@ -42,11 +45,13 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mDiffuseHandle = mEffect->GetParameterByName(0, "diffuseColor");
 	mProjectionHandle = mEffect->GetParameterByName(0, "projection");
 	mLightColorHandle = mEffect->GetParameterByName(0, "lightColor");
+	mLight2ColorHandle = mEffect->GetParameterByName(0, "lightColor2");
 	mAmbientHandle = mEffect->GetParameterByName(0, "ambient");
 	mCamPosHandle = mEffect->GetParameterByName(0, "camPos");
 	mSpecularPowerHandle = mEffect->GetParameterByName(0, "specularPower");
 	mSpecularColorHandle = mEffect->GetParameterByName(0, "specularColor");
 	mLightPosHandle = mEffect->GetParameterByName(0, "lightPos");
+	mLight2PosHandle = mEffect->GetParameterByName(0, "lightPos2");
 	mFogColorHandle = mEffect->GetParameterByName(0, "fogColor");
 	mFogEnabledHandle = mEffect->GetParameterByName(0, "fogEnabled");
 
@@ -55,24 +60,31 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mCamPos = D3DXVECTOR3(0, -1.0f, -10.0f);
 	mLookAt = D3DXVECTOR3(0, -0.5f, 0.0f);
 	mLightColor = D3DXVECTOR4(.5f, .5f, .5f, 1.0f);
+	mLight2Color = D3DXVECTOR4(.5f, .5f, .5f, 1.0f);
 	mAmbient = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
 	mSpecularPower = 33.0f;
 	mSpecularColor = D3DXVECTOR3(0.8f, 0.8f, 0.8f);
 	mLightPos = D3DXVECTOR3(0.0f, 2.0f, -20.0f);
+	mLight2Pos = D3DXVECTOR3(0.0f, 2.0f, 5.0f);
 	mFogColor = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 	mFogEnabled = false;
 
 	mTimeInterval = .5f;
 
+	mPositions.push_back(AlbumPos(false, -7.0f, -D3DX_PI*.5f, mTimeInterval));
 	mPositions.push_back(AlbumPos(false, -6.0f, -D3DX_PI*.5f, mTimeInterval));
-	mPositions.push_back(AlbumPos(true, -5.5f, -D3DX_PI*.5f, mTimeInterval));
+	mPositions.push_back(AlbumPos(true, -5.f, -D3DX_PI*.5f, mTimeInterval));
 	mPositions.push_back(AlbumPos(true, -4.0f, -D3DX_PI*.5f, mTimeInterval));
 	mPositions.push_back(AlbumPos(true, 0.0f, 0, mTimeInterval));
 	mPositions.push_back(AlbumPos(true, 4.0f, D3DX_PI*.5f, mTimeInterval));
 	mPositions.push_back(AlbumPos(true, 5.0f, D3DX_PI*.5f, mTimeInterval));
 	mPositions.push_back(AlbumPos(false, 6.0f, D3DX_PI*.5f, mTimeInterval));
+	mPositions.push_back(AlbumPos(false, 7.0f, D3DX_PI*.5f, mTimeInterval));
 
 	mAlbumIndex = 0;
+	mDisplayingAlbum = 0;
+	mScrollingDuration = 0;
+	mTotScrollingDuration = 0;
 	vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
 
 	for (unsigned int i = 0; i < albums.size(); i++)
@@ -110,7 +122,7 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 
 	std::string selBoxPath = FileManager::getContentAsset(std::string("Textures\\cdHighlight.png"));
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, 50.0f, 50.0f);
-	mSelectedThing = ALBUM;
+	mSelectedThing = CollectionWindow::ALBUM;
 
 	mLargeAlbumLbl = snew Label(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mLargeAlbumLbl->setSizeToFit(true);
@@ -226,6 +238,8 @@ void LargeAlbumWidget::update(float dt)
 
 	lock.Unlock();
 	int selTrack = mTrackBox->getSelectedIndex();
+
+
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		mLargeAlbums[i]->update(dt);
@@ -235,99 +249,132 @@ void LargeAlbumWidget::update(float dt)
 		mWidgets[i]->update(dt);
 	}
 
-	if (mSelectedThing == ARTIST)
+	if (mSelectedThing == CollectionWindow::ARTIST)
 	{
 		mSelectionSprite->setDest(mArtistLbl->getX() - 8.0f, mArtistLbl->getY() - mY, 
 			mArtistLbl->getWidth() + 16.0f, mArtistLbl->getHeight());
 	}
-	else if (mSelectedThing == ALBUM)
+	else if (mSelectedThing == CollectionWindow::ALBUM)
 	{
 		mSelectionSprite->setDest(mLargeAlbumLbl->getX() - 8.0f, mLargeAlbumLbl->getY() - mY, 
 			mLargeAlbumLbl->getWidth() + 16.0f, mLargeAlbumLbl->getHeight());
 	}
 
+	float scrollSpeed = SLOW_SCROLL_SPEED;
+	float scrollSpeedInv = 1.0f / scrollSpeed;
 	if (mFocused)
 	{
-		if (gInput->keyPressed(VK_LEFT))
+		if (gInput->isKeyDown(VK_LEFT))
 		{
-			int mid = mPositions.size() / 2;
-			mAlbumIndex--;
-			if (mAlbumIndex < 0)
+			bool firstPress = mScrollingDuration < 0;
+			if (firstPress)
 			{
-				mAlbumIndex = 0;
+				mScrollingDuration = 0;
 			}
+			mScrollingDuration += dt;
+			mTotScrollingDuration += dt;
+			
+			if (mTotScrollingDuration >= FAST_SCROLL_DELAY)
+			{
+				scrollSpeed = FAST_SCROLL_SPEED;
+				scrollSpeedInv = 1.0f / scrollSpeed;
+			}
+			if (firstPress || mScrollingDuration >= scrollSpeedInv)
+			{
+				int mid = mPositions.size() / 2;
+				mAlbumIndex--;
+				if (mAlbumIndex < 0)
+				{
+					mAlbumIndex = 0;
+				}
 
-			setTracks();
-			for (unsigned int i = 0; i < mPositions.size(); i++)
-			{
-				int index = mAlbumIndex - mid + i;
-				if (index >= 0 && index < (int)mLargeAlbums.size())
+				while (mScrollingDuration > scrollSpeedInv)
 				{
-					mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+					mScrollingDuration -= scrollSpeedInv;
 				}
+
+				setTracks();
 			}
 		}
-		else if (gInput->keyPressed(VK_RIGHT))
+		else if (gInput->isKeyDown(VK_RIGHT))
 		{
-			int mid = mPositions.size() / 2;
-			mAlbumIndex++;
-			if (mAlbumIndex >= (int)mLargeAlbums.size())
+			bool firstPress = mScrollingDuration < 0;
+			if (firstPress)
 			{
-				mAlbumIndex = mLargeAlbums.size() - 1;
+				mScrollingDuration = 0;
 			}
-			setTracks();
-			for (unsigned int i = 0; i < mPositions.size(); i++)
+			mScrollingDuration += dt;
+			mTotScrollingDuration += dt;
+			
+			if (mTotScrollingDuration >= FAST_SCROLL_DELAY)
 			{
-				int index = mAlbumIndex - mid + i;
-				if (index >= 0 && index < (int)mLargeAlbums.size())
+				scrollSpeed = FAST_SCROLL_SPEED;
+				scrollSpeedInv = 1.0f / scrollSpeed;
+			}
+			if (firstPress || mScrollingDuration >= scrollSpeedInv)
+			{
+				mAlbumIndex++;
+				if (mAlbumIndex >= (int)mLargeAlbums.size())
 				{
-					mLargeAlbums[index]->setDest(mPositions[i].xPos, mPositions[i].yRotation, mPositions[i].visible, mTimeInterval);
+					mAlbumIndex = mLargeAlbums.size() - 1;
 				}
+				while (mScrollingDuration > scrollSpeedInv)
+				{
+					mScrollingDuration -= scrollSpeedInv;
+				}
+				setTracks();
 			}
 		}
-		else if (gInput->keyPressed(VK_DOWN))
+		else
 		{
-			if (mSelectedThing == ARTIST)
+			mScrollingDuration = -1.0f;
+			mTotScrollingDuration = -1.0f;
+		}
+
+		if (gInput->keyPressed(VK_DOWN))
+		{
+			if (mSelectedThing == CollectionWindow::ARTIST)
 			{
 				mTrackBox->focus();
 				mTrackBox->setSelectedIndex(0);
-				mSelectedThing = TRACK;
+				mSelectedThing = CollectionWindow::TRACK;
 			}
-			else if (mSelectedThing == TRACK && selTrack == mTrackBox->getNumItems() - 1)
+			else if (mSelectedThing == CollectionWindow::TRACK && selTrack == mTrackBox->getNumItems() - 1)
 			{
 				mTrackBox->blur();
 				mTrackBox->setSelectedIndex(-1);
-				mSelectedThing = ALBUM;
+				mSelectedThing = CollectionWindow::ALBUM;
 			}
-			else if (mSelectedThing == ALBUM)
+			else if (mSelectedThing == CollectionWindow::ALBUM)
 			{
-				mSelectedThing = ARTIST;
+				mSelectedThing = CollectionWindow::ARTIST;
 			}
 		}
 		else if (gInput->keyPressed(VK_UP))
 		{
-			if (mSelectedThing == ARTIST)
+			if (mSelectedThing == CollectionWindow::ARTIST)
 			{
-				mSelectedThing = ALBUM;
+				mSelectedThing = CollectionWindow::ALBUM;
 			}
-			else if (mSelectedThing == TRACK && selTrack == 0)
+			else if (mSelectedThing == CollectionWindow::TRACK && selTrack == 0)
 			{
 				mTrackBox->blur();
 				mTrackBox->setSelectedIndex(-1);
-				mSelectedThing = ARTIST;
+				mSelectedThing = CollectionWindow::ARTIST;
 			}
-			else if (mSelectedThing == ALBUM)
+			else if (mSelectedThing == CollectionWindow::ALBUM)
 			{
 				mTrackBox->focus();
 				mTrackBox->setSelectedIndex(mTrackBox->getNumItems() - 1);
-				mSelectedThing = TRACK;
+				mSelectedThing = CollectionWindow::TRACK;
 			}
 
 		}
-		else if (gInput->keyPressed(VK_RETURN) && mSelectedThing != TRACK)
+		else if (gInput->keyPressed(VK_RETURN) && mSelectedThing != CollectionWindow::TRACK)
 		{
 			queueThing(mSelectedThing);
 		}
+
 		if (mAlbumIndex == mPlayingAlbum)
 		{
 			mTrackBox->setHighlightedItem(mPlayingTrack);
@@ -337,6 +384,69 @@ void LargeAlbumWidget::update(float dt)
 			mTrackBox->setHighlightedItem(-1);
 		}
 
+	}  // if focused
+
+	float offset = 0;
+
+	if (mDisplayingAlbum != (float)mAlbumIndex)
+	{
+		if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 2.0f)
+		{
+			scrollSpeed = FAST_SCROLL_SPEED;
+			scrollSpeedInv = 1.0f / scrollSpeed;
+		}
+
+		if (mDisplayingAlbum > mAlbumIndex)
+		{
+			mDisplayingAlbum -= dt * scrollSpeed;
+			if (mDisplayingAlbum < mAlbumIndex)
+			{
+				mDisplayingAlbum = (float)mAlbumIndex;
+			}
+			offset = -(mDisplayingAlbum - (int)(mDisplayingAlbum));
+		}
+		else
+		{
+			mDisplayingAlbum += dt * scrollSpeed;
+			if (mDisplayingAlbum > mAlbumIndex)
+			{
+				mDisplayingAlbum = (float)mAlbumIndex;
+			}
+			offset = -(mDisplayingAlbum - (int)(mDisplayingAlbum));
+		}
+		int mid = mPositions.size() / 2;
+
+		for (unsigned int i = 0; i < mPositions.size(); i++)
+		{
+			int index = (int)mDisplayingAlbum - mid + i;
+			if (index >= 0 && index < (int)mLargeAlbums.size())
+			{
+				float xPos = mPositions[i].xPos;
+				float yRot = mPositions[i].yRotation;
+				if (offset > 0 && i < mPositions.size() - 1)
+				{
+					xPos += (mPositions[i].xPos - mPositions[i + 1].xPos) * offset;
+					yRot += (mPositions[i].yRotation - mPositions[i + 1].yRotation) * offset;
+				}
+				else if (offset < 0 && i > 0)
+				{
+					xPos += (mPositions[i].xPos - mPositions[i-1].xPos) * offset;
+					yRot += (mPositions[i].yRotation - mPositions[i-1].yRotation) * offset;
+				}
+				mLargeAlbums[index]->setPosition(xPos, yRot);
+				mLargeAlbums[index]->setVisible(true);
+			}
+		}
+		int oneLess = (int)mDisplayingAlbum - mid - 1;
+		int oneMore = (int)mDisplayingAlbum + mid + 1;
+		if (oneLess > 0)
+		{
+			mLargeAlbums[oneLess]->setVisible(false);
+		}
+		if (oneMore < (int)mLargeAlbums.size())
+		{
+			mLargeAlbums[oneMore]->setVisible(false);
+		}
 	}
 }
 void LargeAlbumWidget::createBuffers()
@@ -438,7 +548,7 @@ void LargeAlbumWidget::preRender()
 	}
 	mTarget->beginScene();
 
-	if (mSelectedThing == ALBUM || mSelectedThing == ARTIST)
+	if (mSelectedThing == CollectionWindow::ALBUM || mSelectedThing == CollectionWindow::ARTIST)
 	{
 		gWindowMgr->drawSprite(mSelectionSprite, (float)mTarget->getWidth(), (float)mTarget->getHeight());
 	}
@@ -462,12 +572,14 @@ void LargeAlbumWidget::preRender()
 				HR(mEffect->SetMatrix(mWorldHandle, &mLargeAlbums[i]->getWorld()));
 				HR(mEffect->SetMatrix(mProjectionHandle, &mProjection));
 				HR(mEffect->SetVector(mLightColorHandle, &mLightColor));
+				HR(mEffect->SetVector(mLight2ColorHandle, &mLight2Color));
 				HR(mEffect->SetVector(mDiffuseHandle, &mDiffuseColor));
 				HR(mEffect->SetVector(mAmbientHandle, &mAmbient));
 				HR(mEffect->SetValue(mCamPosHandle, &mCamPos, sizeof(D3DXVECTOR3)));
 				HR(mEffect->SetFloat(mSpecularPowerHandle, mSpecularPower));
 				HR(mEffect->SetValue(mSpecularColorHandle, &mSpecularColor, sizeof(D3DXVECTOR3)));
 				HR(mEffect->SetValue(mLightPosHandle, &mLightPos, sizeof(D3DXVECTOR3)));
+				HR(mEffect->SetValue(mLight2PosHandle, &mLight2Pos, sizeof(D3DXVECTOR3)));
 				HR(mEffect->SetVector(mFogColorHandle, &mFogColor));
 				HR(mEffect->SetBool(mFogEnabledHandle, mFogEnabled));
 
@@ -543,7 +655,7 @@ bool LargeAlbumWidget::onMouseEvent(MouseEvent ev)
 				mWidgets[i]->focus();
 				if (mWidgets[i] == mTrackBox)
 				{
-					mSelectedThing = TRACK;
+					mSelectedThing = CollectionWindow::TRACK;
 				}
 			}
 			else if (!mWidgets[i]->getIsFocused())
@@ -553,39 +665,64 @@ bool LargeAlbumWidget::onMouseEvent(MouseEvent ev)
 		}
 		if (mArtistLbl->isPointInside(ev.getX(), ev.getY()))
 		{
-			mSelectedThing = ARTIST;
+			mSelectedThing = CollectionWindow::ARTIST;
 		}
 		else if (mLargeAlbumLbl->isPointInside(ev.getX(), ev.getY()))
 		{
-			mSelectedThing = ALBUM;
+			mSelectedThing = CollectionWindow::ALBUM;
 		}
 	}
 	else if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
 	{
 		if (mArtistLbl->isPointInside(ev.getX(), ev.getY()))
 		{
-			queueThing(ARTIST);
+			queueThing(CollectionWindow::ARTIST);
 		}
 		else if (mLargeAlbumLbl->isPointInside(ev.getX(), ev.getY()))
 		{
-			queueThing(ALBUM);
+			queueThing(CollectionWindow::ALBUM);
 		}
 	}
 	bool consumed = false;
 	if ( !ev.getConsumed() && ev.getEvent() == MouseEvent::RBUTTONUP && isPointInside(ev.getX(), ev.getY()))
 	{
-		vector<ListItem*> items;
-		items.push_back(snew SimpleListItem("item 1, item 1, item 1, item 1, item 1, item 1, ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0));
-		items.push_back(snew SimpleListItem("item 2", 1));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 3", 2));
-		items.push_back(snew SimpleListItem("item 4", 2));
-		gWindowMgr->openContextMenu(ev.getX(), ev.getY(), items, this);
-		consumed = true;
+		mRightClickedTrack = mTrackBox->getItemAtPos(ev.getX(), ev.getY());
+		if (mTrackBox->isPointInside(ev.getX(), ev.getY()) && mRightClickedTrack >= 0)
+		{
+			mRightClicked = CollectionWindow::RIGHT_TRACK;
+			vector<ListItem*> items;
+			items.push_back(snew SimpleListItem("Play Now", CollectionWindow::TRACK_PLAY_IMMEDIATE));
+///			items.push_back(snew SimpleListItem("Replace Queue", TRACK_REPLACE_QUEUE));
+			items.push_back(snew SimpleListItem("Queue Next", CollectionWindow::TRACK_QUEUE_NEXT));
+			items.push_back(snew SimpleListItem("Append to Queue", CollectionWindow::TRACK_QUEUE_END));
+
+			gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+			consumed = true;
+		}
+		else if (mArtistLbl->isPointInside(ev.getX(), ev.getY()))
+		{
+			mRightClicked = CollectionWindow::RIGHT_ARTIST;
+			vector<ListItem*> items;
+			items.push_back(snew SimpleListItem("Play All Now", CollectionWindow::ARTIST_PLAY_IMMEDIATE));
+			items.push_back(snew SimpleListItem("Replace Queue", CollectionWindow::ARTIST_REPLACE_QUEUE));
+			items.push_back(snew SimpleListItem("Queue All Next", CollectionWindow::ARTIST_QUEUE_NEXT));
+			items.push_back(snew SimpleListItem("Append All to Queue", CollectionWindow::ARTIST_QUEUE_END));
+
+			gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+			consumed = true;
+		}
+		else if (mLargeAlbumLbl->isPointInside(ev.getX(), ev.getY()))
+		{
+			mRightClicked = CollectionWindow::RIGHT_ALBUM;
+			vector<ListItem*> items;
+			items.push_back(snew SimpleListItem("Play All Now", CollectionWindow::ALBUM_PLAY_IMMEDIATE));
+			items.push_back(snew SimpleListItem("Replace Queue", CollectionWindow::ALBUM_REPLACE_QUEUE));
+			items.push_back(snew SimpleListItem("Queue All Next", CollectionWindow::ALBUM_QUEUE_NEXT));
+			items.push_back(snew SimpleListItem("Append All to Queue", CollectionWindow::ALBUM_QUEUE_END));
+
+			gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+			consumed = true;
+		}
 	}
 
 	for (unsigned int i = 0; i < mWidgets.size() && !consumed; i++)
@@ -695,10 +832,67 @@ void LargeAlbumWidget::goToAlbum(int index)
 }
 void LargeAlbumWidget::onContextMenuSelected(ItemListBox* menu)
 {
+	int sel = menu->getSelectedItem()->getId();
+
+	// tracks
+	if (sel == CollectionWindow::TRACK_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->playSong(((TrackListItem*)mTrackBox->getItem(mRightClickedTrack))->getTrack()->Filename);
+	}
+	else if (sel == CollectionWindow::TRACK_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addTrackToQueueEnd(mTrackBox->getItem(mRightClickedTrack)->getId());
+	}
+	else if (sel == CollectionWindow::TRACK_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertTrackToQueueNext(mTrackBox->getItem(mRightClickedTrack)->getId());
+	}
+	else if (sel == CollectionWindow::TRACK_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithTrack(mTrackBox->getItem(mRightClickedTrack)->getId());
+	}
+
+	// artist
+	else if (sel == CollectionWindow::ARTIST_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(mArtistLbl->getString());
+		MusicLibrary::instance()->playNextSong();
+	}
+	else if (sel == CollectionWindow::ARTIST_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addArtistToQueueEnd(mArtistLbl->getString());
+	}
+	else if (sel == CollectionWindow::ARTIST_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertArtistToQueueNext(mArtistLbl->getString());
+	}
+	else if (sel == CollectionWindow::ARTIST_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(mArtistLbl->getString());
+	}
+	
+	// Album
+	else if (sel == CollectionWindow::ALBUM_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithAlbum(mLargeAlbums[mAlbumIndex]->getAlbum());
+		MusicLibrary::instance()->playNextSong();
+	}
+	else if (sel == CollectionWindow::ALBUM_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addAlbumToQueueEnd(mLargeAlbums[mAlbumIndex]->getAlbum());
+	}
+	else if (sel == CollectionWindow::ALBUM_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertAlbumToQueueNext(mLargeAlbums[mAlbumIndex]->getAlbum());
+	}
+	else if (sel == CollectionWindow::ALBUM_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithAlbum(mLargeAlbums[mAlbumIndex]->getAlbum());
+	}
 }
-void LargeAlbumWidget::queueThing(SELECTED_THING thing)
+void LargeAlbumWidget::queueThing(CollectionWindow::SELECTED_THING thing)
 {
-	if (thing == ALBUM)
+	if (thing == CollectionWindow::ALBUM)
 	{
 		vector<Track*> tracks = DatabaseManager::instance()->getTracks(mLargeAlbums[mAlbumIndex]->getAlbum());
 		MusicLibrary::instance()->getPlaylistWindow()->clearItems();
@@ -706,9 +900,9 @@ void LargeAlbumWidget::queueThing(SELECTED_THING thing)
 		{
 			MusicLibrary::instance()->getPlaylistWindow()->addItem(snew Track(*tracks[i]));
 		}
-		MusicLibrary::instance()->playSong(tracks[0]->Filename);
+		MusicLibrary::instance()->playNextSong();
 	}
-	else if (thing == ARTIST)
+	else if (thing == CollectionWindow::ARTIST)
 	{
 		vector<Track*> tracks = DatabaseManager::instance()->getTracks(mLargeAlbums[mAlbumIndex]->getAlbum().Artist);
 		MusicLibrary::instance()->getPlaylistWindow()->clearItems();
@@ -716,9 +910,8 @@ void LargeAlbumWidget::queueThing(SELECTED_THING thing)
 		{
 			MusicLibrary::instance()->getPlaylistWindow()->addItem(snew Track(*tracks[i]));
 		}
-		MusicLibrary::instance()->playSong(tracks[0]->Filename);
+		MusicLibrary::instance()->playNextSong();
 	}
-
 }
 
 bool LargeAlbumWidget::isPointInside(int x, int y)

@@ -45,6 +45,8 @@ public:
 	void setItems(std::vector<ListItem*> items);
 	void addItems(std::vector<ListItem*> items);
 	void addItem(ListItem* item);
+	void addItem(ListItem* item, unsigned int index);
+	void addItems(std::vector<ListItem*> items, unsigned int index);
 	void modifyItems(std::vector<ListItem*> items); // updates if item with id exists...does NOT claim memory
 	void modifyItem(ListItem* item); // updates if item with id exists...does NOT claim memory
 	unsigned int getNumItemsDisplayed();
@@ -64,6 +66,7 @@ public:
 	void setAllowSingleClickSelection(bool allow);
 
 	bool isPointInside(int x, int y);
+	int getItemAtPos(int x, int y);
 
 protected:
 // when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
@@ -84,7 +87,6 @@ protected:
 
 	std::vector<Sprite*> mSprites; 
 	std::vector<ListItem*> mItems;
-	std::map<int, ListItem*> mItemMap;
 	map<int, float> mHoverItems;
 	int mCurrHoverIndex;
 	Sprite* mScrollbar;
@@ -123,7 +125,6 @@ protected:
 	void deleteItems();
 	void updateScrollBar();
 	
-	int getItemAtPos(int x, int y);
 	// callback
 	void (*mCallback)(void* ptrObj, ItemListBox* listBox);
 	void *mCallbackObj;

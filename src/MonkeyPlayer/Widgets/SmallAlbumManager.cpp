@@ -73,6 +73,8 @@ SmallAlbumManager::SmallAlbumManager()
 
 	mDoRedraw = false;
 	mAlbumsChanged = false;
+
+	mSelectedThing = CollectionWindow::ALBUM;
 }
 SmallAlbumManager::~SmallAlbumManager()
 {
@@ -581,6 +583,10 @@ void SmallAlbumManager::moveDownToSmallSelection()
 void SmallAlbumManager::display()
 {
 }
+int SmallAlbumManager::getNumTriangles()
+{
+	return 0;
+}
 std::vector<Sprite*> SmallAlbumManager::getSprites()
 {
 	return mSprites;
@@ -647,7 +653,8 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 			// check if this widget is a SmallAlbumItem
 			if ((ev.getEvent() == MouseEvent::LBUTTONDOWN || 
 				ev.getEvent() == MouseEvent::LBUTTONDBLCLK ||
-				ev.getEvent() == MouseEvent::RBUTTONDOWN))
+				ev.getEvent() == MouseEvent::RBUTTONDOWN ||
+				ev.getEvent() == MouseEvent::RBUTTONUP))
 			{
 				try 
 				{
@@ -676,8 +683,7 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 								{
 									MusicLibrary::instance()->getPlaylistWindow()->addItem(snew Track(*tracks[i]));
 								}
-								MusicLibrary::instance()->playSong(tracks[0]->Filename);
-
+								MusicLibrary::instance()->playNextSong();
 							}
 							else if (clickedItem->getSelectedTrack() != NULL)
 							{
@@ -685,22 +691,68 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 									clickedItem->getSelectedTrack()->Filename.c_str());
 							}
 						}
-						break;
-					}
-					if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK && mWidgets[i]->isPointInside(ev.getX(), ev.getY()))
-					{
-						Label* clickedLabel = dynamic_cast<Label*>(mWidgets[i]);
-						if (clickedLabel != NULL)
+						else if (ev.getEvent() == MouseEvent::RBUTTONUP)
 						{
-							vector<Track*> tracks = DatabaseManager::instance()->getTracks(clickedLabel->getString());
-							MusicLibrary::instance()->getPlaylistWindow()->clearItems();
-							MusicLibrary::instance()->getPlaylistWindow()->addItems(tracks);
-							MusicLibrary::instance()->getPlaylistWindow()->playNextSong();
-							break;
+							mRightClickedTrack = clickedItem->getItemAtPos(ev.getX(), ev.getY());
+							if (clickedItem->isPointInsideAlbum(ev.getX(), ev.getY()))
+							{
+								mRightClicked = CollectionWindow::RIGHT_ALBUM;
+								vector<ListItem*> items;
+								items.push_back(snew SimpleListItem("Play All Now", CollectionWindow::ALBUM_PLAY_IMMEDIATE));
+								items.push_back(snew SimpleListItem("Replace Queue", CollectionWindow::ALBUM_REPLACE_QUEUE));
+								items.push_back(snew SimpleListItem("Queue All Next", CollectionWindow::ALBUM_QUEUE_NEXT));
+								items.push_back(snew SimpleListItem("Append All to Queue", CollectionWindow::ALBUM_QUEUE_END));
+
+								gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+								mRightClickedAlbum = clickedItem;
+								consumed = true;
+							}
+							else if (mRightClickedTrack >= 0)
+							{
+								mRightClicked = CollectionWindow::RIGHT_TRACK;
+								vector<ListItem*> items;
+								items.push_back(snew SimpleListItem("Play Now", CollectionWindow::TRACK_PLAY_IMMEDIATE));
+					///			items.push_back(snew SimpleListItem("Replace Queue", TRACK_REPLACE_QUEUE));
+								items.push_back(snew SimpleListItem("Queue Next", CollectionWindow::TRACK_QUEUE_NEXT));
+								items.push_back(snew SimpleListItem("Append to Queue", CollectionWindow::TRACK_QUEUE_END));
+
+								gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+								mRightClickedAlbum = clickedItem;
+								consumed = true;
+							}
 						}
+						break;
 					}
 				}
 				catch (std::bad_cast e) {}
+			}
+		}
+		// queue artist
+		if ((ev.getEvent() == MouseEvent::LBUTTONDBLCLK || ev.getEvent() == MouseEvent::RBUTTONDOWN)
+			&& mWidgets[i]->isPointInside(ev.getX(), ev.getY()))
+		{
+			Label* clickedLabel = dynamic_cast<Label*>(mWidgets[i]);
+			if (clickedLabel != NULL)
+			{
+				if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
+				{
+					MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(clickedLabel->getString());
+					MusicLibrary::instance()->getPlaylistWindow()->playNextSong();
+				}
+				else
+				{
+					mRightClicked = CollectionWindow::RIGHT_ARTIST;
+					vector<ListItem*> items;
+					items.push_back(snew SimpleListItem("Play All Now", CollectionWindow::ARTIST_PLAY_IMMEDIATE));
+					items.push_back(snew SimpleListItem("Replace Queue", CollectionWindow::ARTIST_REPLACE_QUEUE));
+					items.push_back(snew SimpleListItem("Queue All Next", CollectionWindow::ARTIST_QUEUE_NEXT));
+					items.push_back(snew SimpleListItem("Append All to Queue", CollectionWindow::ARTIST_QUEUE_END));
+
+					gWindowMgr->openContextMenu((float)ev.getX(), (float)ev.getY(), items, this);
+					mRightClickedArtist = clickedLabel->getString();
+					consumed = true;
+				}
+				break;
 			}
 		}
 	}
@@ -743,31 +795,11 @@ void SmallAlbumManager::updateSmallDisplay()
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
 	mWidgets.clear();
-	float fractPart;
-	float intPart = 0;
-
-	fractPart = modf(mCurrDisplayAlbum, &intPart);
-	int topIndex = (int)intPart;
-
-	if (topIndex < 0)
-	{
-		topIndex = 0;
-	}
-
-	float albumHeight = 0;
+	
+	int topIndex = 0;
 	int bottomIndex = topIndex;
-
-	while (bottomIndex >= 0 && bottomIndex < (int)mSmallItems.size() && albumHeight < getHeight())
-	{
-		albumHeight += mSmallItems[bottomIndex]->getHeight();
-		bottomIndex++;
-	}
-
-	// + 1 so we can partially draw the one after
-	if (bottomIndex >= (int)mSmallItems.size())
-	{
-		bottomIndex--;
-	}
+	float fractPart = 0;
+	getDrawableRange(topIndex, bottomIndex, fractPart);
 
 	if (topIndex <= bottomIndex)
 	{
@@ -814,6 +846,92 @@ void SmallAlbumManager::updateSmallDisplay()
 	mAlbumsChanged = true;
 	mDoRedraw = false;
 	lock.Unlock();
+}
+void SmallAlbumManager::getDrawableRange(int &topIndex, int &bottomIndex, float &fractPart)
+{
+	float intPart = 0;
+
+	fractPart = modf(mCurrDisplayAlbum, &intPart);
+	topIndex = (int)intPart;
+
+	if (topIndex < 0)
+	{
+		topIndex = 0;
+	}
+
+	float albumHeight = 0;
+	bottomIndex = topIndex;
+
+	while (bottomIndex >= 0 && bottomIndex < (int)mSmallItems.size() && albumHeight < getHeight())
+	{
+		albumHeight += mSmallItems[bottomIndex]->getHeight();
+		bottomIndex++;
+	}
+
+	// + 1 so we can partially draw the one after
+	if (bottomIndex >= (int)mSmallItems.size())
+	{
+		bottomIndex--;
+	}
+}
+void SmallAlbumManager::onContextMenuSelected(ItemListBox* menu)
+{
+	int sel = menu->getSelectedItem()->getId();
+
+	// tracks
+	if (sel == CollectionWindow::TRACK_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->playSong(mRightClickedAlbum->getTracks()[mRightClickedTrack]->Filename);
+	}
+	else if (sel == CollectionWindow::TRACK_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addTrackToQueueEnd(mRightClickedAlbum->getTracks()[mRightClickedTrack]->Id);
+	}
+	else if (sel == CollectionWindow::TRACK_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertTrackToQueueNext(mRightClickedAlbum->getTracks()[mRightClickedTrack]->Id);
+	}
+	else if (sel == CollectionWindow::TRACK_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithTrack(mRightClickedAlbum->getTracks()[mRightClickedTrack]->Id);
+	}
+	// artist
+	else if (sel == CollectionWindow::ARTIST_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(mRightClickedArtist);
+		MusicLibrary::instance()->playNextSong();
+	}
+	else if (sel == CollectionWindow::ARTIST_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addArtistToQueueEnd(mRightClickedArtist);
+	}
+	else if (sel == CollectionWindow::ARTIST_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertArtistToQueueNext(mRightClickedArtist);
+	}
+	else if (sel == CollectionWindow::ARTIST_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(mRightClickedArtist);
+	}
+
+	// Album
+	else if (sel == CollectionWindow::ALBUM_PLAY_IMMEDIATE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithAlbum(mRightClickedAlbum->getAlbum());
+		MusicLibrary::instance()->playNextSong();
+	}
+	else if (sel == CollectionWindow::ALBUM_QUEUE_END)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->addAlbumToQueueEnd(mRightClickedAlbum->getAlbum());
+	}
+	else if (sel == CollectionWindow::ALBUM_QUEUE_NEXT)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->insertAlbumToQueueNext(mRightClickedAlbum->getAlbum());
+	}
+	else if (sel == CollectionWindow::ALBUM_REPLACE_QUEUE)
+	{
+		MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithAlbum(mRightClickedAlbum->getAlbum());
+	}
 }
 void SmallAlbumManager::addAlbum(Album *album)
 {

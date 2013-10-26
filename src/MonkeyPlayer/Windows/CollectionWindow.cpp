@@ -19,6 +19,21 @@
 
 const float CollectionWindow::ARTIST_LABEL_SIZE = 26.0f;
 
+const int CollectionWindow::TRACK_PLAY_IMMEDIATE = 0;
+const int CollectionWindow::TRACK_QUEUE_NEXT = 1;
+const int CollectionWindow::TRACK_QUEUE_END = 2;
+const int CollectionWindow::TRACK_REPLACE_QUEUE = 3;
+
+const int CollectionWindow::ALBUM_PLAY_IMMEDIATE = 4;
+const int CollectionWindow::ALBUM_QUEUE_NEXT = 5;
+const int CollectionWindow::ALBUM_QUEUE_END = 6;
+const int CollectionWindow::ALBUM_REPLACE_QUEUE = 7;
+
+const int CollectionWindow::ARTIST_PLAY_IMMEDIATE = 8;
+const int CollectionWindow::ARTIST_QUEUE_NEXT = 9;
+const int CollectionWindow::ARTIST_QUEUE_END = 10;
+const int CollectionWindow::ARTIST_REPLACE_QUEUE = 11;
+
 // used for synchronization
 CCriticalSection CollectionWindow::mCritSection;
 

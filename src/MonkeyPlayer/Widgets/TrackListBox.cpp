@@ -139,6 +139,15 @@ ListItem* TrackListBox::setHighlightedItem(std::string &name)
 }
 ListItem* TrackListBox::setHighlightedItem(int index)
 {
+	if (index == mHighightedIndex)
+	{
+		if (index >= 0 && index < (int)mItems.size())
+		{
+			return mItems[index];
+		}
+		return NULL;
+	}
+
 	setCurrentTrack(-1);
 	if (index >= 0 && index < (int)mItems.size())
 	{

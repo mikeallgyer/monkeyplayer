@@ -47,8 +47,16 @@ void MusicLibrary::update(float dt)
 
 	if (mPlayNextSong)
 	{
-		mPlaylistWindow->playNextSong();
+		if (mNextSong != "")
+		{
+			SoundManager::instance()->playFile(mNextSong.c_str());
+		}
+		else 
+		{
+			mPlaylistWindow->playNextSong();
+		}
 		mPlayNextSong = false;
+		mNextSong = "";
 	}
 	else if (mPlayPreviousSong)
 	{

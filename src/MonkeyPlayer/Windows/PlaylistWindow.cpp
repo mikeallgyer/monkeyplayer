@@ -10,6 +10,7 @@
 #include "DatabaseManager.h"
 #include "FileManager.h"
 #include "MetadataReader.h"
+#include "MusicLibrary.h"
 #include "PlaylistWindow.h"
 #include "Settings.h"
 #include "SoundManager.h"
@@ -231,6 +232,100 @@ bool PlaylistWindow::playPreviousSong()
 		return true;
 	}
 	return false;
+}
+
+void PlaylistWindow::addTrackToQueueEnd(int id)
+{
+	Track* t = snew Track();
+	DatabaseManager::instance()->getTrack(id, t);
+	if (t->Id >= 0)
+	{
+		mListBox->addItem(snew TrackListItem(t));
+	}
+}
+void PlaylistWindow::insertTrackToQueueNext(int id)
+{
+	Track* t = snew Track();
+	DatabaseManager::instance()->getTrack(id, t);
+	if (t->Id >= 0)
+	{
+		int index = mListBox->getHighlightedIndex();
+		mListBox->addItem(snew TrackListItem(t), index >= 0 ? (unsigned int)index + 1 : 0);
+	}
+}
+void PlaylistWindow::replaceQueueWithTrack(int id)
+{
+	Track* t = snew Track();
+	DatabaseManager::instance()->getTrack(id, t);
+	if (t->Id >= 0)
+	{
+		mListBox->clearItems();
+		mListBox->addItem(snew TrackListItem(t));
+	}
+}
+
+void PlaylistWindow::addAlbumToQueueEnd(Album a)
+{
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(a);
+	vector<ListItem*> items(tracks.size());
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		items[i] = snew TrackListItem(tracks[i]);
+	}
+	mListBox->addItems(items);
+}
+void PlaylistWindow::insertAlbumToQueueNext(Album a)
+{
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(a);
+	vector<ListItem*> items(tracks.size());
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		items[i] = snew TrackListItem(tracks[i]);
+	}
+
+	int index = mListBox->getHighlightedIndex();
+	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
+}
+void PlaylistWindow::replaceQueueWithAlbum(Album a)
+{
+	clearItems();
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(a);
+	vector<ListItem*> items(tracks.size());
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		items[i] = snew TrackListItem(tracks[i]);
+	}
+	mListBox->addItems(items);
+}
+
+void PlaylistWindow::addArtistToQueueEnd(string &name)
+{
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(name);
+	vector<ListItem*> items(tracks.size());
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		items[i] = snew TrackListItem(tracks[i]);
+	}
+	int index = mListBox->getHighlightedIndex();
+	mListBox->addItems(items);
+}
+
+void PlaylistWindow::insertArtistToQueueNext(string &name)
+{
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(name);
+	vector<ListItem*> items(tracks.size());
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		items[i] = snew TrackListItem(tracks[i]);
+	}
+	int index = mListBox->getHighlightedIndex();
+	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
+}
+void PlaylistWindow::replaceQueueWithArtist(string &name)
+{
+	vector<Track*> tracks = DatabaseManager::instance()->getTracks(name);
+	clearItems();
+	addItems(tracks);
 }
 
 void PlaylistWindow::onItemSelected(ListItem* item, int index)

@@ -47,6 +47,20 @@ public:
 	void modifyItems(std::vector<Track*> items);
 	bool playNextSong();
 	bool playPreviousSong();
+
+	void addTrackToQueueEnd(int id);
+	void insertTrackToQueueNext(int id);
+	void replaceQueueWithTrack(int id);
+
+	void addAlbumToQueueEnd(Album a);
+	void insertAlbumToQueueNext(Album a);
+	void replaceQueueWithAlbum(Album a);
+
+	void addArtistToQueueEnd(string &name);
+	void insertArtistToQueueNext(string &name);
+	void replaceQueueWithArtist(string &name);
+
+
 	static void listBox_callback(void* obj, ItemListBox* listBox)
 	{
 		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);

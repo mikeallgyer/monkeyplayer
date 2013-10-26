@@ -38,6 +38,7 @@ D3DApp::D3DApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, 
 	mHwnd = 0;
 	m3dObj = 0;
 	mPaused = false;
+	mUpdateOnly = false;
 	ZeroMemory(&mPresParams, sizeof(mPresParams));
 
 	initMainWindow();
@@ -186,7 +187,11 @@ int D3DApp::run()
 				float dt = (currTimeStamp - prevTimeStamp) * secsPerCount;
 
 				updateScene(dt);
-				drawScene();
+
+				if (!mUpdateOnly)
+				{
+					drawScene();
+				}
 
 				prevTimeStamp = currTimeStamp;
 			}
@@ -238,7 +243,8 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		else
 		{
 			mPaused = false;
-			mActive = true;;
+			mUpdateOnly = false;
+			mActive = true;
 		}
 		return 0;
 
@@ -267,7 +273,8 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			else if (wParam == SIZE_RESTORED) 
 			{
 				mPaused = false;
-
+				mUpdateOnly = false;
+				
 				// Are we restoring from a mimimized or maximized state, 
 				// and are in windowed mode?  Do not execute this code if 
 				// we are restoring to full screen mode.
@@ -323,10 +330,15 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			enableFullScreen(true);
 		}
 		return 0;
+	case WM_SYSCOMMAND:
+		if (wParam == SC_SCREENSAVE)
+		{
+			mUpdateOnly = true;
 		}
+	}
 
-		// if we processed it, we should have returned already
-		return DefWindowProc(mHwnd, msg, wParam, lParam);
+	// if we processed it, we should have returned already
+	return DefWindowProc(mHwnd, msg, wParam, lParam);
 }
 
 void D3DApp::enableFullScreen(bool enable)

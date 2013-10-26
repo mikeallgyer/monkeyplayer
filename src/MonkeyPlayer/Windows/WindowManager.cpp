@@ -36,6 +36,7 @@ WindowManager::WindowManager()
 	mProgressBar->setVisible(false);
 
 	mContextMenu = snew ItemListBox(-999.0f, -999.0f, 150.0f, 50.0, contextMenu_callback, this, D3DCOLOR_XRGB(116, 116, 64));
+	mContextMenu->setAllowSingleClickSelection(true);
 	mContextMenuOwner = NULL;
 
 	mNumTriangles = 0;
@@ -241,7 +242,8 @@ void WindowManager::mouseEventCallback(void* obj, MouseEvent e)
 }
 void WindowManager::onMouseEvent(MouseEvent e)
 {
-	if ((mContextMenu->onMouseEvent(e) || (!mContextMenu->isPointInside(e.getX(), e.getY()) && 
+	mContextMenu->onMouseEvent(e);
+	if (((!mContextMenu->isPointInside(e.getX(), e.getY()) && 
 		(e.getEvent() == MouseEvent::LBUTTONDOWN || e.getEvent() == MouseEvent::RBUTTONDOWN))) &&
 		e.getEvent() != MouseEvent::MOUSEWHEEL)
 	{

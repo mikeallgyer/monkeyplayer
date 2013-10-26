@@ -25,10 +25,30 @@
 #ifndef COLLECTION_WINDOW_H
 #define COLLECTION_WINDOW_H
 
+class LargeAlbumWidget;
+class SmallAlbumManager;
+
 class CollectionWindow : public IWindow
 {
 public:
 	enum DISPLAY_STYLE { LargeAlbum, SmallAlbum, UNDEFINED_STYLE };
+	enum RIGHT_CLICKED_ITEM { RIGHT_ARTIST, RIGHT_TRACK, RIGHT_ALBUM, RIGHT_NONE };
+	enum SELECTED_THING { ARTIST, TRACK, ALBUM };
+
+	static const int TRACK_PLAY_IMMEDIATE;
+	static const int TRACK_QUEUE_NEXT;
+	static const int TRACK_QUEUE_END;
+	static const int TRACK_REPLACE_QUEUE;
+
+	static const int ALBUM_PLAY_IMMEDIATE;
+	static const int ALBUM_QUEUE_NEXT;
+	static const int ALBUM_QUEUE_END;
+	static const int ALBUM_REPLACE_QUEUE;
+
+	static const int ARTIST_PLAY_IMMEDIATE;
+	static const int ARTIST_QUEUE_NEXT;
+	static const int ARTIST_QUEUE_END;
+	static const int ARTIST_REPLACE_QUEUE;
 
 	CollectionWindow();
 	~CollectionWindow();

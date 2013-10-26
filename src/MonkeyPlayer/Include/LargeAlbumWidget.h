@@ -16,6 +16,8 @@
 #ifndef LARGE_ALBUM_WIDGET_H
 #define LARGE_ALBUM_WIDGET_H
 
+#include "CollectionWindow.h"
+
 
 class LargeAlbumWidget : public IWidget
 {
@@ -23,6 +25,10 @@ public:
 	static const float ALBUM_WIDTH;
 	static const float ALBUM_HEIGHT;
 	static const float ALBUM_DEPTH;
+	
+	static const float SLOW_SCROLL_SPEED;
+	static const float FAST_SCROLL_SPEED;
+	static const float FAST_SCROLL_DELAY;
 
 	LargeAlbumWidget(float x, float y, float width, float height);
 	~LargeAlbumWidget();
@@ -65,9 +71,8 @@ public:
 	}
 
 protected:
-	enum SELECTED_THING { ARTIST, TRACK, ALBUM };
 	void goToAlbum(int index);
-	void queueThing(SELECTED_THING thing);
+	void queueThing(CollectionWindow::SELECTED_THING thing);
 
 	void doAddAlbum(Album* album);
 	void doAddTrack(Track* track);
@@ -85,6 +90,9 @@ protected:
 	std::vector<Album*> mAlbumsToAdd;
 	std::vector<Track*> mTracksToAdd;
 	int mAlbumIndex;
+	float mDisplayingAlbum;
+	float mScrollingDuration;
+	float mTotScrollingDuration;
 
 	float mTimeInterval;
 	float mX, mY, mWidth, mHeight, mX2, mY2;
@@ -94,7 +102,10 @@ protected:
 	bool mHasFocus;
 	int mPlayingTrack;
 	int mPlayingAlbum;
-	SELECTED_THING mSelectedThing;
+	CollectionWindow::SELECTED_THING mSelectedThing;
+
+	CollectionWindow::RIGHT_CLICKED_ITEM mRightClicked;
+	int mRightClickedTrack;
 
 	void createBuffers();
 
@@ -111,11 +122,13 @@ protected:
 	D3DXHANDLE mDiffuseHandle;
 	D3DXHANDLE mProjectionHandle;
 	D3DXHANDLE mLightColorHandle;
+	D3DXHANDLE mLight2ColorHandle;
 	D3DXHANDLE mAmbientHandle;
 	D3DXHANDLE mCamPosHandle;
 	D3DXHANDLE mSpecularPowerHandle;
 	D3DXHANDLE mSpecularColorHandle;
 	D3DXHANDLE mLightPosHandle;
+	D3DXHANDLE mLight2PosHandle;
 	D3DXHANDLE mFogColorHandle;
 	D3DXHANDLE mFogEnabledHandle;
 
@@ -124,12 +137,14 @@ protected:
 	D3DXMATRIX mWorld;
 	D3DXVECTOR4 mDiffuseColor;
 	D3DXVECTOR4 mLightColor;
+	D3DXVECTOR4 mLight2Color;
 	D3DXVECTOR4 mAmbient;
 	D3DXVECTOR3 mCamPos;
 	D3DXVECTOR3 mLookAt;
 	float mSpecularPower;
 	D3DXVECTOR3 mSpecularColor;
 	D3DXVECTOR3 mLightPos;
+	D3DXVECTOR3 mLight2Pos;
 	D3DXVECTOR4 mFogColor;
 	bool mFogEnabled;
 

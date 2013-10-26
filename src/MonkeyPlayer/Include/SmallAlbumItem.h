@@ -56,6 +56,10 @@ public:
 	void setAlbumSelected(bool sel);
 	void addTrack(Track* track);
 
+	bool isPointInside(int x, int y);
+	bool isPointInsideAlbum(int x, int y);
+	int getItemAtPos(int x, int y);
+
 protected:
 	std::vector<Sprite*> mSprites; 
 
@@ -86,9 +90,6 @@ protected:
 	int mTrackRatingWidth;
 
 	int mAlbumDimension;
-	bool isPointInside(int x, int y);
-	bool isPointInsideAlbum(int x, int y);
-	int getItemAtPos(int x, int y);
 
 	void setAlbum(Album album);
 		
