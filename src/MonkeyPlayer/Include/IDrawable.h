@@ -14,21 +14,23 @@
 #ifndef IDRAWABLE_H
 #define IDRAWABLE_H
 
-class ItemListBox;
-
-class IDrawable
+namespace MonkeyPlayer
 {
-public:
-	virtual ~IDrawable() {}
-	virtual void onDeviceLost() = 0;
-	virtual void onDeviceReset() = 0;
+	class ItemListBox;
 
-	virtual void update(float dt) = 0;
+	class IDrawable
+	{
+	public:
+		virtual ~IDrawable() {}
+		virtual void onDeviceLost() = 0;
+		virtual void onDeviceReset() = 0;
 
-	virtual void preRender() {}
-	virtual void display() {}
-	virtual int getNumTriangles() = 0;
-	virtual void onContextMenuSelected(ItemListBox* menu) {}
-};
+		virtual void update(float dt) = 0;
 
+		virtual void preRender() {}
+		virtual void display() {}
+		virtual int getNumTriangles() = 0;
+		virtual void onContextMenuSelected(ItemListBox* menu) {}
+	};
+}
 #endif

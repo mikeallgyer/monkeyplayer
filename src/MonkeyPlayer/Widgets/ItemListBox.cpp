@@ -10,6 +10,8 @@
 #include "Settings.h"
 #include "WindowManager.h"
 
+using namespace MonkeyPlayer;
+
 // when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
 const float ItemListBox::BUTTON_REPEAT_TIME = .05f;
 // upon first holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
@@ -308,7 +310,10 @@ void ItemListBox::update(float dt)
 			selChanged = true;
 		}
 	} // if focused
-	CSingleLock lock(&mCritSection, true);
+	
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	// update list of items to display
 	if (selChanged)
 	{
@@ -360,7 +365,9 @@ void ItemListBox::preRender()
 {
 	if (mDoRedraw)
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
+	
 		mListTarget->beginScene();
 
 		int row = 0;
@@ -417,7 +424,9 @@ void ItemListBox::setPos(float x, float y, float width, float height)
 	mListTarget->setDimensions((int)width, (int)height);
 	recreateTargets();
 
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	mDoRedraw = true;
 	lock.Unlock();
@@ -436,7 +445,8 @@ void ItemListBox::setPos(float x, float y, bool autoSize)
 float ItemListBox::getWidthToFit()
 {
 	int maxWidth = TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT;
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		RECT r = { 0, 0, (int)100, mFontHeight };
@@ -477,7 +487,8 @@ void ItemListBox::clearItems()
 }
 void ItemListBox::shuffleItems()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	std::random_shuffle(mItems.begin(), mItems.end());
 	mDoRedraw = true;
 	lock.Unlock();
@@ -485,7 +496,9 @@ void ItemListBox::shuffleItems()
 // takes ownership of pointer
 void ItemListBox::setItems(std::vector<ListItem*> items)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	deleteItems();
 	mItems.clear();
 
@@ -500,8 +513,9 @@ void ItemListBox::setItems(std::vector<ListItem*> items)
 
 void ItemListBox::addItems(std::vector<ListItem*> items)
 {
-	CSingleLock lock(&mCritSection, true);
-	
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+		
 	for (unsigned int i = 0; i < items.size(); i++)
 	{
 		mItems.push_back(items[i]);
@@ -512,7 +526,9 @@ void ItemListBox::addItems(std::vector<ListItem*> items)
 }
 void ItemListBox::addItem(ListItem* item)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	mItems.push_back(item);
 	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	
@@ -526,8 +542,9 @@ void ItemListBox::addItem(ListItem* item, unsigned int index)
 		addItem(item);
 		return;
 	}
-	CSingleLock lock(&mCritSection, true);
-	
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+		
 	vector<ListItem*>::iterator iter = mItems.begin() + index;
 
 	mItems.insert(iter, item);
@@ -542,8 +559,9 @@ void ItemListBox::addItems(std::vector<ListItem*> items, unsigned int index)
 		addItems(items);
 		return;
 	}
-	CSingleLock lock(&mCritSection, true);
-	
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+		
 	vector<ListItem*>::iterator iter = mItems.begin() + index;
 
 	mItems.insert(iter, items.begin(), items.end());
@@ -554,7 +572,8 @@ void ItemListBox::addItems(std::vector<ListItem*> items, unsigned int index)
 // does nothing if an item isn't already in the list
 void ItemListBox::modifyItems(std::vector<ListItem*> items)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
@@ -572,7 +591,9 @@ void ItemListBox::modifyItems(std::vector<ListItem*> items)
 // does nothing if an item isn't already in the list
 void ItemListBox::modifyItem(ListItem* item)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		if (mItems[i]->getId() == item->getId())
@@ -607,7 +628,9 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 		if (e.getEvent() == MouseEvent::MOUSEWHEEL && mItems.size() > getNumItemsDisplayed())
 		{
 			int scrollAmt = Settings::instance()->getIntValue("SCROLL_SPEED", NUM_SCROLLING_ITEMS);
-			CSingleLock lock(&mCritSection, true);
+			CSingleLock lock(&mCritSection);
+			lock.Lock();
+	
 			// update list of items to display
 			if (e.getExtraHiData() < 0)
 			{
@@ -730,7 +753,9 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 }
 int ItemListBox::findItem(std::string &name)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		if (mItems[i]->toString() == name)
@@ -744,7 +769,9 @@ int ItemListBox::findItem(std::string &name)
 }
 ListItem* ItemListBox::setHighlightedItem(std::string &name)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		if (mItems[i]->toString() == name)

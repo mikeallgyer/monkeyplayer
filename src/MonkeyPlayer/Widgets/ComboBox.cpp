@@ -7,6 +7,8 @@
 #include "ComboBox.h"
 #include "FileManager.h"
 
+using namespace MonkeyPlayer;
+
 const int ComboBox::BACKGROUND_UP = 0;
 const int ComboBox::BACKGROUND_DOWN = 1;
 
@@ -40,7 +42,7 @@ ComboBox::ComboBox(float x, float y, string text, float width,
 	mBackgroundSprite = snew Sprite(bgPath.c_str(), mX, mY, mWidth, mHeight);
 	mBackgroundSprite->addTexture(BACKGROUND_DOWN, bgDownPath.c_str(), false);
 
-	mLabel = snew Label(mX + 8.0f, mY, mWidth, mHeight, text, 16, DT_VCENTER, D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f));
+	mLabel = snew SimpleLabel(mX + 8.0f, mY, mWidth, mHeight, text, 16, DT_VCENTER, D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f));
 
 	mListBox = snew ItemListBox(mX, mY + COMBOBOX_DIMENSION, getWidth(), 200.0f, listBox_callback, this,
 		 D3DCOLOR_XRGB(50, 50, 50), D3DCOLOR_XRGB(255, 255, 255), D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f));

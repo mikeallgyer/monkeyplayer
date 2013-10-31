@@ -22,56 +22,58 @@
 #ifndef MUSIC_DIR_WINDOW_H
 #define MUSIC_DIR_WINDOW_H
 
-class DirectoriesWindow : public IWindow
+namespace MonkeyPlayer
 {
-public:
-	static const float WINDOW_WIDTH;
-	static const float BUTTON_SIZE;
-
-	DirectoriesWindow();
-	~DirectoriesWindow();
-
-	void onDeviceLost();
-	void onDeviceReset();
-
-	int getWidth();
-	int getHeight();
-
-	void update(float dt);
-
-	void display();
-
-	std::vector<Sprite*> getSprites();
-	std::vector<IWidget*> getWidgets();
-
-	bool onMouseEvent(MouseEvent ev);  // true if window consumed event
-
-	void onBlur();
-	void onFocus();
-
-	static void btn_callback(void* obj, Button* btn)
+	class DirectoriesWindow : public IWindow
 	{
-		DirectoriesWindow* win = static_cast<DirectoriesWindow*>(obj);
-		if (win)
+	public:
+		static const float WINDOW_WIDTH;
+		static const float BUTTON_SIZE;
+
+		DirectoriesWindow();
+		~DirectoriesWindow();
+
+		void onDeviceLost();
+		void onDeviceReset();
+
+		int getWidth();
+		int getHeight();
+
+		void update(float dt);
+
+		void display();
+
+		std::vector<Sprite*> getSprites();
+		std::vector<IWidget*> getWidgets();
+
+		bool onMouseEvent(MouseEvent ev);  // true if window consumed event
+
+		void onBlur();
+		void onFocus();
+
+		static void btn_callback(void* obj, Button* btn)
 		{
-			win->onBtnPushed(btn);
+			DirectoriesWindow* win = static_cast<DirectoriesWindow*>(obj);
+			if (win)
+			{
+				win->onBtnPushed(btn);
+			}
 		}
-	}
 
-private:
-	std::vector<Sprite*> mSprites;
-	std::vector<IWidget*> mWidgets;
-	Sprite* mBackground;
-	Button* mAddBtn;
-	ItemListBox* mFolderList;
-	Label* mFolderLabel;
+	private:
+		std::vector<Sprite*> mSprites;
+		std::vector<IWidget*> mWidgets;
+		Sprite* mBackground;
+		Button* mAddBtn;
+		ItemListBox* mFolderList;
+		SimpleLabel* mFolderLabel;
 
-	bool mResized;
-	float mWidth, mHeight;
-	std::string mDefaultAlbumPath;
-	
-	void setFolders();
-	void onBtnPushed(Button* btn);
-};
-
+		bool mResized;
+		float mWidth, mHeight;
+		std::string mDefaultAlbumPath;
+		
+		void setFolders();
+		void onBtnPushed(Button* btn);
+	};
+}
 #endif

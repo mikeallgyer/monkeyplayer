@@ -17,6 +17,8 @@
 #include "SmallAlbumManager.h"
 #include "Vertex.h"
 
+using namespace MonkeyPlayer;
+
 const float CollectionWindow::ARTIST_LABEL_SIZE = 26.0f;
 
 const int CollectionWindow::TRACK_PLAY_IMMEDIATE = 0;
@@ -70,10 +72,10 @@ CollectionWindow::CollectionWindow()
 
 	mSprites.push_back(mBackground);
 
-	mAlphabetLabel = snew Label(0, 0, 200.0f, 40.0f, string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 30, DT_CENTER | DT_NOCLIP,
+	mAlphabetLabel = snew SimpleLabel(0, 0, 200.0f, 40.0f, string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 30, DT_CENTER | DT_NOCLIP,
 		D3DCOLOR_XRGB(200, 200, 200), D3DCOLOR_ARGB(0, 0, 0, 0), "COURIER NEW");
 	mAlphabetLabel->setSizeToFit(true);
-	mLetterLabel = snew Label(-1000.0f, 0, 80.0f, 80.0f, string("A"), 40, DT_CENTER | DT_NOCLIP,
+	mLetterLabel = snew SimpleLabel(-1000.0f, 0, 80.0f, 80.0f, string("A"), 40, DT_CENTER | DT_NOCLIP,
 		D3DCOLOR_XRGB(255, 255, 255), D3DCOLOR_ARGB(0, 0, 0, 0), "COURIER NEW");
 	mLetterLabel->setSizeToFit(true);
 
@@ -517,6 +519,25 @@ void CollectionWindow::goToSong()
 					mLargeAlbumWidget->goToSong(album, track);
 					mSmallAlbumManager->goToSong(album, track);
 				}
+			}
+		}
+	}
+}
+void CollectionWindow::goToSong(string file)
+{
+	if (file.length() > 0)
+	{
+		Track track;
+		Album album;
+		DatabaseManager::instance()->getTrack(file, &track);
+		if (track.Id != DatabaseStructs::INVALID_ID)
+		{
+			DatabaseManager::instance()->getAlbum(track.AlbumId, &album);
+
+			if (album.Id != DatabaseStructs::INVALID_ID)
+			{
+				mLargeAlbumWidget->goToSong(album, track, false);
+				mSmallAlbumManager->goToSong(album, track);
 			}
 		}
 	}

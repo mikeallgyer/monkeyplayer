@@ -11,6 +11,8 @@
 #include "LargeAlbumItem.h"
 #include "MetadataReader.h"
 
+using namespace MonkeyPlayer;
+
 LargeAlbumItem::LargeAlbumItem(Album album) : mCurrDestination(0, 0, true, .5f)
 {
 	mAlbum = album;

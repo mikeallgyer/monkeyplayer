@@ -6,7 +6,9 @@
 
 #include "Label.h"
 
-Label::Label(float x, float y, float width, float height, std::string &label, int fontSize,
+using namespace MonkeyPlayer;
+
+SimpleLabel::SimpleLabel(float x, float y, float width, float height, std::string &label, int fontSize,
 				 DWORD format, D3DXCOLOR textColor, D3DXCOLOR bgColor,  const char* fontName)
 {
 	D3DXFONT_DESC font;
@@ -41,7 +43,7 @@ Label::Label(float x, float y, float width, float height, std::string &label, in
 	mCallbackObj = NULL;
 	mRedraw = true;
 }
-Label::~Label()
+SimpleLabel::~SimpleLabel()
 {
 	for (unsigned int i = 0; i < mSprites.size(); i++)
 	{
@@ -52,19 +54,19 @@ Label::~Label()
 	delete mTarget;
 }
 
-void Label::onDeviceLost()
+void SimpleLabel::onDeviceLost()
 {
 	HR(mFont->OnLostDevice());
 	mTarget->onDeviceLost();
 }
-void Label::onDeviceReset()
+void SimpleLabel::onDeviceReset()
 {
 	HR(mFont->OnResetDevice());
 
 	mTarget->onDeviceReset();
 	recreateTargets();
 }
-void Label::recreateTargets()
+void SimpleLabel::recreateTargets()
 {
 	if (mSprite == NULL)
 	{
@@ -96,11 +98,11 @@ void Label::recreateTargets()
 	mRedraw = true;
 }
 
-void Label::update(float dt)
+void SimpleLabel::update(float dt)
 {
 }
 
-void Label::preRender()
+void SimpleLabel::preRender()
 {
 	if  (mRedraw)
 	{
@@ -114,7 +116,7 @@ void Label::preRender()
 		mRedraw = false;
 	}
 }
-void Label::setPos(float x, float y, float width, float height)
+void SimpleLabel::setPos(float x, float y, float width, float height)
 {
 	mX = floor(x);
 	mY = floor(y);
@@ -134,19 +136,19 @@ void Label::setPos(float x, float y, float width, float height)
 	recreateTargets();
 }
 
-void Label::setFormat(DWORD format)
+void SimpleLabel::setFormat(DWORD format)
 {
 	mFormat = format;
 	mRedraw = true;
 }
 
-void Label::setTextColor(D3DXCOLOR color)
+void SimpleLabel::setTextColor(D3DXCOLOR color)
 {
 	mTextColor = color;
 	mRedraw = true;
 }
 
-void Label::setString(std::string &str)
+void SimpleLabel::setString(std::string &str)
 {
 	mText = str;
 	mRedraw = true;
@@ -155,16 +157,16 @@ void Label::setString(std::string &str)
 		recreateTargets();
 	}
 }
-std::string Label::getString()
+std::string SimpleLabel::getString()
 {
 	return mText;
 }
 
-std::vector<Sprite*> Label::getSprites()
+std::vector<Sprite*> SimpleLabel::getSprites()
 {
 	return mSprites;
 }
-int Label::getNumTriangles()
+int SimpleLabel::getNumTriangles()
 {
 	int total = 0;
 	for (unsigned int i = 0; i < mSprites.size(); i++)
@@ -174,7 +176,7 @@ int Label::getNumTriangles()
 
 	return total;
 }
-bool Label::onMouseEvent(MouseEvent e)
+bool SimpleLabel::onMouseEvent(MouseEvent e)
 {
 	if (isPointInside(e.getX(), e.getY()))
 	{
@@ -193,7 +195,7 @@ bool Label::onMouseEvent(MouseEvent e)
 	}
 	return false;
 }
-bool Label::isPointInside(int x, int y)
+bool SimpleLabel::isPointInside(int x, int y)
 {
 	float xPoint = (float)x;
 	float yPoint = (float)y;
@@ -202,7 +204,7 @@ bool Label::isPointInside(int x, int y)
 
 	return !(xPoint < mX || yPoint < mY || xPoint > x2 || yPoint > y2);
 }
-void Label::setSizeToFit(bool fit)
+void SimpleLabel::setSizeToFit(bool fit)
 {
 	mSizeToFit = fit;
 	setPos(mX, mY);
@@ -210,7 +212,7 @@ void Label::setSizeToFit(bool fit)
 	recreateTargets();
 }
 
-void Label::setCallback(void (*cb)(void* objPtr, Label* label), void* objPtr)
+void SimpleLabel::setCallback(void (*cb)(void* objPtr, SimpleLabel* label), void* objPtr)
 {
 	mCallback = cb;
 	mCallbackObj = objPtr;

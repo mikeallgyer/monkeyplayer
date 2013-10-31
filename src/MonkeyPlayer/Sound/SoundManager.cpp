@@ -13,6 +13,8 @@
 #include "d3dUtil.h"
 #include "Settings.h"
 
+using namespace MonkeyPlayer;
+
 SoundManager* SoundManager::mInstance = NULL;
 //#define MEM_LEAK_TEST
 

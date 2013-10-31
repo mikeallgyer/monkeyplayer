@@ -11,6 +11,8 @@
 #include "TrackListBox.h"
 #include "WindowManager.h"
 
+using namespace MonkeyPlayer;
+
 TrackListBox::TrackListBox(float x, float y, float width, float height,
 	void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem), void* callbackObj)
 	: ItemListBox(x, y, width, height, selectedtItemCB, callbackObj)

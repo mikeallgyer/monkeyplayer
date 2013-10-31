@@ -5,10 +5,15 @@
 // handles several windows
 
 #include "d3dApp.h"
+#include "MusicLibrary.h"
 #include "Settings.h"
 #include "WindowManager.h"
 
+#include "../Winforms/SearchForm.h"
+
 #include <vector>
+
+using namespace MonkeyPlayer;
 
 WindowManager::WindowManager()
 {
@@ -21,7 +26,7 @@ WindowManager::WindowManager()
 
 	if (errors)
 	{
-		MessageBox(0, (char*)errors->GetBufferPointer(), 0, 0);
+		::MessageBox(0, (char*)errors->GetBufferPointer(), 0, 0);
 		PostQuitMessage(1);
 	}
 
@@ -43,8 +48,11 @@ WindowManager::WindowManager()
 
 	gInput->addMouseCallback(this, &mouseEventCallback);
 	mFocusWindow = NULL;
+	mCollectionWin = NULL;
 
 	mResized = true;
+
+	mSearchThread = NULL;
 }
 WindowManager::~WindowManager()
 {
@@ -54,6 +62,14 @@ WindowManager::~WindowManager()
 	}
 	delete mProgressBar;
 	delete mContextMenu;
+	if (mSearchThread != NULL)
+	{
+		WaitForSingleObject(mThread, 2000);
+		delete mSearchThread;
+		delete mThread;
+		mSearchThread = NULL;
+	}
+
 	ReleaseCOM(mEffect);
 }
 void WindowManager::onDeviceLost()
@@ -91,6 +107,49 @@ void WindowManager::addWindow(IWindow *win)
 
 void WindowManager::update(float dt)
 {
+	if (gInput->keyPressed(0x46 /* F */))
+	{
+		if (gInput->isKeyDown(VK_CONTROL) || gInput->keyReleased(VK_CONTROL))
+		{
+			if (mSearchThread == NULL)
+			{
+				mSearchThread = snew SearchFormThread();
+				mThread = AfxBeginThread(&searchThread, mSearchThread, 0, 0, CREATE_SUSPENDED);
+				mThread->m_bAutoDelete = FALSE;
+				mThread->ResumeThread();
+			}
+			else
+			{
+				mSearchThread->resetSearchForm();
+			}
+		}
+	}
+	if (mSearchThread != NULL && mSearchThread->mFinished)
+	{
+		if (MonkeyPlayer::SearchForm::instance()->doPlay())
+		{
+			Track t;
+			DatabaseManager::instance()->getTrack(MonkeyPlayer::SearchForm::instance()->getSelectedTrackID(), &t);
+			if (t.Id >= 0)
+			{
+				MusicLibrary::instance()->playSong(t.Filename);
+			}
+		}
+		
+		if (MonkeyPlayer::SearchForm::instance()->doGoTo() && mCollectionWin != NULL)
+		{
+			Track t;
+			DatabaseManager::instance()->getTrack(MonkeyPlayer::SearchForm::instance()->getSelectedTrackID(), &t);
+			if (t.Id >= 0)
+			{
+				mCollectionWin->goToSong(t.Filename);
+			}
+		}
+		WaitForSingleObject(mThread, 2000);
+		delete mSearchThread;
+		delete mThread;
+		mSearchThread = NULL;
+	}
 	for (unsigned int i = 0; i < mWindows.size(); i++)
 	{
 		mWindows[i]->update(dt);
@@ -360,3 +419,45 @@ void WindowManager::openContextMenu(float mouseX, float mouseY, vector<ListItem*
 	}
 }
 
+/*static*/ UINT WindowManager::searchThread(LPVOID pParam)
+{
+	SearchFormThread* search = (SearchFormThread*)pParam;
+
+	bool reOpen = false;
+
+	do
+	{
+		search->mRestart = false;
+		MonkeyPlayer::SearchForm::openSearch(); 
+		
+		CSingleLock lock(&search->mCritSection);
+		reOpen = search->mRestart;
+		lock.Lock();
+		
+		lock.Unlock();
+	} while (reOpen);
+
+	search->mFinished = true;
+	return 0;
+}
+
+void SearchFormThread::closeSearchForm()
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
+	MonkeyPlayer::SearchForm::instance()->threadClose(); 
+	MonkeyPlayer::SearchForm::instance()->reset();
+	mRestart = false;
+	lock.Unlock();
+}
+void SearchFormThread::resetSearchForm()
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	
+	MonkeyPlayer::SearchForm::instance()->threadClose(); 
+	MonkeyPlayer::SearchForm::instance()->reset(); 
+	mRestart = true;
+	lock.Unlock();
+}

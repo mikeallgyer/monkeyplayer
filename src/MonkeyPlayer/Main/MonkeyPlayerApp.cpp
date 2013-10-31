@@ -30,6 +30,8 @@
 #include <fileref.h>
 #include <tag.h>
 
+using namespace MonkeyPlayer;
+
 MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, DWORD vertexProc)
 : D3DApp(hInstance, caption, deviceType, vertexProc)
 {
@@ -69,7 +71,8 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 
 		CollectionWindow* collWin = snew CollectionWindow();
 		mgr->addWindow(collWin);
-		
+		mgr->setCollectionWindow(collWin);
+
 		MusicLoader::instance()->setPlaylistWindow(pl);
 		MusicLoader::instance()->setCollectionWindow(collWin);
 //		MusicLoader::instance()->loadDirectory("d:\\MP3s\\Ripped\\");

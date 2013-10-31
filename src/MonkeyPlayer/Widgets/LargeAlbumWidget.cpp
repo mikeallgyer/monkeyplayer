@@ -3,6 +3,7 @@
 // (C) 2013 Mike Allgyer.  All Rights Reserved.
 //
 // Window of large albums
+#include "../Winforms/SearchForm.h"
 
 #include "LargeAlbumWidget.h"
 #include "d3dApp.h"
@@ -11,13 +12,17 @@
 #include "Settings.h"
 #include "Vertex.h"
 
+
 #include <MonkeyInput.h>
+
+using namespace MonkeyPlayer;
 
 const float LargeAlbumWidget::ALBUM_WIDTH = 4.0f;
 const float LargeAlbumWidget::ALBUM_HEIGHT = 3.88f;
 const float LargeAlbumWidget::ALBUM_DEPTH = .2f;
 const float LargeAlbumWidget::SLOW_SCROLL_SPEED = 2.0f;
 const float LargeAlbumWidget::FAST_SCROLL_SPEED = 6.0f;
+const float LargeAlbumWidget::REALLY_FAST_SCROLL_SPEED = 60.0f;
 const float LargeAlbumWidget::FAST_SCROLL_DELAY = 1.0f;
 
 // used for synchronization
@@ -124,11 +129,11 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, 50.0f, 50.0f);
 	mSelectedThing = CollectionWindow::ALBUM;
 
-	mLargeAlbumLbl = snew Label(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
+	mLargeAlbumLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mLargeAlbumLbl->setSizeToFit(true);
 	mWidgets.push_back(mLargeAlbumLbl);
 
-	mArtistLbl = snew Label(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
+	mArtistLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mArtistLbl->setSizeToFit(true);
 	mWidgets.push_back(mArtistLbl);
 
@@ -296,7 +301,7 @@ void LargeAlbumWidget::update(float dt)
 				setTracks();
 			}
 		}
-		else if (gInput->isKeyDown(VK_RIGHT))
+		else if (gInput->isKeyDown(VK_RIGHT) || gInput->isKeyDown(VK_SHIFT))
 		{
 			bool firstPress = mScrollingDuration < 0;
 			if (firstPress)
@@ -390,7 +395,12 @@ void LargeAlbumWidget::update(float dt)
 
 	if (mDisplayingAlbum != (float)mAlbumIndex)
 	{
-		if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 2.0f)
+		if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 3.0f)
+		{
+			scrollSpeed = REALLY_FAST_SCROLL_SPEED;
+			scrollSpeedInv = 1.0f / scrollSpeed;
+		}
+		else if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 2.0f)
 		{
 			scrollSpeed = FAST_SCROLL_SPEED;
 			scrollSpeedInv = 1.0f / scrollSpeed;
@@ -439,13 +449,13 @@ void LargeAlbumWidget::update(float dt)
 		}
 		int oneLess = (int)mDisplayingAlbum - mid - 1;
 		int oneMore = (int)mDisplayingAlbum + mid + 1;
-		if (oneLess > 0)
+		for (int i = 0; i <= oneLess; i++)
 		{
-			mLargeAlbums[oneLess]->setVisible(false);
+			mLargeAlbums[i]->setVisible(false);
 		}
-		if (oneMore < (int)mLargeAlbums.size())
+		for (int i = oneMore; i < (int)mLargeAlbums.size(); i++)
 		{
-			mLargeAlbums[oneMore]->setVisible(false);
+			mLargeAlbums[i]->setVisible(false);
 		}
 	}
 }
@@ -756,7 +766,7 @@ void LargeAlbumWidget::goToChar(char c)
 		goToAlbum(index);
 	}
 }
-void LargeAlbumWidget::goToSong(Album a, Track t)
+void LargeAlbumWidget::goToSong(Album a, Track t, bool doHighlight)
 {
 	mPlayingAlbum = -1;
 	mPlayingTrack = -1;
@@ -778,8 +788,20 @@ void LargeAlbumWidget::goToSong(Album a, Track t)
 		{
 			if (mLargeAlbums[mAlbumIndex]->getTracks()[i]->Id == t.Id)
 			{
-				mTrackBox->setHighlightedItem(i);
-				mPlayingTrack = i;
+				if (doHighlight)
+				{
+					mTrackBox->setHighlightedItem(i);
+					mPlayingTrack = i;
+				}
+				else
+				{
+					if (mHasFocus)
+					{
+						mTrackBox->setSelectedIndex(i);
+						mTrackBox->focus();
+					}
+					mSelectedThing = CollectionWindow::TRACK;
+				}
 			}
 		}
 	}

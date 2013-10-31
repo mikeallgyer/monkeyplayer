@@ -7,6 +7,8 @@
 #include "d3dUtil.h"
 #include "Vertex.h"
 
+using namespace MonkeyPlayer;
+
 IDirect3DVertexDeclaration9* Vertex::VertexPosition::Decl = 0;
 IDirect3DVertexDeclaration9* Vertex::VertexPosTex::Decl = 0;
 IDirect3DVertexDeclaration9* Vertex::VertexPosTexNormal::Decl = 0;

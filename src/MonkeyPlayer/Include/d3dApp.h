@@ -24,68 +24,70 @@
 #include <MonkeyInput.h>
 #include <string>
 
-
-class D3DApp
+namespace MonkeyPlayer
 {
+	public class D3DApp
+	{
 
-public:
-	D3DApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, DWORD vertexProc);
-	virtual ~D3DApp();
+	public:
+		D3DApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, DWORD vertexProc);
+		virtual ~D3DApp();
 
-	// derived methods
-	virtual bool checkDeviceCaps() { return true; }
-	virtual void onDeviceLost() {}
-	virtual void onDeviceReset() {}
-	virtual void updateScene(float dt) {}
-	virtual void drawScene() {}
+		// derived methods
+		virtual bool checkDeviceCaps() { return true; }
+		virtual void onDeviceLost() {}
+		virtual void onDeviceReset() {}
+		virtual void updateScene(float dt) {}
+		virtual void drawScene() {}
 
-	// these are not usually overridden
-	virtual void initMainWindow();
-	virtual void initDirect3D();
-	virtual int run();
-	virtual LRESULT msgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+		// these are not usually overridden
+		virtual void initMainWindow();
+		virtual void initDirect3D();
+		virtual int run();
+		virtual LRESULT msgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	void enableFullScreen(bool enable);
-	bool isDeviceLost();
+		void enableFullScreen(bool enable);
+		bool isDeviceLost();
 
-	// get/set
-	HINSTANCE getAppInstance();
-	HWND getMainWnd();
+		// get/set
+		HINSTANCE getAppInstance();
+		HWND getMainWnd();
 
-	Camera* getCamera();
+		Camera* getCamera();
 
-	virtual GfxStats *getStats() = 0;
+		virtual GfxStats *getStats() = 0;
 
-	int getWidth() { return mScreenWidth; }
-	int getHeight() { return mScreenHeight; }
+		int getWidth() { return mScreenWidth; }
+		int getHeight() { return mScreenHeight; }
 
-	bool getIsActive() { return mActive; }
-protected:
-	void processResize();
+		bool getIsActive() { return mActive; }
+	protected:
+		void processResize();
 
-	std::string mCaption;
-	D3DDEVTYPE mDeviceType;
-	DWORD mVertexProc;
+		std::string mCaption;
+		D3DDEVTYPE mDeviceType;
+		DWORD mVertexProc;
 
-	// window/direct3d stuff
-	HINSTANCE mHAppInstance;
-	HWND mHwnd;
-	IDirect3D9* m3dObj;
-	bool mPaused;
-	bool mUpdateOnly;
-	D3DPRESENT_PARAMETERS mPresParams;
+		// window/direct3d stuff
+		HINSTANCE mHAppInstance;
+		HWND mHwnd;
+		IDirect3D9* m3dObj;
+		bool mPaused;
+		bool mUpdateOnly;
+		D3DPRESENT_PARAMETERS mPresParams;
 
-	int mScreenWidth;
-	int mScreenHeight;
-	Camera *mCamera;
+		int mScreenWidth;
+		int mScreenHeight;
+		Camera *mCamera;
 
-	bool mActive;
-};
-
+		bool mActive;
+	};
 // globals 
-extern D3DApp* gApp;
+extern MonkeyPlayer::D3DApp* gApp;
 extern IDirect3DDevice9* gDevice;
 extern MonkeyInput* gInput;
-extern WindowManager* gWindowMgr;
+extern MonkeyPlayer::WindowManager* gWindowMgr;
+}
+
 
 #endif

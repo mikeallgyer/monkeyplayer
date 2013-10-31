@@ -16,6 +16,8 @@
 #include "SoundManager.h"
 #include "Vertex.h"
 
+using namespace MonkeyPlayer;
+
 // when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
 const float SmallAlbumManager::BUTTON_REPEAT_TIME = .05f;
 // upon first holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
@@ -247,6 +249,7 @@ void SmallAlbumManager::update(float dt)
 				}
 				moveDownToSmallSelection();
 				doRedraw = true;
+				mDoHighlight = false;
 				break;
 			}
 		}
@@ -731,7 +734,7 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 		if ((ev.getEvent() == MouseEvent::LBUTTONDBLCLK || ev.getEvent() == MouseEvent::RBUTTONDOWN)
 			&& mWidgets[i]->isPointInside(ev.getX(), ev.getY()))
 		{
-			Label* clickedLabel = dynamic_cast<Label*>(mWidgets[i]);
+			SimpleLabel* clickedLabel = dynamic_cast<SimpleLabel*>(mWidgets[i]);
 			if (clickedLabel != NULL)
 			{
 				if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
@@ -783,11 +786,12 @@ void SmallAlbumManager::goToChar(char c)
 	mChar = c;
 }
 
-void SmallAlbumManager::goToSong(Album a, Track t)
+void SmallAlbumManager::goToSong(Album a, Track t, bool doHighlight)
 {
 	mGoToAlbumId = a.Id;
 	mGoToSongId = t.Id;
 	mGoToSong = true;
+	mDoHighlight = doHighlight;
 }
 
 void SmallAlbumManager::updateSmallDisplay()
@@ -816,14 +820,14 @@ void SmallAlbumManager::updateSmallDisplay()
 				if (artist != currArtist)
 				{
 					currArtist = artist;
-					Label* label = NULL;
+					SimpleLabel* label = NULL;
 					if (currLabelIndex < (int)mArtistLabels.size())
 					{
 						label = mArtistLabels[currLabelIndex];
 					}
 					else
 					{
-						label = snew Label(currX, currY, (float)mCurrWidth, ARTIST_LABEL_SIZE,
+						label = snew SimpleLabel(currX, currY, (float)mCurrWidth, ARTIST_LABEL_SIZE,
 							currArtist, (int)ARTIST_LABEL_SIZE, DT_LEFT, D3DXCOLOR(0xffaaaaef), D3DXCOLOR(0xff000000));
 						mArtistLabels.push_back(label);
 					}

@@ -15,6 +15,8 @@
 #include "SoundManager.h"
 #include "WindowManager.h"
 
+using namespace MonkeyPlayer;
+
 const int SmallAlbumItem::TRACK_FONT_HEIGHT = 20;
 int SmallAlbumItem::TEXT_MARGIN_LEFT = 125;
 int SmallAlbumItem::TEXT_MARGIN_RIGHT = 0;

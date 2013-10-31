@@ -6,6 +6,8 @@
 
 #include "RenderTarget.h"
 
+using namespace MonkeyPlayer;
+
 RenderTarget::RenderTarget(int width, int height, D3DXCOLOR bgColor, bool ownTexture)
 {
 	mWidth = width;

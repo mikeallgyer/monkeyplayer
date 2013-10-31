@@ -8,79 +8,109 @@
 #ifndef WINDOW_MANAGER_H
 #define WINDOW_MANAGER_H
 
+#include "CollectionWindow.h"
 #include "d3dUtil.h"
 #include "IDrawable.h"
 #include "ItemListBox.h"
 #include "IWindow.h"
 #include "ProgressBar.h"
 #include <MonkeyInput.h>
+
 #include <vector>
 
 using namespace std;
 
-class WindowManager : public IDrawable
+namespace MonkeyPlayer
 {
-public:
-	WindowManager();
-	~WindowManager();
+	class SearchFormThread
+	{
+	public:
+		SearchFormThread()
+		{
+			mFinished = false;
+			mRestart = false;
+		}
 
-	void onDeviceLost();
-	void onDeviceReset();
+		void closeSearchForm();
+		void resetSearchForm();
+		bool mFinished;
+		bool mRestart;
 
-	void addWindow(IWindow *win);
+		// synchronization
+		CCriticalSection mCritSection;
+	};
 
-	void update(float dt);
+	class WindowManager : public IDrawable
+	{
+	public:
+		WindowManager();
+		~WindowManager();
 
-	void preRender();
-	void display();
+		void onDeviceLost();
+		void onDeviceReset();
 
-	void drawSprite(Sprite* sprite, float width, float height);
-	int getNumTriangles();
+		void addWindow(IWindow *win);
 
-	static void mouseEventCallback(void* obj, MouseEvent e);
-	void onMouseEvent(MouseEvent e);
-	bool requestFocusedWindow(IWindow* win);
-	IWindow* getFocusWindow();
-	int getMainContentWidth();
-	int getMainContentTop();
-	int getMainContentBottom();
-	void addWindowBesideMain(IWindow* win);
-	void addWindowAboveMain(IWindow* win);
-	void addWindowBelowMain(IWindow* win);
-	ProgressBar* getProgressBar() { return mProgressBar; }
+		void update(float dt);
 
-	void openContextMenu(float mouseX, float mouseY, vector<ListItem*> items, IDrawable* owner);
-	static void contextMenu_callback(void* obj, ItemListBox* listBox);
+		void preRender();
+		void display();
 
-private:
-	void drawSprites(std::vector<Sprite*> sprites);
-	void drawWidgets(std::vector<IWidget*> widgets);
+		void drawSprite(Sprite* sprite, float width, float height);
+		int getNumTriangles();
 
-	vector<IWindow*> mWindows;
-	vector<IWindow*> mWindowsBesideMain;
-	vector<IWindow*> mWindowsAboveMain;
-	vector<IWindow*> mWindowsBelowMain;
+		static void mouseEventCallback(void* obj, MouseEvent e);
+		void onMouseEvent(MouseEvent e);
+		bool requestFocusedWindow(IWindow* win);
+		IWindow* getFocusWindow();
+		int getMainContentWidth();
+		int getMainContentTop();
+		int getMainContentBottom();
+		void addWindowBesideMain(IWindow* win);
+		void addWindowAboveMain(IWindow* win);
+		void addWindowBelowMain(IWindow* win);
+		ProgressBar* getProgressBar() { return mProgressBar; }
+		CollectionWindow* getCollectionWindow() { return mCollectionWin; }
+		void setCollectionWindow(CollectionWindow*  win) { mCollectionWin = win; }
 
-	ID3DXEffectPool* mPool;
-	ID3DXEffect* mEffect;
-	D3DXHANDLE mTechnique;
-	D3DXHANDLE mScreenWidth;
-	D3DXHANDLE mScreenHeight;
-	D3DXHANDLE mRectHandle;
-	D3DXHANDLE mTexture;
-	D3DXHANDLE mSpriteColor;
+		void openContextMenu(float mouseX, float mouseY, vector<ListItem*> items, IDrawable* owner);
+		static void contextMenu_callback(void* obj, ItemListBox* listBox);
 
-	int mNumTriangles;
+		static UINT searchThread(LPVOID pParam);
 
-	IWindow* mFocusWindow;
-	std::vector<void (*)(void* ptrObj, MouseEvent e) > mMouseCallbacks;
-	std::vector<void*> mMouseCallbackObj; 
+	private:
+		void drawSprites(std::vector<Sprite*> sprites);
+		void drawWidgets(std::vector<IWidget*> widgets);
 
-	ProgressBar* mProgressBar;
+		vector<IWindow*> mWindows;
+		vector<IWindow*> mWindowsBesideMain;
+		vector<IWindow*> mWindowsAboveMain;
+		vector<IWindow*> mWindowsBelowMain;
 
-	ItemListBox* mContextMenu;
-	IDrawable* mContextMenuOwner;
-	bool mResized;
-};
+		ID3DXEffectPool* mPool;
+		ID3DXEffect* mEffect;
+		D3DXHANDLE mTechnique;
+		D3DXHANDLE mScreenWidth;
+		D3DXHANDLE mScreenHeight;
+		D3DXHANDLE mRectHandle;
+		D3DXHANDLE mTexture;
+		D3DXHANDLE mSpriteColor;
 
+		int mNumTriangles;
+
+		IWindow* mFocusWindow;
+		std::vector<void (*)(void* ptrObj, MouseEvent e) > mMouseCallbacks;
+		std::vector<void*> mMouseCallbackObj; 
+
+		ProgressBar* mProgressBar;
+		CollectionWindow* mCollectionWin;
+
+		ItemListBox* mContextMenu;
+		IDrawable* mContextMenuOwner;
+		bool mResized;
+
+		SearchFormThread* mSearchThread;
+		CWinThread* mThread;
+	};
+}
 #endif

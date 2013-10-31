@@ -16,6 +16,8 @@
 #include "SoundManager.h"
 #include "Vertex.h"
 
+using namespace MonkeyPlayer;
+
 const int ControlWindow::WINDOW_HEIGHT = 100;
 const float ControlWindow::BUTTON_PLAY_SIZE = 100.0f;
 const float ControlWindow::BUTTON_OTHER_SIZE = 75.0f;
@@ -118,7 +120,7 @@ ControlWindow::ControlWindow()
 	mWidgets.push_back(mTimeSlider);
 
 	// time label
-	mTimeLabel = snew Label(300,0, 200.0f, 200.0f, std::string(""), 20,
+	mTimeLabel = snew SimpleLabel(300,0, 200.0f, 200.0f, std::string(""), 20,
 		DT_NOCLIP | DT_RIGHT | DT_VCENTER,
 		D3DCOLOR_XRGB(255, 255, 255));
 	mTimeLabel->setCallback(labelCB, this);
@@ -429,7 +431,7 @@ void ControlWindow::onSliderChanged(Slider* slider)
 	}
 }
 
-void ControlWindow::onLabelChanged(Label* label)
+void ControlWindow::onLabelChanged(SimpleLabel* label)
 {
 	if (label == mTimeLabel)
 	{

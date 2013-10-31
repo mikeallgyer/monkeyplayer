@@ -10,24 +10,26 @@
 #ifndef TRACK_LIST_BOX_H
 #define TRACK_LIST_BOX_H
 
-class TrackListBox : public ItemListBox
+namespace MonkeyPlayer
 {
-public:
-	TrackListBox(float x, float y, float width, float height,
-		void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL);
+	class TrackListBox : public ItemListBox
+	{
+	public:
+		TrackListBox(float x, float y, float width, float height,
+			void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL);
 
-	void preRender();
-	void setCurrentTrack(int index);
+		void preRender();
+		void setCurrentTrack(int index);
 
-	virtual void shuffleItems();
-	virtual int findItem(std::string &name);
-	virtual ListItem* setHighlightedItem(std::string &name);
-	virtual ListItem* setHighlightedItem(int index);
-	virtual int getHighlightedIndex();
+		virtual void shuffleItems();
+		virtual int findItem(std::string &name);
+		virtual ListItem* setHighlightedItem(std::string &name);
+		virtual ListItem* setHighlightedItem(int index);
+		virtual int getHighlightedIndex();
 
-private:
-	int mTimeWidth;
-	int mHighightedIndex;
-};
-
+	private:
+		int mTimeWidth;
+		int mHighightedIndex;
+	};
+}
 #endif

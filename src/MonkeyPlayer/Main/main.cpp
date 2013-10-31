@@ -16,6 +16,7 @@
 #include <MonkeyInput.h>
 #include <tchar.h>
 
+using namespace MonkeyPlayer;
 // program begins here
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
@@ -28,10 +29,10 @@ _CrtSetDbgFlag(nOldState | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
 	MonkeyInput input(0);
-	gInput = &input;
+	MonkeyPlayer::gInput = &input;
 	MonkeyPlayerApp app(hInstance, "MonkeyPlayer", D3DDEVTYPE_HAL, D3DCREATE_HARDWARE_VERTEXPROCESSING);
-	gApp = &app;
-	gInput->setHwnd(gApp->getMainWnd());
-	int retValue = gApp->run();
+	MonkeyPlayer::gApp = &app;
+	MonkeyPlayer::gInput->setHwnd(MonkeyPlayer::gApp->getMainWnd());
+	int retValue = MonkeyPlayer::gApp->run();
 	return retValue;
 }

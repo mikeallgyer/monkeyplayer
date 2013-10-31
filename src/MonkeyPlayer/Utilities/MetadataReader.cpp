@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace TagLib;
+using namespace MonkeyPlayer;
 
 const int MetadataReader::GUID_LENGTH = 39;
 

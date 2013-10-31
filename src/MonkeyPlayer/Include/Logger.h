@@ -12,22 +12,23 @@
 
 using namespace std;
 
-class Logger
+namespace MonkeyPlayer
 {
+	class Logger
+	{
+	public:
+		static Logger* instance();
+		static void destroy();
+		
+		void write(string message);
 
-public:
-	static Logger* instance();
-	static void destroy();
-	
-	void write(string message);
+	private:
+		Logger();
+		static string getCurrTime();
 
-private:
-	Logger();
-	static string getCurrTime();
-
-	static Logger* mInstance;
-	string mFilename;
-	bool mDisableLogging;
-};
-
+		static Logger* mInstance;
+		string mFilename;
+		bool mDisableLogging;
+	};
+}
 #endif

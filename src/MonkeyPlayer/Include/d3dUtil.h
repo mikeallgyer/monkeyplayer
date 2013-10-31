@@ -33,12 +33,14 @@
 #include<sstream>
 
 // globals
-class D3DApp;
-//class MonkeyInput;
-extern D3DApp *gApp;
-extern IDirect3DDevice9* gDevice;
-extern MonkeyInput* gInput;
-
+namespace MonkeyPlayer
+{
+	class D3DApp;
+	//class MonkeyInput;
+	extern D3DApp *gApp;
+	extern IDirect3DDevice9* gDevice;
+	extern MonkeyInput* gInput;
+}
 // clean up macros
 #define ReleaseCOM(x) { if (x) { x->Release(); x = 0; } }
 

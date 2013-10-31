@@ -10,18 +10,23 @@
 #include "Settings.h"
 //#include <windows.h>
 
+namespace MonkeyPlayer
+{
 D3DApp* gApp = 0;
 IDirect3DDevice9* gDevice = 0;
 MonkeyInput* gInput = 0;
 WindowManager* gWindowMgr = 0;
+}
+
+using namespace MonkeyPlayer;
 
 LRESULT CALLBACK
 MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// don't process msgs unless app has been created
-	if (gApp != 0)
+	if (MonkeyPlayer::gApp != 0)
 	{
-		return gApp->msgProc(msg, wParam, lParam);
+		return MonkeyPlayer::gApp->msgProc(msg, wParam, lParam);
 	}
 	else
 	{
@@ -43,8 +48,6 @@ D3DApp::D3DApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, 
 
 	initMainWindow();
 	initDirect3D();
-
-
 }
 D3DApp::~D3DApp()
 {
@@ -320,7 +323,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 
-	case WM_KEYDOWN:
+/*	case WM_KEYDOWN:
 		if (wParam == VK_ESCAPE)
 		{
 			enableFullScreen(false);
@@ -330,7 +333,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			enableFullScreen(true);
 		}
 		return 0;
-	case WM_SYSCOMMAND:
+*/	case WM_SYSCOMMAND:
 		if (wParam == SC_SCREENSAVE)
 		{
 			mUpdateOnly = true;

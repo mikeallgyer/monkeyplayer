@@ -8,35 +8,38 @@
 #ifndef RENDER_TARGET_H
 #define RENDER_TARGET_H
 
-class RenderTarget
+namespace MonkeyPlayer
 {
-public:
-	RenderTarget(int width, int height, D3DXCOLOR bgColor, bool ownTexture);
-	~RenderTarget();
+	class RenderTarget
+	{
+	public:
+		RenderTarget(int width, int height, D3DXCOLOR bgColor, bool ownTexture);
+		~RenderTarget();
 
-	void onDeviceLost();
-	void onDeviceReset();
+		void onDeviceLost();
+		void onDeviceReset();
 
-	void recreateTargets();
-	void beginScene();
-	void endScene();
+		void recreateTargets();
+		void beginScene();
+		void endScene();
 
-	void setDimensions(int width, int height);
-	int getWidth();
-	int getHeight();
-	void setColor(D3DXCOLOR bgColor);
-	D3DXCOLOR getColor();
-	LPDIRECT3DTEXTURE9 getTexture();
+		void setDimensions(int width, int height);
+		int getWidth();
+		int getHeight();
+		void setColor(D3DXCOLOR bgColor);
+		D3DXCOLOR getColor();
+		LPDIRECT3DTEXTURE9 getTexture();
 
-private:
-	int mWidth, mHeight;
-	bool mOwnTexture;
-	LPDIRECT3DTEXTURE9 mTexture;
-	LPDIRECT3DSURFACE9 mSurface;
-	LPDIRECT3DSURFACE9 mBackBuffer;
-	ID3DXRenderToSurface* mRTS;
-	D3DVIEWPORT9 mViewport;
-	D3DXCOLOR mBgColor;
+	private:
+		int mWidth, mHeight;
+		bool mOwnTexture;
+		LPDIRECT3DTEXTURE9 mTexture;
+		LPDIRECT3DSURFACE9 mSurface;
+		LPDIRECT3DSURFACE9 mBackBuffer;
+		ID3DXRenderToSurface* mRTS;
+		D3DVIEWPORT9 mViewport;
+		D3DXCOLOR mBgColor;
 
-};
+	};
+}
 #endif

@@ -10,6 +10,8 @@
 #include "MusicLibrary.h"
 #include "SoundManager.h"
 
+using namespace MonkeyPlayer;
+
 MusicLibrary* MusicLibrary::mInstance = NULL;
 
 MusicLibrary::MusicLibrary()

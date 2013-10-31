@@ -14,6 +14,7 @@
 #include <sstream>
 
 using namespace std;
+using namespace MonkeyPlayer;
 
 DatabaseManager* DatabaseManager::mInstance = NULL;
 
@@ -651,6 +652,47 @@ bool DatabaseManager::modifyTrack(Track& track)
 		return false;
 	}
 	return true;
+}
+vector<Track*> DatabaseManager::searchTracks(string search)
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+	
+	search = "%" + search + "%";
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ARTIST LIKE ? OR TITLE LIKE ? ORDER BY "
+		"ARTIST, ALBUM, TRACK_NUMBER", -1, &stmt, NULL);
+	
+	sqlite3_bind_text(stmt, 1, search.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 2, search.c_str(), -1, SQLITE_STATIC);
+	
+	vector<Track*> tracks;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Track* track = snew Track();
+		track->Id = getIntColumn(stmt, 0);
+		track->Filename = getStringColumn(stmt, 1);
+		track->Title = getStringColumn(stmt, 2);
+		track->Artist = getStringColumn(stmt, 3);
+		track->TrackNumber = getIntColumn(stmt, 4);
+		track->AlbumId = getIntColumn(stmt, 5);
+		track->Length = getIntColumn(stmt, 6);
+		track->DateAdded = getLongColumn(stmt, 7);
+		track->Ignored = getBoolColumn(stmt, 8);
+		track->Genre = getIntColumn(stmt, 9);
+		track->DateUsed = getLongColumn(stmt, 10);
+		track->NumPlayed = getIntColumn(stmt, 11);
+
+		tracks.push_back(track);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return tracks;
 }
 void DatabaseManager::getAlbum(int id, Album* album)
 {

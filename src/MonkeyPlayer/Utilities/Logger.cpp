@@ -15,6 +15,7 @@
 #include <time.h>
 
 using namespace std;
+using namespace MonkeyPlayer;
 
 Logger* Logger::mInstance = NULL;
 

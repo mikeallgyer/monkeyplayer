@@ -7,6 +7,8 @@
 #include "FileManager.h"
 #include "Slider.h"
 
+using namespace MonkeyPlayer;
+
 const int Slider::TEXTURE_UP = 0;
 const int Slider::TEXTURE_HOVER = 1;
 const int Slider::TEXTURE_DOWN = 2;

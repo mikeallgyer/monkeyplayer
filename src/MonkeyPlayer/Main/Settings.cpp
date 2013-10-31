@@ -16,6 +16,7 @@
 #pragma comment(lib,"shlwapi.lib")
 
 using namespace std;
+using namespace MonkeyPlayer;
 
 //helper
 void trimString(string& str);

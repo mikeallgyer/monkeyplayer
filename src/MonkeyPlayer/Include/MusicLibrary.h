@@ -15,42 +15,44 @@
 #ifndef MUSIC__LOADER__H
 #define MUSIC__LOADER__H
 
-class MusicLibrary
+namespace MonkeyPlayer
 {
-public:
-	static MusicLibrary* instance();
-	static void destroy();
-
-	void update(float dt);
-	void playNextSong();
-	void playPreviousSong();
-	void playSong(string song);
-	void setPlaylistWindow(PlaylistWindow* win);
-	PlaylistWindow* getPlaylistWindow();
-
-	static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
+	class MusicLibrary
 	{
-		MusicLibrary* win = static_cast<MusicLibrary*>(obj);
-		if (win)
+	public:
+		static MusicLibrary* instance();
+		static void destroy();
+
+		void update(float dt);
+		void playNextSong();
+		void playPreviousSong();
+		void playSong(string song);
+		void setPlaylistWindow(PlaylistWindow* win);
+		PlaylistWindow* getPlaylistWindow();
+
+		static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
 		{
-			win->onSoundEvent(ev);
+			MusicLibrary* win = static_cast<MusicLibrary*>(obj);
+			if (win)
+			{
+				win->onSoundEvent(ev);
+			}
 		}
-	}
 
-private:
+	private:
 
-	MusicLibrary();
+		MusicLibrary();
 
-	void onSoundEvent(SoundManager::SoundEvent ev);
+		void onSoundEvent(SoundManager::SoundEvent ev);
 
-	static MusicLibrary* mInstance;
-	bool mPlayNextSong;
-	bool mPlayPreviousSong;
-	string mNextSong;
-	PlaylistWindow* mPlaylistWindow;
+		static MusicLibrary* mInstance;
+		bool mPlayNextSong;
+		bool mPlayPreviousSong;
+		string mNextSong;
+		PlaylistWindow* mPlaylistWindow;
 
-	// synchronization
-	static CCriticalSection mCritSection;
-};
-
+		// synchronization
+		static CCriticalSection mCritSection;
+	};
+}
 #endif

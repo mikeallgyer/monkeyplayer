@@ -21,89 +21,95 @@
 #ifndef PLAYLIST_WINDOW_H
 #define PLAYLIST_WINDOW_H
 
-class PlaylistWindow : public IWindow
+namespace MonkeyPlayer
 {
-public:
-	PlaylistWindow();
-	~PlaylistWindow();
-
-	void onDeviceLost();
-	void onDeviceReset();
-
-	int getWidth();
-	int getHeight();
-
-	void update(float dt);
-
-	void display();
-
-	std::vector<Sprite*> getSprites();
-	std::vector<IWidget*> getWidgets();
-
-	void clearItems();
-	void addItem(Track* item);
-	void addItems(std::vector<Track*> items);
-	void modifyItem(Track* item);
-	void modifyItems(std::vector<Track*> items);
-	bool playNextSong();
-	bool playPreviousSong();
-
-	void addTrackToQueueEnd(int id);
-	void insertTrackToQueueNext(int id);
-	void replaceQueueWithTrack(int id);
-
-	void addAlbumToQueueEnd(Album a);
-	void insertAlbumToQueueNext(Album a);
-	void replaceQueueWithAlbum(Album a);
-
-	void addArtistToQueueEnd(string &name);
-	void insertArtistToQueueNext(string &name);
-	void replaceQueueWithArtist(string &name);
-
-
-	static void listBox_callback(void* obj, ItemListBox* listBox)
+	class PlaylistWindow : public IWindow
 	{
-		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
-		if (win)
+	public:
+		PlaylistWindow();
+		~PlaylistWindow();
+
+		void onDeviceLost();
+		void onDeviceReset();
+
+		int getWidth();
+		int getHeight();
+
+		void update(float dt);
+
+		void display();
+
+		std::vector<Sprite*> getSprites();
+		std::vector<IWidget*> getWidgets();
+
+		void clearItems();
+		void addItem(Track* item);
+		void addItems(std::vector<Track*> items);
+		void modifyItem(Track* item);
+		void modifyItems(std::vector<Track*> items);
+		bool playNextSong();
+		bool playPreviousSong();
+
+		void addTrackToQueueEnd(int id);
+		void insertTrackToQueueNext(int id);
+		void replaceQueueWithTrack(int id);
+
+		void addAlbumToQueueEnd(Album a);
+		void insertAlbumToQueueNext(Album a);
+		void replaceQueueWithAlbum(Album a);
+
+		void addArtistToQueueEnd(string &name);
+		void insertArtistToQueueNext(string &name);
+		void replaceQueueWithArtist(string &name);
+
+
+		static void listBox_callback(void* obj, ItemListBox* listBox)
 		{
-			win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
+			PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
+			if (win)
+			{
+				win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
+			}
 		}
-	}
 
-	static void button_callback(void* obj, Button* btn)
-	{
-		PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
-		if (win)
+		static void button_callback(void* obj, Button* btn)
 		{
-			win->onBtnClicked(btn);
+			PlaylistWindow* win = static_cast<PlaylistWindow*>(obj);
+			if (win)
+			{
+				win->onBtnClicked(btn);
+			}
 		}
-	}
 
-	bool onMouseEvent(MouseEvent ev);  // true if window consumed event
+		bool onMouseEvent(MouseEvent ev);  // true if window consumed event
 
-	void onBlur();
-	void onFocus();
+		void onBlur();
+		void onFocus();
 
-private:
+	private:
 
-	ID3DXFont* mFont;
+		ID3DXFont* mFont;
 
-	std::vector<Sprite*> mSprites;
-	std::vector<IWidget*> mWidgets;
-	Sprite* mBackground;
+		std::vector<Sprite*> mSprites;
+		std::vector<IWidget*> mWidgets;
+		Sprite* mBackground;
 
-	TrackListBox *mListBox;
-	Button *mShuffleBtn;
+		TrackListBox *mListBox;
+		Button *mShuffleBtn;
 
-	int mPreferredWidth;
-	int mCurrWidth;
-	bool mResized;
-	int mCurrSongIndex;
+		int mPreferredWidth;
+		int mCurrWidth;
+		bool mResized;
+		int mCurrSongIndex;
 
-	static const int MIN_WINDOW_WIDTH;
+		static const int MIN_WINDOW_WIDTH;
 
-	void onItemSelected(ListItem* item, int index);
-	void onBtnClicked(Button* btn);
-};
+		void writeFile();
+		void readFile();
+		string getFilename();
 
+		void onItemSelected(ListItem* item, int index);
+		void onBtnClicked(Button* btn);
+	};
+}
 #endif

@@ -19,38 +19,40 @@
 
 using namespace TagLib;
 
-struct AlbumArt
+namespace MonkeyPlayer
 {
-	static enum ALBUM_ART_MIME { UNKNOWN, PNG, JPG };
-
-	AlbumArt(ALBUM_ART_MIME m, const char *d, int len) :
-      mimeType(m), data(d), length(len) {}
-		
-	~AlbumArt()
+	struct AlbumArt
 	{
-		if (data != NULL)
+		static enum ALBUM_ART_MIME { UNKNOWN, PNG, JPG };
+
+		AlbumArt(ALBUM_ART_MIME m, const char *d, int len) :
+		  mimeType(m), data(d), length(len) {}
+			
+		~AlbumArt()
 		{
-			delete data;
+			if (data != NULL)
+			{
+				delete data;
+			}
 		}
-	}
-	ALBUM_ART_MIME mimeType;
-   const char* data;
-	int length;
-};
+		ALBUM_ART_MIME mimeType;
+	   const char* data;
+		int length;
+	};
 
-class MetadataReader
-{
-public:
-	static const int GUID_LENGTH;
-	
-	static void getTrackInfo(const char* filename, Track* t, Album* a, Genre *g);
-	static AlbumArt* getAlbumArt(const ID3v2::Tag *tag);
-	static AlbumArt* getAlbumArt(const char* file);
-	static void setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt);
+	class MetadataReader
+	{
+	public:
+		static const int GUID_LENGTH;
+		
+		static void getTrackInfo(const char* filename, Track* t, Album* a, Genre *g);
+		static AlbumArt* getAlbumArt(const ID3v2::Tag *tag);
+		static AlbumArt* getAlbumArt(const char* file);
+		static void setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt);
 
-private:
-	static bool getAlbumGUID(const char* filename, GUID &guid);
-	static void toString(GUID & guid, char* guidStr);
-};
-
+	private:
+		static bool getAlbumGUID(const char* filename, GUID &guid);
+		static void toString(GUID & guid, char* guidStr);
+	};
+}
 #endif

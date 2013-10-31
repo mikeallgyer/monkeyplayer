@@ -9,45 +9,47 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-class Camera
+namespace MonkeyPlayer
 {
+	class Camera
+	{
 
-public:
+	public:
 
-	Camera();
-	Camera(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up,
-			float fov, int screenWidth, int screenHeight, float nearPlane, float farPlane);
-	~Camera();
+		Camera();
+		Camera(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up,
+				float fov, int screenWidth, int screenHeight, float nearPlane, float farPlane);
+		~Camera();
 
-	void configure(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up);
-	void configure(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up,
-			float fov, int screenWidth, int screenHeight);
-	D3DXMATRIX getView();
-	D3DXMATRIX getProjection();
+		void configure(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up);
+		void configure(D3DXVECTOR3 pos, D3DXVECTOR3 target, D3DXVECTOR3 up,
+				float fov, int screenWidth, int screenHeight);
+		D3DXMATRIX getView();
+		D3DXMATRIX getProjection();
 
-	int getScreenWidth();
-	int getScreenHeight();
+		int getScreenWidth();
+		int getScreenHeight();
 
 
-private:
+	private:
 
-	void build();
+		void build();
 
-	D3DXVECTOR3 mPos;
-	D3DXVECTOR3 mTarget;
-	D3DXVECTOR3 mUp;
+		D3DXVECTOR3 mPos;
+		D3DXVECTOR3 mTarget;
+		D3DXVECTOR3 mUp;
 
-	float mFov;
-	float mAspect;
-	float mNear;
-	float mFar;
+		float mFov;
+		float mAspect;
+		float mNear;
+		float mFar;
 
-	D3DXMATRIX mView;
-	D3DXMATRIX mProjection;
+		D3DXMATRIX mView;
+		D3DXMATRIX mProjection;
 
-	int mScreenWidth;
-	int mScreenHeight;
+		int mScreenWidth;
+		int mScreenHeight;
 
-};
-
+	};
+}
 #endif

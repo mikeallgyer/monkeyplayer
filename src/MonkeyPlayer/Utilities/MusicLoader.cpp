@@ -14,6 +14,8 @@
 #include "MusicLoader.h"
 #include "ProgressBar.h"
 
+using namespace MonkeyPlayer;
+
 MusicLoader* MusicLoader::mInstance = NULL;
 bool MusicLoader::mTerminating = false;
 

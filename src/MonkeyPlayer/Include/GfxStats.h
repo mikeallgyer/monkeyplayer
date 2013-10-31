@@ -15,28 +15,30 @@
 #include <d3dx9.h>
 #include "IDrawable.h"
 
-class GfxStats : public IDrawable
+namespace MonkeyPlayer
 {
-public:
-	GfxStats();
-	~GfxStats();
+	class GfxStats : public IDrawable
+	{
+	public:
+		GfxStats();
+		~GfxStats();
 
-	void onDeviceLost();
-	void onDeviceReset();
+		void onDeviceLost();
+		void onDeviceReset();
 
-	void addTriangles(DWORD n);
-	void subtractTriangles(DWORD n);
-	void setTriangles(DWORD n);
+		void addTriangles(DWORD n);
+		void subtractTriangles(DWORD n);
+		void setTriangles(DWORD n);
 
-	void update(float dt);
-	void display();
-	int getNumTriangles() { return 0; }
+		void update(float dt);
+		void display();
+		int getNumTriangles() { return 0; }
 
-private:
-	ID3DXFont* mFont;
-	float mFps;
-	float mFrameDuration;
-	DWORD mNumTriangles;
-};
-
+	private:
+		ID3DXFont* mFont;
+		float mFps;
+		float mFrameDuration;
+		DWORD mNumTriangles;
+	};
+}
 #endif

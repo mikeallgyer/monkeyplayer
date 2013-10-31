@@ -6,6 +6,8 @@
 
 #include "Button.h"
 
+using namespace MonkeyPlayer;
+
 const int Button::TEXTURE_UP = 0;
 const int Button::TEXTURE_HOVER = 1;
 const int Button::TEXTURE_DOWN = 2;

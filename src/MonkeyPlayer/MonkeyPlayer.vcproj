@@ -22,6 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
+			ManagedExtensions="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -43,12 +44,12 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(InputDir)\..\..\..\..\taglib-1.7.2\build\&quot;;&quot;$(InputDir)\..\..\..\..\taglib-1.7.2\taglib-1.7.2\include&quot;;&quot;$(InputDir)\..\..\..\sqlite-amalgamation-3070701&quot;;&quot;$(InputDir)\..\..\..\..\MonkeyInput\MonkeyInput\Include&quot;;&quot;$(SolutionDir)Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -64,6 +65,7 @@
 				AdditionalDependencies="d3d9.lib d3dx9d.lib dxguid.lib DxErr.lib dinput8.lib fmodexL_vc.lib D:\programs\taglib-1.7.2\build\taglib\Debug\tagd.lib $(InputDir)\..\..\sqlite-amalgamation-3070701\sqlite3.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
+				AssemblyDebug="1"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -96,6 +98,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -172,6 +175,31 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{5FB1B1BE-CAB1-4C25-854C-AC4518615CE4}"
 			RelativePathToProject="..\..\..\MonkeyInput\MonkeyInput\MonkeyInput.vcproj"
+		/>
+		<AssemblyReference
+			RelativePath="System.dll"
+			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.Data.dll"
+			AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.Drawing.dll"
+			AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.Windows.Forms.dll"
+			AssemblyName="System.Windows.Forms, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.XML.dll"
+			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
 		/>
 	</References>
 	<Files>
@@ -275,6 +303,36 @@
 			<File
 				RelativePath=".\Utilities\RenderTarget.cpp"
 				>
+			</File>
+			<File
+				RelativePath=".\WinForms\SearchForm.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						MinimalRebuild="false"
+						ExceptionHandling="2"
+						BasicRuntimeChecks="0"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						MinimalRebuild="false"
+						ExceptionHandling="2"
+						BasicRuntimeChecks="0"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Main\Settings.cpp"
@@ -445,6 +503,15 @@
 			<File
 				RelativePath=".\Include\RenderTarget.h"
 				>
+			</File>
+			<File
+				RelativePath=".\WinForms\SearchForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\WinForms\SearchForm.resx"
+					>
+				</File>
 			</File>
 			<File
 				RelativePath=".\Include\Settings.h"

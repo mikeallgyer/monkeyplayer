@@ -8,6 +8,8 @@
 #include "Sprite.h"
 #include "Vertex.h"
 
+using namespace MonkeyPlayer;
+
 Sprite::Sprite(const char* textureFile, float x, float y, float width, float height)
 {
 	Logger::instance()->write(string("Sprite is loading texture: ") + textureFile);

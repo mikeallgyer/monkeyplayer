@@ -4,8 +4,10 @@
 //
 // contains a playlist of songs
 
+#include <fstream>
 #include <vector>
 
+#include "Button.h"
 #include "d3dApp.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
@@ -15,6 +17,8 @@
 #include "Settings.h"
 #include "SoundManager.h"
 #include "Vertex.h"
+
+using namespace MonkeyPlayer;
 
 const int PlaylistWindow::MIN_WINDOW_WIDTH = 100;
 
@@ -163,10 +167,14 @@ void PlaylistWindow::clearItems()
 	mListBox->clearItems();
 	mListBox->setHighlightedItem(-1);
 	mCurrSongIndex = -1;
+
+	writeFile();
 }
 void PlaylistWindow::addItem(Track *item)
 {
 	mListBox->addItem(snew TrackListItem(item));
+
+	writeFile();
 }
 void PlaylistWindow::addItems(std::vector<Track*> items)
 {
@@ -176,6 +184,8 @@ void PlaylistWindow::addItems(std::vector<Track*> items)
 		trackItems[i] = snew TrackListItem(items[i]);
 	}
 	mListBox->addItems(trackItems);
+
+	writeFile();
 }
 
 void PlaylistWindow::modifyItem(Track *item)
@@ -242,6 +252,8 @@ void PlaylistWindow::addTrackToQueueEnd(int id)
 	{
 		mListBox->addItem(snew TrackListItem(t));
 	}
+
+	writeFile();
 }
 void PlaylistWindow::insertTrackToQueueNext(int id)
 {
@@ -252,6 +264,8 @@ void PlaylistWindow::insertTrackToQueueNext(int id)
 		int index = mListBox->getHighlightedIndex();
 		mListBox->addItem(snew TrackListItem(t), index >= 0 ? (unsigned int)index + 1 : 0);
 	}
+
+	writeFile();
 }
 void PlaylistWindow::replaceQueueWithTrack(int id)
 {
@@ -262,6 +276,8 @@ void PlaylistWindow::replaceQueueWithTrack(int id)
 		mListBox->clearItems();
 		mListBox->addItem(snew TrackListItem(t));
 	}
+
+	writeFile();
 }
 
 void PlaylistWindow::addAlbumToQueueEnd(Album a)
@@ -273,6 +289,8 @@ void PlaylistWindow::addAlbumToQueueEnd(Album a)
 		items[i] = snew TrackListItem(tracks[i]);
 	}
 	mListBox->addItems(items);
+
+	writeFile();
 }
 void PlaylistWindow::insertAlbumToQueueNext(Album a)
 {
@@ -285,6 +303,8 @@ void PlaylistWindow::insertAlbumToQueueNext(Album a)
 
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
+
+	writeFile();
 }
 void PlaylistWindow::replaceQueueWithAlbum(Album a)
 {
@@ -296,6 +316,8 @@ void PlaylistWindow::replaceQueueWithAlbum(Album a)
 		items[i] = snew TrackListItem(tracks[i]);
 	}
 	mListBox->addItems(items);
+
+	writeFile();
 }
 
 void PlaylistWindow::addArtistToQueueEnd(string &name)
@@ -308,6 +330,8 @@ void PlaylistWindow::addArtistToQueueEnd(string &name)
 	}
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items);
+
+	writeFile();
 }
 
 void PlaylistWindow::insertArtistToQueueNext(string &name)
@@ -320,12 +344,16 @@ void PlaylistWindow::insertArtistToQueueNext(string &name)
 	}
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
+
+	writeFile();
 }
 void PlaylistWindow::replaceQueueWithArtist(string &name)
 {
 	vector<Track*> tracks = DatabaseManager::instance()->getTracks(name);
 	clearItems();
 	addItems(tracks);
+
+	writeFile();
 }
 
 void PlaylistWindow::onItemSelected(ListItem* item, int index)
@@ -391,4 +419,44 @@ void PlaylistWindow::onBlur()
 
 void PlaylistWindow::onFocus()
 {
+}
+
+void PlaylistWindow::writeFile()
+{
+	try 
+	{
+
+		vector<ListItem*> items = mListBox->getItems();
+
+		if (items.size() > 0)
+		{
+			ofstream outfile(getFilename().c_str());
+
+			for (unsigned int i = max(0, mListBox->getHighlightedIndex()); i < items.size(); i++)
+			{
+				outfile << ((TrackListItem*)items[i])->getTrack()->Filename << std::endl;
+			}
+			outfile.close();
+		}
+	}
+	catch (...)
+	{
+	}
+}
+void PlaylistWindow::readFile()
+{
+}
+string PlaylistWindow::getFilename()
+{
+	string retVal;
+
+#ifdef _DEBUG
+	retVal = "playlist.cfg";
+#else
+	TCHAR appPath[1024];
+	Settings::instance()->getAppDataPath(appPath, "playlist.cfg"); 
+	retVal = appPath;
+#endif
+
+	return retVal;
 }

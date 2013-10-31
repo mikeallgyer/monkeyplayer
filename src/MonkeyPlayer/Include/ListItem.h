@@ -16,102 +16,104 @@
 #ifndef LIST_ITEM_H
 #define LIST_ITEM_H
 
-class ListItem 
+namespace MonkeyPlayer
 {
-public:
-	virtual int getId() = 0;
-	virtual std::string toString() = 0;
-	virtual ~ListItem() {}
-	virtual void setData(ListItem* item) = 0;
+	class ListItem 
+	{
+	public:
+		virtual int getId() = 0;
+		virtual std::string toString() = 0;
+		virtual ~ListItem() {}
+		virtual void setData(ListItem* item) = 0;
 
-};
+	};
 
-class SimpleListItem : public ListItem
-{
-public:
-	SimpleListItem(const char* title, int id) : mTitle(title), mId(id) {}
-	int getId() { return mId; }
-	std::string toString() { return mTitle; }
-	void setData(ListItem* item) 
+	class SimpleListItem : public ListItem
 	{
-		mTitle = item->toString();
-		mId = item->getId();
-	}
-	
-private:
-	std::string mTitle;
-	int mId;
-};
-
-class TrackListItem : public ListItem
-{
-public:
-	TrackListItem()
-	{
-		mTrack = NULL;
-		mDisplayStr = "<No data available>";
-		mManageMemory = true;
-		mDisplayTime = "";
-	}
-	TrackListItem(Track* t, bool manageMemory = true)
-	{
-		mTrack = t;
-		setDisplayName(t);
-		mManageMemory = manageMemory;
-		setDisplayTime();
-	}
-	~TrackListItem()
-	{
-		if (mManageMemory)
+	public:
+		SimpleListItem(const char* title, int id) : mTitle(title), mId(id) {}
+		int getId() { return mId; }
+		std::string toString() { return mTitle; }
+		void setData(ListItem* item) 
 		{
-			delete mTrack;
+			mTitle = item->toString();
+			mId = item->getId();
 		}
-	}
-	int getId() { return mTrack->Id; }
-	std::string toString() { return mDisplayStr; }
+		
+	private:
+		std::string mTitle;
+		int mId;
+	};
 
-	void setData(ListItem* item)
+	class TrackListItem : public ListItem
 	{
-		Track* track = ((TrackListItem*)item)->mTrack;
-		mTrack->setTrackInfo(*track);
-		setDisplayName(track);
-		setDisplayTime();
-	}
-	Track* getTrack()
-	{
-		return mTrack;
-	}
-	std::string getTime()
-	{
-		return mDisplayTime;
-	}
-
-private:
-	void setDisplayName(Track* track)
-	{
-		if (track->Title.length() > 0 && track->Artist.length() > 0)
+	public:
+		TrackListItem()
 		{
-			mDisplayStr = track->Artist + " - " + track->Title;
-		} 
-		else
-		{
-			mDisplayStr = FileManager::getFileName(track->Filename);
-		}
-	}
-	void setDisplayTime()
-	{
-		if (mTrack == NULL || mTrack->Length < 0)
-		{
+			mTrack = NULL;
+			mDisplayStr = "<No data available>";
+			mManageMemory = true;
 			mDisplayTime = "";
-			return;
+		}
+		TrackListItem(Track* t, bool manageMemory = true)
+		{
+			mTrack = t;
+			setDisplayName(t);
+			mManageMemory = manageMemory;
+			setDisplayTime();
+		}
+		~TrackListItem()
+		{
+			if (mManageMemory)
+			{
+				delete mTrack;
+			}
+		}
+		int getId() { return mTrack->Id; }
+		std::string toString() { return mDisplayStr; }
+
+		void setData(ListItem* item)
+		{
+			Track* track = ((TrackListItem*)item)->mTrack;
+			mTrack->setTrackInfo(*track);
+			setDisplayName(track);
+			setDisplayTime();
+		}
+		Track* getTrack()
+		{
+			return mTrack;
+		}
+		std::string getTime()
+		{
+			return mDisplayTime;
 		}
 
-		mDisplayTime = SoundManager::getTimeString(mTrack->Length * 1000);
-	}
-	Track* mTrack;
-	std::string mDisplayStr;
-	std::string mDisplayTime;
-	bool mManageMemory;
-};
+	private:
+		void setDisplayName(Track* track)
+		{
+			if (track->Title.length() > 0 && track->Artist.length() > 0)
+			{
+				mDisplayStr = track->Artist + " - " + track->Title;
+			} 
+			else
+			{
+				mDisplayStr = FileManager::getFileName(track->Filename);
+			}
+		}
+		void setDisplayTime()
+		{
+			if (mTrack == NULL || mTrack->Length < 0)
+			{
+				mDisplayTime = "";
+				return;
+			}
 
+			mDisplayTime = SoundManager::getTimeString(mTrack->Length * 1000);
+		}
+		Track* mTrack;
+		std::string mDisplayStr;
+		std::string mDisplayTime;
+		bool mManageMemory;
+	};
+}
 #endif

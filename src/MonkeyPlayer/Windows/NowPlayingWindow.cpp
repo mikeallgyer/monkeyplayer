@@ -7,6 +7,10 @@
 #include "FileManager.h"
 #include "NowPlayingWindow.h"
 
+using namespace MonkeyPlayer;
+
+using namespace MonkeyPlayer;
+
 const float NowPlayingWindow::WINDOW_WIDTH = 150;
 const float NowPlayingWindow::WINDOW_HEIGHT = 150;
 

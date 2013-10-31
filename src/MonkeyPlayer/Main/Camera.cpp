@@ -6,6 +6,7 @@
 #include "d3dUtil.h"
 
 #include "Camera.h"
+using namespace MonkeyPlayer;
 
 Camera::Camera()
 {

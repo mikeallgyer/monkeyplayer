@@ -11,6 +11,9 @@
 #include "MusicLoader.h"
 
 #include <Shlobj.h>
+
+using namespace MonkeyPlayer;
+
 const float DirectoriesWindow::WINDOW_WIDTH = 350.0f;
 const float DirectoriesWindow::BUTTON_SIZE = 50.0f;
 
@@ -31,7 +34,7 @@ DirectoriesWindow::DirectoriesWindow()
 	mWidgets.push_back(mFolderList);
 	setFolders();
 
-	mFolderLabel = snew Label(0, 0, 50.0f, 50.0f, std::string("Music Folders"));
+	mFolderLabel = snew SimpleLabel(0, 0, 50.0f, 50.0f, std::string("Music Folders"));
 	mFolderLabel->setTextColor(D3DXCOLOR(0XFFFFFFFF));
 	mWidgets.push_back(mFolderLabel);
 

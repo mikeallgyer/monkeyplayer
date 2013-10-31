@@ -13,35 +13,37 @@
 #include "IDrawable.h"
 #include "Sprite.h"
 
-class IWidget : public IDrawable
+namespace MonkeyPlayer
 {
-public:
-	virtual std::vector<Sprite*> getSprites() = 0;
-	virtual std::vector<IWidget*> getWidgets() { return mEmptyWidgetList; }
-	virtual bool onMouseEvent(MouseEvent e) { return false; } 
-	virtual bool getIsFocused()
+	class IWidget : public IDrawable
 	{
-		return mFocused;
-	}
-	virtual void focus()
-	{
-		mFocused = true;
-	}
-	virtual void blur()
-	{
-		mFocused = false;
-	}
-	virtual void setPos(float x, float y) {}
-	virtual float getHeight() { return 0; }
-	virtual float getWidth() { return 0; }
-	virtual bool isPointInside(int x, int y) = 0;
-	
-	
-protected:
-	bool mFocused;
-private:
-	std::vector<IWidget*> mEmptyWidgetList;
+	public:
+		virtual std::vector<Sprite*> getSprites() = 0;
+		virtual std::vector<IWidget*> getWidgets() { return mEmptyWidgetList; }
+		virtual bool onMouseEvent(MouseEvent e) { return false; } 
+		virtual bool getIsFocused()
+		{
+			return mFocused;
+		}
+		virtual void focus()
+		{
+			mFocused = true;
+		}
+		virtual void blur()
+		{
+			mFocused = false;
+		}
+		virtual void setPos(float x, float y) {}
+		virtual float getHeight() { return 0; }
+		virtual float getWidth() { return 0; }
+		virtual bool isPointInside(int x, int y) = 0;
+		
+		
+	protected:
+		bool mFocused;
+	private:
+		std::vector<IWidget*> mEmptyWidgetList;
 
-};
-
+	};
+}
 #endif

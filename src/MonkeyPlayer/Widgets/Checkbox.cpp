@@ -7,6 +7,8 @@
 #include "Checkbox.h"
 #include "FileManager.h"
 
+using namespace MonkeyPlayer;
+
 const int Checkbox::TEXTURE_UP = 0;
 const int Checkbox::TEXTURE_DOWN = 1;
 const int Checkbox::TEXTURE_HOVER = 2;
@@ -39,7 +41,7 @@ Checkbox::Checkbox(float x, float y, string text,
 	mCheckboxSprite->addTexture(TEXTURE_CHECKED_DOWN, checkedDownPath.c_str(), false);
 	mCheckboxSprite->addTexture(TEXTURE_CHECKED_HOVER, checkedHoverPath.c_str(), false);
 
-	mLabel = snew Label(mX, mY, mWidth, mHeight, text, 18, DT_VCENTER, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	mLabel = snew SimpleLabel(mX, mY, mWidth, mHeight, text, 18, DT_VCENTER, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	mLabel->setSizeToFit(true);
 
 	mCallback = CheckboxClickedCB;

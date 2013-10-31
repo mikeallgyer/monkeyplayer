@@ -15,60 +15,62 @@
 
 #include "IWidget.h"
 
-class IWindow : public IDrawable
+namespace MonkeyPlayer
 {
-public:
-	static const float BORDER_THICKNESS;
-
-	void preRender()
+	class IWindow : public IDrawable
 	{
-		std::vector<IWidget*> widgets = getWidgets();
-		for (unsigned int i = 0; i < widgets.size(); i++)
+	public:
+		static const float BORDER_THICKNESS;
+
+		void preRender()
 		{
-			widgets[i]->preRender();
+			std::vector<IWidget*> widgets = getWidgets();
+			for (unsigned int i = 0; i < widgets.size(); i++)
+			{
+				widgets[i]->preRender();
+			}
+
+		}
+		
+		void setDepth(int depth)
+		{
+			mDepth = depth;
 		}
 
-	}
-	
-	void setDepth(int depth)
-	{
-		mDepth = depth;
-	}
-
-	int getDepth() 
-	{
-		return mDepth; 
-	}
-	virtual int getWidth() = 0;
-	virtual int getHeight() = 0;
-
-	int getNumTriangles()
-	{
-		std::vector<Sprite*> sprites = getSprites();
-		int total = 0;
-		for (unsigned int i = 0; i < sprites.size(); i++)
+		int getDepth() 
 		{
-			total += sprites[i]->getNumTriangles();
+			return mDepth; 
 		}
+		virtual int getWidth() = 0;
+		virtual int getHeight() = 0;
 
-		std::vector<IWidget*> widgets = getWidgets();
-		for (unsigned int i = 0; i < widgets.size(); i++)
+		int getNumTriangles()
 		{
-			total += widgets[i]->getNumTriangles();
+			std::vector<Sprite*> sprites = getSprites();
+			int total = 0;
+			for (unsigned int i = 0; i < sprites.size(); i++)
+			{
+				total += sprites[i]->getNumTriangles();
+			}
+
+			std::vector<IWidget*> widgets = getWidgets();
+			for (unsigned int i = 0; i < widgets.size(); i++)
+			{
+				total += widgets[i]->getNumTriangles();
+			}
+
+			return total;
 		}
+		virtual std::vector<Sprite*> getSprites() = 0;
+		virtual std::vector<IWidget*> getWidgets() = 0;
+		virtual bool onMouseEvent(MouseEvent ev) = 0;  // true if window consumed event
 
-		return total;
-	}
-	virtual std::vector<Sprite*> getSprites() = 0;
-	virtual std::vector<IWidget*> getWidgets() = 0;
-	virtual bool onMouseEvent(MouseEvent ev) = 0;  // true if window consumed event
+		virtual void onBlur() {}
+		virtual void onFocus() {}
 
-	virtual void onBlur() {}
-	virtual void onFocus() {}
+	protected:
+		int mDepth;
 
-protected:
-	int mDepth;
-
-};
-
+	};
+}
 #endif

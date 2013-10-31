@@ -14,123 +14,126 @@
 #include "RenderTarget.h"
 #include "Sprite.h"
 
-class ItemListBox : public IWidget
+namespace MonkeyPlayer
 {
-public:
-	ItemListBox(float x, float y, float width, float height,
-		void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL,
-		D3DXCOLOR bgColor = D3DCOLOR_RGBA(0, 0, 0, 255), D3DXCOLOR fontColor = D3DCOLOR_XRGB(255, 255, 255),
-		D3DXVECTOR4 highlightColor = D3DXVECTOR4(0.0f, 0.0f, 0.85f, 1.0f));
-	~ItemListBox();
+	class ItemListBox : public IWidget
+	{
+	public:
+		ItemListBox(float x, float y, float width, float height,
+			void (*selectedtItemCB)(void* ptrObj, ItemListBox* selItem) = NULL, void* callbackObj = NULL,
+			D3DXCOLOR bgColor = D3DCOLOR_RGBA(0, 0, 0, 255), D3DXCOLOR fontColor = D3DCOLOR_XRGB(255, 255, 255),
+			D3DXVECTOR4 highlightColor = D3DXVECTOR4(0.0f, 0.0f, 0.85f, 1.0f));
+		~ItemListBox();
 
-	void onDeviceLost();
-	void onDeviceReset();
-	void recreateTargets();
+		void onDeviceLost();
+		void onDeviceReset();
+		void recreateTargets();
 
-	void setBgColor(D3DXCOLOR c);
+		void setBgColor(D3DXCOLOR c);
 
-	void update(float dt);
+		void update(float dt);
 
-	virtual void preRender();
-	void display() {}
-	void setPos(float x, float y, float width, float height);
-	void setPos(float x, float y, bool autoSize);
-	float getWidthToFit();
-	float getHeightToFit();
+		virtual void preRender();
+		void display() {}
+		void setPos(float x, float y, float width, float height);
+		void setPos(float x, float y, bool autoSize);
+		float getWidthToFit();
+		float getHeightToFit();
 
-	std::vector<Sprite*> getSprites();
-	int getNumTriangles();
-	void clearItems();
-	virtual void shuffleItems();
-	void setItems(std::vector<ListItem*> items);
-	void addItems(std::vector<ListItem*> items);
-	void addItem(ListItem* item);
-	void addItem(ListItem* item, unsigned int index);
-	void addItems(std::vector<ListItem*> items, unsigned int index);
-	void modifyItems(std::vector<ListItem*> items); // updates if item with id exists...does NOT claim memory
-	void modifyItem(ListItem* item); // updates if item with id exists...does NOT claim memory
-	unsigned int getNumItemsDisplayed();
-	virtual bool onMouseEvent(MouseEvent e);
-	
-	virtual int findItem(std::string &name);
-	virtual ListItem* setHighlightedItem(std::string &name);
-	virtual ListItem* setHighlightedItem(int index);
-	ListItem* getSelectedItem();
-	void setSelectedIndex(int index);
-	int getSelectedIndex();
-	ListItem* getItem(int index);
-	vector<ListItem*> getItems();
-	int getNumItems();
+		std::vector<Sprite*> getSprites();
+		int getNumTriangles();
+		void clearItems();
+		virtual void shuffleItems();
+		void setItems(std::vector<ListItem*> items);
+		void addItems(std::vector<ListItem*> items);
+		void addItem(ListItem* item);
+		void addItem(ListItem* item, unsigned int index);
+		void addItems(std::vector<ListItem*> items, unsigned int index);
+		void modifyItems(std::vector<ListItem*> items); // updates if item with id exists...does NOT claim memory
+		void modifyItem(ListItem* item); // updates if item with id exists...does NOT claim memory
+		unsigned int getNumItemsDisplayed();
+		virtual bool onMouseEvent(MouseEvent e);
+		
+		virtual int findItem(std::string &name);
+		virtual ListItem* setHighlightedItem(std::string &name);
+		virtual ListItem* setHighlightedItem(int index);
+		ListItem* getSelectedItem();
+		void setSelectedIndex(int index);
+		int getSelectedIndex();
+		ListItem* getItem(int index);
+		vector<ListItem*> getItems();
+		int getNumItems();
 
-	bool getAllowSingleClickSelection();
-	void setAllowSingleClickSelection(bool allow);
+		bool getAllowSingleClickSelection();
+		void setAllowSingleClickSelection(bool allow);
 
-	bool isPointInside(int x, int y);
-	int getItemAtPos(int x, int y);
+		bool isPointInside(int x, int y);
+		int getItemAtPos(int x, int y);
 
-protected:
-// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
-	static const float BUTTON_REPEAT_TIME;
-// upon first holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
-	static const float BUTTON_REPEAT_DELAY;
-	// number of items to scroll when using page up/page down
-	static const int NUM_PAGING_ITEMS;
-	// number of items to scroll when using scroll wheel
-	static const int NUM_SCROLLING_ITEMS;
+	protected:
+	// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
+		static const float BUTTON_REPEAT_TIME;
+	// upon first holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
+		static const float BUTTON_REPEAT_DELAY;
+		// number of items to scroll when using page up/page down
+		static const int NUM_PAGING_ITEMS;
+		// number of items to scroll when using scroll wheel
+		static const int NUM_SCROLLING_ITEMS;
 
-	static const int TEXT_MARGIN_TOP;
-	static const int TEXT_MARGIN_BOTTOM;
-	static const int TEXT_MARGIN_LEFT;
-	static const int TEXT_MARGIN_RIGHT;
+		static const int TEXT_MARGIN_TOP;
+		static const int TEXT_MARGIN_BOTTOM;
+		static const int TEXT_MARGIN_LEFT;
+		static const int TEXT_MARGIN_RIGHT;
 
-	static const float HOVER_DURATION;
+		static const float HOVER_DURATION;
 
-	std::vector<Sprite*> mSprites; 
-	std::vector<ListItem*> mItems;
-	map<int, float> mHoverItems;
-	int mCurrHoverIndex;
-	Sprite* mScrollbar;
+		std::vector<Sprite*> mSprites; 
+		std::vector<ListItem*> mItems;
+		map<int, float> mHoverItems;
+		int mCurrHoverIndex;
+		Sprite* mScrollbar;
 
-	ID3DXFont* mFont;
-	D3DXCOLOR mFontColor;
-	
-	float mX, mY, mWidth, mHeight;
-	float mTextX, mTextY, mTextWidth, mTextHeight;
-	std::vector<int> mSelectedIndices;
-	int mCurrSelection;
+		ID3DXFont* mFont;
+		D3DXCOLOR mFontColor;
+		
+		float mX, mY, mWidth, mHeight;
+		float mTextX, mTextY, mTextWidth, mTextHeight;
+		std::vector<int> mSelectedIndices;
+		int mCurrSelection;
 
-	unsigned int mStartDisplayIndex;
-	unsigned int mEndDisplayIndex;
+		unsigned int mStartDisplayIndex;
+		unsigned int mEndDisplayIndex;
 
-	// main list area
-	RenderTarget* mListTarget;
-	Sprite* mListSprite;
-	Sprite* mHighlightedSprite;
-	Sprite* mHoverSprite;
+		// main list area
+		RenderTarget* mListTarget;
+		Sprite* mListSprite;
+		Sprite* mHighlightedSprite;
+		Sprite* mHoverSprite;
 
-	// scrolling area
-	Sprite* mScrollHandle;
-	float mScrollBarWidth;
-	float mScrollBarHeight;
+		// scrolling area
+		Sprite* mScrollHandle;
+		float mScrollBarWidth;
+		float mScrollBarHeight;
 
-	int mFontHeight; 
-	float mUpDownTimer;
-	float mPageTimer;
-	bool mHoldDelayPassed;
+		int mFontHeight; 
+		float mUpDownTimer;
+		float mPageTimer;
+		bool mHoldDelayPassed;
 
-	bool mAllowSingleClickSelection;
-	bool mStartedOnTop;
-	bool mDoRedraw;
+		bool mAllowSingleClickSelection;
+		bool mStartedOnTop;
+		bool mDoRedraw;
 
-	void deleteItems();
-	void updateScrollBar();
-	
-	// callback
-	void (*mCallback)(void* ptrObj, ItemListBox* listBox);
-	void *mCallbackObj;
+		void deleteItems();
+		void updateScrollBar();
+		
+		// callback
+		void (*mCallback)(void* ptrObj, ItemListBox* listBox);
+		void *mCallbackObj;
 
-protected:
-	// synchronization
-	static CCriticalSection mCritSection;
-};
+	protected:
+		// synchronization
+		static CCriticalSection mCritSection;
+	};
+	}
 #endif

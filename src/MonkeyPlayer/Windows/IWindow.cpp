@@ -5,4 +5,6 @@
 // interface for any window containing "stuff"
 #include "IWindow.h"
 
+using namespace MonkeyPlayer;
+
 const float IWindow::BORDER_THICKNESS = 3.0f;

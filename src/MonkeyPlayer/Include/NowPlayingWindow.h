@@ -20,55 +20,57 @@
 #ifndef NOW_PLAYING_WINDOW_H
 #define NOW_PLAYING_WINDOW_H
 
-class NowPlayingWindow : public IWindow
+namespace MonkeyPlayer
 {
-public:
-
-	NowPlayingWindow();
-	~NowPlayingWindow();
-
-	void onDeviceLost();
-	void onDeviceReset();
-
-	int getWidth();
-	int getHeight();
-
-	void update(float dt);
-
-	void display();
-
-	std::vector<Sprite*> getSprites();
-	std::vector<IWidget*> getWidgets();
-
-	bool onMouseEvent(MouseEvent ev);  // true if window consumed event
-
-	void onBlur();
-	void onFocus();
-
-	static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
+	class NowPlayingWindow : public IWindow
 	{
-		NowPlayingWindow* win = static_cast<NowPlayingWindow*>(obj);
-		if (win)
+	public:
+
+		NowPlayingWindow();
+		~NowPlayingWindow();
+
+		void onDeviceLost();
+		void onDeviceReset();
+
+		int getWidth();
+		int getHeight();
+
+		void update(float dt);
+
+		void display();
+
+		std::vector<Sprite*> getSprites();
+		std::vector<IWidget*> getWidgets();
+
+		bool onMouseEvent(MouseEvent ev);  // true if window consumed event
+
+		void onBlur();
+		void onFocus();
+
+		static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
 		{
-			win->onSoundEvent(ev);
+			NowPlayingWindow* win = static_cast<NowPlayingWindow*>(obj);
+			if (win)
+			{
+				win->onSoundEvent(ev);
+			}
 		}
-	}
-	
-private:
-	static const float WINDOW_WIDTH;
-	static const float WINDOW_HEIGHT;
+		
+	private:
+		static const float WINDOW_WIDTH;
+		static const float WINDOW_HEIGHT;
 
-	std::vector<Sprite*> mSprites;
-	std::vector<IWidget*> mWidgets;
-	Sprite* mAlbumArt;
-	Album mCurrentAlbum;
+		std::vector<Sprite*> mSprites;
+		std::vector<IWidget*> mWidgets;
+		Sprite* mAlbumArt;
+		Album mCurrentAlbum;
 
-	float mWidth, mHeight;
-	std::string mDefaultAlbumPath;
+		float mWidth, mHeight;
+		std::string mDefaultAlbumPath;
 
-	void updateCover(std::string &soundFile);
-	void onSoundEvent(SoundManager::SoundEvent ev);
-	
-};
-
+		void updateCover(std::string &soundFile);
+		void onSoundEvent(SoundManager::SoundEvent ev);
+		
+	};
+}
 #endif

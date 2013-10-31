@@ -14,6 +14,8 @@
 #include <d3dx9.h>
 #include <tchar.h>
 
+using namespace MonkeyPlayer;
+
 GfxStats::GfxStats()
 {
 	mFps = 0;

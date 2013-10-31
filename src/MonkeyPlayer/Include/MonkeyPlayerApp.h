@@ -18,25 +18,26 @@
 
 using namespace std;
 
-class MonkeyPlayerApp : public D3DApp
+namespace MonkeyPlayer
 {
-public:
-	MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, DWORD vertexProc);
-	~MonkeyPlayerApp();
+	class MonkeyPlayerApp : public D3DApp
+	{
+	public:
+		MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, DWORD vertexProc);
+		~MonkeyPlayerApp();
 
-	bool checkDeviceCaps();
-	void onDeviceLost();
-	void onDeviceReset();
-	void updateScene(float dt);
-	void drawScene();
+		bool checkDeviceCaps();
+		void onDeviceLost();
+		void onDeviceReset();
+		void updateScene(float dt);
+		void drawScene();
 
-	GfxStats *getStats() { return mStats; }
+		GfxStats *getStats() { return mStats; }
 
-private:
-	GfxStats *mStats;
-	vector<IDrawable*> mDrawables;
+	private:
+		GfxStats *mStats;
+		vector<IDrawable*> mDrawables;
 
-};
-
-
+	};
+}
 #endif

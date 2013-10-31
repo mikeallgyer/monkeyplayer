@@ -10,6 +10,7 @@
 #include "FileManager.h"
 
 using namespace std;
+using namespace MonkeyPlayer;
 
 const string FileManager::FILE_TYPE_MUSIC = ".MP3.WAV";
 const string FileManager::FILE_TYPE_IMAGE = ".JPG.JPEG.GIF.GIFF.PNG.DDS";

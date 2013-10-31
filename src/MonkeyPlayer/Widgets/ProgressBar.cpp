@@ -7,6 +7,8 @@
 #include "FileManager.h"
 #include "ProgressBar.h"
 
+using namespace MonkeyPlayer;
+
 int ProgressBar::DEFAULT_NUM_TICKS = 40;
 float ProgressBar::TICK_MARGIN_PERCENT = .2f;
 

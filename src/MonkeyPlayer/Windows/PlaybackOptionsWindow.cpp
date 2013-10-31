@@ -9,6 +9,8 @@
 //#include <random>       // std::default_random_engine
 //#include <chrono>       // std::chrono::system_clock
 
+#include "Button.h"
+#include "ComboBox.h"
 #include "d3dApp.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
@@ -18,6 +20,8 @@
 #include "Settings.h"
 #include "SoundManager.h"
 #include "Vertex.h"
+
+using namespace MonkeyPlayer;
 
 const int PlaybackOptionsWindow::WINDOW_HEIGHT = 100;
 
@@ -30,11 +34,11 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 
 	mSprites.push_back(mBackground);
 
-	mTitleLabel = snew Label(0,0, 50.0f, 20.0f, string("Playback Options"), 24, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
+	mTitleLabel = snew SimpleLabel(0,0, 50.0f, 20.0f, string("Playback Options"), 24, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
 	mTitleLabel->setSizeToFit(true);
 	mWidgets.push_back(mTitleLabel);
 
-	mPlayModeLabel = snew Label(0,0, 50.0f, 20.0f, string("Mode:"), 18, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
+	mPlayModeLabel = snew SimpleLabel(0,0, 50.0f, 20.0f, string("Mode:"), 18, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
 	mPlayModeLabel->setSizeToFit(true);
 	mWidgets.push_back(mPlayModeLabel);
 
