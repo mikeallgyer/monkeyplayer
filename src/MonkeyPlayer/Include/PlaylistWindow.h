@@ -44,11 +44,12 @@ namespace MonkeyPlayer
 
 		void clearItems();
 		void addItem(Track* item);
-		void addItems(std::vector<Track*> items);
+		void addItems(std::vector<Track*> items, bool doWriteFile = true);
 		void modifyItem(Track* item);
 		void modifyItems(std::vector<Track*> items);
 		bool playNextSong();
 		bool playPreviousSong();
+		bool playCurrentSong();
 
 		void addTrackToQueueEnd(int id);
 		void insertTrackToQueueNext(int id);
@@ -96,6 +97,7 @@ namespace MonkeyPlayer
 
 		TrackListBox *mListBox;
 		Button *mShuffleBtn;
+		Button *mClearBtn;
 
 		int mPreferredWidth;
 		int mCurrWidth;

@@ -137,6 +137,14 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mArtistLbl->setSizeToFit(true);
 	mWidgets.push_back(mArtistLbl);
 
+	std::string searchBtnPath = FileManager::getContentAsset(std::string("Textures\\search.png"));
+	std::string searchBtnHoverPath = FileManager::getContentAsset(std::string("Textures\\search_hover.png"));
+	std::string searchBtnDownPath = FileManager::getContentAsset(std::string("Textures\\search_down.png"));
+	mSearchBtn = snew Button(0,0, 50.0f, 50.0f, searchBtnPath, btn_callback, this);
+	mSearchBtn->setDownTexture(searchBtnDownPath.c_str());
+	mSearchBtn->setHoverTexture(searchBtnHoverPath.c_str());
+	mWidgets.push_back(mSearchBtn);
+
 	setTracks();
 	mPlayingAlbum = -1;
 	mPlayingTrack = -1;
@@ -206,6 +214,7 @@ void LargeAlbumWidget::onDeviceReset()
 	mTarget->onDeviceReset();
 	mSelectionSprite->onDeviceReset();
 	recreateTargets();
+
 	lock.Unlock();
 }
 
@@ -627,6 +636,7 @@ void LargeAlbumWidget::setPos(float x, float y, float width, float height)
 
 	mX2 = mX + mWidth;
 	mY2 = mY + mHeight;
+	mSearchBtn->setPos(mX + mWidth - 75.0f, mY + mHeight - 75.0f);
 
 	mTrackBox->setPos(mX + (mX2 - mX) * .5f - 200.0f, mY + 80.0f, 400.0f, 200.0f);
 	mLargeAlbumLbl->setPos(mWidth / 2.0f - mLargeAlbumLbl->getWidth() / 2.0f, mY + mHeight - 50.0f);
@@ -1108,3 +1118,7 @@ void LargeAlbumWidget::onItemSelected(ListItem* item, int index)
 	}
 }
 
+void LargeAlbumWidget::onBtnClicked(Button* btn)
+{
+	gWindowMgr->openSearch();
+}

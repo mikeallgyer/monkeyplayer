@@ -23,20 +23,29 @@ NowPlayingWindow::NowPlayingWindow()
 	Sprite* whiteTex = snew Sprite(whitePath.c_str(), 0, 0, mWidth, mHeight, D3DXVECTOR4(0, 0, 0, 1.0f));
 	mSprites.push_back(whiteTex);
 
+	float coverWidth = mWidth - IWindow::BORDER_THICKNESS;
+	float coverHeight = mHeight - IWindow::BORDER_THICKNESS;
 	mDefaultAlbumPath = FileManager::getContentAsset(std::string("Textures\\UnknownAlbum.jpg"));
-	mAlbumArt = snew Sprite(mDefaultAlbumPath.c_str(), 1.0f, 1.0f, mWidth - 2.0f, mHeight - 2.0f);
+	mAlbumArt = snew Sprite(mDefaultAlbumPath.c_str(), 1.0f, 1.0f, coverWidth, coverHeight);
 	mSprites.push_back(mAlbumArt);
 
 	std::string edgePath = FileManager::getContentAsset(std::string("Textures\\border_bottom.png"));
-	Sprite* bottomEdge = snew Sprite(edgePath.c_str(), 0, mHeight, mWidth, IWindow::BORDER_THICKNESS);
+	Sprite* bottomEdge = snew Sprite(edgePath.c_str(), 0, coverHeight, coverWidth, IWindow::BORDER_THICKNESS);
 	mSprites.push_back(bottomEdge);
 	edgePath = FileManager::getContentAsset(std::string("Textures\\border_right.png"));
-	Sprite* rightEdge = snew Sprite(edgePath.c_str(), mWidth, 0, IWindow::BORDER_THICKNESS, mHeight);
+	Sprite* rightEdge = snew Sprite(edgePath.c_str(), coverWidth, 0, IWindow::BORDER_THICKNESS, coverHeight);
 	mSprites.push_back(rightEdge);
 	edgePath = FileManager::getContentAsset(std::string("Textures\\border_bottom_right.png"));
-	Sprite* cornerEdge = snew Sprite(edgePath.c_str(), mWidth, mHeight, IWindow::BORDER_THICKNESS, 
+	Sprite* cornerEdge = snew Sprite(edgePath.c_str(), coverWidth, coverHeight, IWindow::BORDER_THICKNESS, 
 		IWindow::BORDER_THICKNESS);
 	mSprites.push_back(cornerEdge);
+
+	mLabel = snew SimpleLabel(mWidth, mHeight - 20.0f, mWidth, 20.0f, string("hello"), 16, 256, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+		D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f));
+	mLabel->setSizeToFit(true);
+	mWidgets.push_back(mLabel);
+	mIsPlaying = false;
+	mLabelX = mWidth;
 
 	SoundManager::instance()->addCallback(soundEventCB, this);
 
@@ -91,6 +100,15 @@ void NowPlayingWindow::update(float dt)
 	{
 		mWidgets[i]->update(dt);
 	}
+	if (mIsPlaying)
+	{
+		mLabelX -= dt * 28.0f;
+		if ((mLabelX + mLabel->getWidth()) < 0)
+		{
+			mLabelX = mWidth;
+		}
+		mLabel->setPos(mLabelX, mLabel->getY());
+	}
 }
 
 void NowPlayingWindow::display()
@@ -144,16 +162,26 @@ void NowPlayingWindow::onSoundEvent(SoundManager::SoundEvent ev)
 	switch (ev)
 	{
 	case SoundManager::START_EVENT:
-		Track currTrack;
-		DatabaseManager::instance()->getTrack(SoundManager::instance()->getCurrFile(), &currTrack);
-		if (mAlbumArt->getCurrentIndex() == 0 || (currTrack.Id != DatabaseStructs::INVALID_ID && 
-			currTrack.AlbumId != DatabaseStructs::INVALID_ID &&
-			mCurrentAlbum.Id != currTrack.AlbumId))
 		{
-			updateCover(currTrack.Filename);
-			DatabaseManager::instance()->getAlbum(currTrack.AlbumId, &mCurrentAlbum);
-		}
-		
+			Track currTrack;
+			DatabaseManager::instance()->getTrack(SoundManager::instance()->getCurrFile(), &currTrack);
+			if (mAlbumArt->getCurrentIndex() == 0 || (currTrack.Id != DatabaseStructs::INVALID_ID && 
+				currTrack.AlbumId != DatabaseStructs::INVALID_ID &&
+				mCurrentAlbum.Id != currTrack.AlbumId))
+			{
+				updateCover(currTrack.Filename);
+				string text = currTrack.Artist + " - " + currTrack.Title;
+				mLabel->setString(text);
+				mIsPlaying = true;
+				DatabaseManager::instance()->getAlbum(currTrack.AlbumId, &mCurrentAlbum);
+			}
+			
+			break;
+		} 
+	case SoundManager::SOUND_FINISHED_EVENT:
+	case SoundManager::STOP_EVENT:
+		mIsPlaying = false;
+		mLabelX = mWidth;
 		break;
 	}
 }

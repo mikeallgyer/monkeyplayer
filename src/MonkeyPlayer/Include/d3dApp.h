@@ -26,7 +26,7 @@
 
 namespace MonkeyPlayer
 {
-	public class D3DApp
+	class D3DApp
 	{
 
 	public:

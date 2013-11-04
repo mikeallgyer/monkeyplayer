@@ -307,32 +307,6 @@
 			<File
 				RelativePath=".\WinForms\SearchForm.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						MinimalRebuild="false"
-						ExceptionHandling="2"
-						BasicRuntimeChecks="0"
-						UsePrecompiledHeader="0"
-						DebugInformationFormat="3"
-						CompileAsManaged="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						MinimalRebuild="false"
-						ExceptionHandling="2"
-						BasicRuntimeChecks="0"
-						UsePrecompiledHeader="0"
-						DebugInformationFormat="3"
-						CompileAsManaged="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Main\Settings.cpp"

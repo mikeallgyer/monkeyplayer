@@ -111,19 +111,15 @@ void WindowManager::update(float dt)
 	{
 		if (gInput->isKeyDown(VK_CONTROL) || gInput->keyReleased(VK_CONTROL))
 		{
-			if (mSearchThread == NULL)
-			{
-				mSearchThread = snew SearchFormThread();
-				mThread = AfxBeginThread(&searchThread, mSearchThread, 0, 0, CREATE_SUSPENDED);
-				mThread->m_bAutoDelete = FALSE;
-				mThread->ResumeThread();
-			}
-			else
-			{
-				mSearchThread->resetSearchForm();
-			}
+			openSearch();
 		}
 	}
+	
+	for (unsigned int i = 0; i < mWindows.size(); i++)
+	{
+		mWindows[i]->update(dt);
+	}
+	
 	if (mSearchThread != NULL && mSearchThread->mFinished)
 	{
 		if (MonkeyPlayer::SearchForm::instance()->doPlay())
@@ -149,10 +145,10 @@ void WindowManager::update(float dt)
 		delete mSearchThread;
 		delete mThread;
 		mSearchThread = NULL;
-	}
-	for (unsigned int i = 0; i < mWindows.size(); i++)
-	{
-		mWindows[i]->update(dt);
+		if (mFocusWindow != NULL)
+		{
+			mFocusWindow->onFocus();
+		}
 	}
 	mContextMenu->update(dt);
 	if (mResized)
@@ -419,6 +415,24 @@ void WindowManager::openContextMenu(float mouseX, float mouseY, vector<ListItem*
 	}
 }
 
+void WindowManager::openSearch()
+{
+	if (mFocusWindow != NULL)
+	{
+		mFocusWindow->onBlur();
+	}
+	if (mSearchThread == NULL)
+	{
+		mSearchThread = snew SearchFormThread();
+		mThread = AfxBeginThread(&searchThread, mSearchThread, 0, 0, CREATE_SUSPENDED);
+		mThread->m_bAutoDelete = FALSE;
+		mThread->ResumeThread();
+	}
+	else
+	{
+		mSearchThread->resetSearchForm();
+	}
+}
 /*static*/ UINT WindowManager::searchThread(LPVOID pParam)
 {
 	SearchFormThread* search = (SearchFormThread*)pParam;

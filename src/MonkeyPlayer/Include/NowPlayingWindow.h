@@ -64,6 +64,9 @@ namespace MonkeyPlayer
 		std::vector<IWidget*> mWidgets;
 		Sprite* mAlbumArt;
 		Album mCurrentAlbum;
+		SimpleLabel* mLabel;
+		float mLabelX;
+		bool mIsPlaying;
 
 		float mWidth, mHeight;
 		std::string mDefaultAlbumPath;

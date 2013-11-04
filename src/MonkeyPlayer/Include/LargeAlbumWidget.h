@@ -71,6 +71,14 @@ namespace MonkeyPlayer
 				win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
 			}
 		}
+		static void btn_callback(void* obj, Button* btn)
+		{
+			LargeAlbumWidget* win = static_cast<LargeAlbumWidget*>(obj);
+			if (win)
+			{
+				win->onBtnClicked(btn);
+			}
+		}
 
 	protected:
 		void goToAlbum(int index);
@@ -87,6 +95,7 @@ namespace MonkeyPlayer
 		SimpleLabel* mLargeAlbumLbl;
 		SimpleLabel* mArtistLbl;
 		Sprite* mSelectionSprite;
+		Button* mSearchBtn;
 
 		vector<LargeAlbumItem*> mLargeAlbums;
 		std::vector<Album*> mAlbumsToAdd;
@@ -114,6 +123,7 @@ namespace MonkeyPlayer
 		bool isPointInside(int x, int y);
 		void setTracks();
 		void onItemSelected(ListItem* item, int index);
+		void onBtnClicked(Button* btn);
 
 		ID3DXEffectPool* mPool;
 		ID3DXEffect* mEffect;

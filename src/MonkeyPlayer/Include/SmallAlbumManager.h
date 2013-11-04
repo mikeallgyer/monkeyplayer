@@ -86,6 +86,7 @@ namespace MonkeyPlayer
 		std::vector<SimpleLabel*> mArtistLabels;
 		std::vector<Album*> mAlbumsToAdd;
 		std::vector<Track*> mTracksToAdd;
+		Button* mSearchBtn;
 
 		int mCurrWidth;
 		int mCurrHeight;
@@ -119,6 +120,14 @@ namespace MonkeyPlayer
 		SmallAlbumItem* mRightClickedAlbum;
 		string mRightClickedArtist;
 
+		static void btn_callback(void* obj, Button* btn)
+		{
+			SmallAlbumManager* win = static_cast<SmallAlbumManager*>(obj);
+			if (win)
+			{
+				win->onBtnClicked(btn);
+			}
+		}
 	protected:
 		// synchronization
 		static CCriticalSection mCritSection;
@@ -126,6 +135,8 @@ namespace MonkeyPlayer
 		void moveSmallSelection(int cursorDelta);
 		void moveUpToSmallSelection();
 		void moveDownToSmallSelection();
+
+		void onBtnClicked(Button* btn);
 	};
 }
 #endif

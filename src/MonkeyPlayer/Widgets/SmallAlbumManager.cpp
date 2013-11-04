@@ -63,6 +63,13 @@ SmallAlbumManager::SmallAlbumManager()
 		delete albums[i];
 	}
 
+	std::string searchBtnPath = FileManager::getContentAsset(std::string("Textures\\search.png"));
+	std::string searchBtnHoverPath = FileManager::getContentAsset(std::string("Textures\\search_hover.png"));
+	std::string searchBtnDownPath = FileManager::getContentAsset(std::string("Textures\\search_down.png"));
+	mSearchBtn = snew Button(0,0, 50.0f, 50.0f, searchBtnPath, btn_callback, this);
+	mSearchBtn->setDownTexture(searchBtnDownPath.c_str());
+	mSearchBtn->setHoverTexture(searchBtnHoverPath.c_str());
+
 	mCurrDisplayAlbum = 0.0f;
 	mCurrSelAlbum = -1;
 
@@ -96,6 +103,7 @@ SmallAlbumManager::~SmallAlbumManager()
 	{
 		delete mArtistLabels[i];
 	}
+	delete mSearchBtn;
 	lock.Unlock();
 }
 
@@ -116,6 +124,7 @@ void SmallAlbumManager::onDeviceLost()
 	{
 		mArtistLabels[i]->onDeviceLost();
 	}
+	mSearchBtn->onDeviceLost();
 	lock.Unlock();
 }
 void SmallAlbumManager::onDeviceReset()
@@ -136,6 +145,7 @@ void SmallAlbumManager::onDeviceReset()
 		mArtistLabels[i]->onDeviceReset();
 	}
 	mResized = true;
+	mSearchBtn->onDeviceReset();
 	lock.Unlock();
 }
 int SmallAlbumManager::getWidth()
@@ -160,6 +170,8 @@ void SmallAlbumManager::setPos(float x, float y, float width, float height)
 	mCurrY = y;
 	mCurrWidth = (int)width;
 	mCurrHeight = (int)height;
+
+	mSearchBtn->setPos(mCurrX + mCurrWidth - 75.0f, mCurrY + mCurrHeight - 75.0f);
 	mDoRedraw = true;
 }
 void SmallAlbumManager::update(float dt)
@@ -188,6 +200,7 @@ void SmallAlbumManager::update(float dt)
 		doRedraw = true;
 	}
 
+	mSearchBtn->update(dt);
 	bool selChanged = false;
 
 	if (mGoToChar)
@@ -624,6 +637,10 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 			lock.Unlock();
 			return true;
 		}
+		if (mSearchBtn->onMouseEvent(ev))
+		{
+			return true;
+		}
 	} // if mousewheel
 	// if clicked, give widget focus
 	if (ev.getEvent() == MouseEvent::LBUTTONDOWN ||
@@ -847,6 +864,7 @@ void SmallAlbumManager::updateSmallDisplay()
 			}
 		}
 	}
+	mWidgets.push_back(mSearchBtn);
 	mAlbumsChanged = true;
 	mDoRedraw = false;
 	lock.Unlock();
@@ -1035,4 +1053,8 @@ void SmallAlbumManager::doAddTrack(Track* track)
 		mSmallItems[insertIndex]->addTrack(track);
 		mSmallItems[insertIndex]->onDeviceReset();
 	}
+}
+void SmallAlbumManager::onBtnClicked(Button* btn)
+{
+	gWindowMgr->openSearch();
 }

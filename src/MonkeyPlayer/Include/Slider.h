@@ -33,7 +33,7 @@ namespace MonkeyPlayer
 
 		virtual void preRender();
 		void display() {}
-		void setPos(float x, float y, float width, float height);
+		void setPos(float x, float y, float width = 0, float height = 0);
 		void setRange(float minValue, float maxValue);
 
 		std::vector<Sprite*> getSprites();

@@ -31,139 +31,6 @@ FMOD: Thread::callback               : * FMOD stream thread started
 FMOD: Thread::initThread             : done.
 FMOD: SystemI::init                  : done
 
-FMOD: OutputWASAPI::feederUpdate     : Starvation detected in WASAPI output buffer!
-FMOD: SystemI::createSoundInternal   : filename = D:\MP3s\Ripped\Arctic Monkeys\Whatever People Say I Am, That's What I'm Not\Arctic Monkeys-Red Light Indicates Doors Are Secured.mp3 : mode 000000a0
-FMOD: SystemI::createSoundInternal   : 21 codecs found.  Scan all until one succeeds
-FMOD: CodecTag::openInternal         : attempting to open ID3 or ASF tags..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F74178)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecCDDA::openInternal        : attempting to open as CDDA..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecFSB5::openInternal        : attempting to open as FSB5..
-FMOD: CodecFSB5::headerReadCheck     : Header check failed. Not an FSB5
-FMOD: Codec::release                 : 
-FMOD: CodecFSB5::closeInternal       : 
-FMOD: CodecFSB5::closeInternal       : done
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecFSB::openInternal         : attempting to open as FSB..
-FMOD: CodecFSB::openInternal         : Header check failed.  Not an FSB
-FMOD: Codec::release                 : 
-FMOD: CodecFSB::closeInternal        : 
-FMOD: CodecFSB::closeInternal        : done
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecVAG::openInternal         : attempting to open as VAG..
-FMOD: CodecVAG::openInternal         : 'VAG' ID check failed [ÿû°]
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecWav::openInternal         : attempting to open as WAV..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecOggVorbis::openInternal   : attempting to open as OGG..
-FMOD: CodecOggVorbis::openInternal   : failed to open as ogg
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecAIFF::openInternal        : attempting to open as AIFF..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecFLAC::openInternal        : attempting to open as FLAC..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecMOD::openInternal         : attempting to open as MOD..
-FMOD: CodecMOD::openInternal         : 'M.K.' etc ID check failed [ÿÿÿÿ]
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecS3M::openInternal         : attempting to open as S3M..
-FMOD: CodecS3M::openInternal         : 'SCRM' ID check failed [br]
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecXM::openInternal          : attempting to open as XM..
-FMOD: CodecXM::openInternal          : 'Extended Module: ' ID check failed [ÿû°@]
-FMOD: Codec::release                 : 
-FMOD: CodecXM::closeInternal         : 3585
-FMOD: CodecXM::closeInternal         : done
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecIT::openInternal          : attempting to open as IT..
-FMOD: CodecIT::openInternal          : 'IMPM' etc ID check failed [ÿû°@]
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecMIDI::openInternal        : attempting to open as MIDI..
-FMOD: CodecMIDI::openInternal        : 'HThd' ID check failed [ÿû°@]
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecDLS::openInternal         : attempting to open as DLS..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecASF::openInternal         : attempting to open as ASF..
-FMOD: Codec::release                 : 
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: CodecMPEG::openInternal        : attempting to open as MPEG..
-FMOD: SystemI::createSoundInternal   : Format has 0 subsounds.
-FMOD: SystemI::createSoundInternal   : Create as FMOD_CREATESTREAM
-FMOD: System::createSoundInternal    : decode buffersize = 17280 : blocksize = 1152 : format = 2
-FMOD: SystemI::createSample          : mode 000000c2 length 17280 samples, lengthbytes 3441250
-FMOD: SystemI::createSample          : subsamples = 1, channels = 2
-FMOD: SystemI::createSample          : subsample 0.  output = 031CD288
-FMOD: SystemI::createSample          : mSoftware = 031CD288
-FMOD: OutputSoftware::createSample   : lengthpcm 17280, lengthbytes 3441250, channels 2, format 2, freq 44100, mode 000000ca
-FMOD: OutputSoftware::createSample   : done
-FMOD: SystemI::createSample          : done
-FMOD: System::createSoundInternal    : Seek stream to start
-FMOD: System::createSoundInternal    : flush stream buffer
-FMOD: System::createSoundInternal    : flush successful.
-FMOD: System::createSoundInternal    : switch file handle from small blocking single buffered to large nonblocking doublebuffered.
-FMOD: Thread::initThread             :     Initializing FMOD file thread.  priority 1
-FMOD: Thread::initThread             :     - Stacksize 8192.  Stack pointer 00000000 : usesemaphore = 0 : sleeptime = 10
-FMOD: Thread::callback               :     * FMOD file thread started
-FMOD: Thread::initThread             :     done.
-FMOD: SystemI::createSoundInternal   : No name found in file, use filename.
-FMOD: SystemI::createSoundInternal   : done.  OpenState now = FMOD_OPENSTATE_READY.
-
-FMOD: SoundI::release                : Red Light Indicates Doors Are Secured (08F7B380)
-FMOD: SoundI::release                : remove stream samples. (08F7B380)
-FMOD: SoundI::release                :      (08F7B510)
-FMOD: SoundI::release                :     free this. (08F7B510)
-FMOD: SoundI::release                :     done (08F7B510)
-FMOD: SoundI::release                : release codec. (08F7B380)
-FMOD: Codec::release                 : 
-FMOD: Codec::release                 : Close file (mFile = 08F63200)
-FMOD: Plugin::release                : (08F75540)
-FMOD: Plugin::release                : done
-FMOD: Codec::release                 : done
-FMOD: SoundI::release                : free this. (08F7B380)
-FMOD: SoundI::release                : done (08F7B380)
 FMOD: SystemI::close                 : 
 FMOD: SystemI::close                 : Stop all sounds
 FMOD: Thread::callback               : * FMOD stream thread finished
@@ -172,8 +39,6 @@ FMOD: SystemI::close                 : Stream thread destroyed
 FMOD: Global::decRef                 : Shut down streamer and FMOD_NONBLOCKING and FileSystem thread.
 FMOD: Global::decRef                 : Shut down profiler.
 FMOD: Global::decRef                 : Shut down file system.
-FMOD: Thread::callback               : * FMOD file thread finished
-FMOD: Thread::close                  : FMOD file thread thread destroyed
 FMOD: SystemI::close                 : Free master channel group.
 FMOD: SystemI::close                 : Remove 'master' sound group.
 FMOD: SystemI::close                 : Shut down output.

@@ -26,6 +26,7 @@ namespace MonkeyPlayer
 		void update(float dt);
 		void playNextSong();
 		void playPreviousSong();
+		void playCurrentSong();
 		void playSong(string song);
 		void setPlaylistWindow(PlaylistWindow* win);
 		PlaylistWindow* getPlaylistWindow();
@@ -46,6 +47,7 @@ namespace MonkeyPlayer
 		void onSoundEvent(SoundManager::SoundEvent ev);
 
 		static MusicLibrary* mInstance;
+		static const string CURRENT_SONG;
 		bool mPlayNextSong;
 		bool mPlayPreviousSong;
 		string mNextSong;

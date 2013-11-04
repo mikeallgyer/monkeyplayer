@@ -107,6 +107,8 @@ namespace MonkeyPlayer
 		Slider* mVolumeSlider;
 		Slider* mTimeSlider;
 		SimpleLabel* mTimeLabel;
+		Slider* mSpeedSlider;
+		SimpleLabel* mSpeedLabel;
 
 		int mCurrWidth;
 		bool mResized;

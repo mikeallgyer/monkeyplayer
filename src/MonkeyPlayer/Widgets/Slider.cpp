@@ -125,8 +125,14 @@ void Slider::setPos(float x, float y, float width, float height)
 {
 	mX = x;
 	mY = y;
-	mWidth = width;
-	mHeight = height;
+	if (width > 0)
+	{
+		mWidth = width;
+	}
+	if (height > 0)
+	{
+		mHeight = height;
+	}
 	mX2 = mX + mWidth;
 	mY2 = mY + mHeight;
 

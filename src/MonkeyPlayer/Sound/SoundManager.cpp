@@ -16,6 +16,8 @@
 using namespace MonkeyPlayer;
 
 SoundManager* SoundManager::mInstance = NULL;
+const float SoundManager::MIN_SPEED = .25f;
+const float SoundManager::MAX_SPEED = 4.0f;
 //#define MEM_LEAK_TEST
 
 void ERRCHECK(FMOD_RESULT result)
@@ -41,6 +43,12 @@ SoundManager::SoundManager()
 
 	ERRCHECK(mSystem->init(32, FMOD_INIT_NORMAL, 0));
 
+	mSystem->createDSPByType(FMOD_DSP_TYPE_PITCHSHIFT, &mPitch);
+	mPitch->setParameter(FMOD_DSP_PITCHSHIFT_FFTSIZE, 4096.0f);
+
+	mSystem->addDSP(mPitch, 0);
+	mPitch->setActive(true);
+
 	mSound = NULL;
 	mChannel = NULL;
 
@@ -53,6 +61,7 @@ SoundManager::SoundManager()
 }
 SoundManager::~SoundManager()
 {
+	mCallbacks.clear();
 #ifndef MEM_LEAK_TEST
 	mStopPermanately = true;
 	mStoppedManually = true;
@@ -128,6 +137,9 @@ void SoundManager::playFile(const char* filename)
 		mChannel->setMute(mMuted);
 
 		mChannel->setCallback(&trackEnd);
+
+		mChannel->getFrequency(&mFreq);
+
 		mCurrFile = filename;
 		notifyAll(START_EVENT);
 	}
@@ -157,6 +169,10 @@ bool SoundManager::isPlaying()
 	return playing;
 #endif
 	return false;
+}
+bool SoundManager::isSongLoaded()
+{
+	return mChannel != NULL || mSound != NULL || isPlaying();
 }
 void SoundManager::setPaused(bool paused)
 {
@@ -251,6 +267,16 @@ void SoundManager::setVolume(float volume)
 		mChannel->setVolume(mVolume);
 		notifyAll(VOLUME_EVENT);
 	}
+}
+
+void SoundManager::setSpeed(float speed)
+{
+	speed = max(MIN_SPEED, min(MAX_SPEED, speed));
+	mChannel->setFrequency(mFreq * speed);
+	mPitch->remove();
+	mPitch->setParameter(FMOD_DSP_PITCHSHIFT_PITCH, 1.0f / speed);
+	mSystem->addDSP(mPitch, 0);
+
 }
 
 float SoundManager::getVolume()

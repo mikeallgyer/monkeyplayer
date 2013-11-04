@@ -59,6 +59,13 @@ PlaylistWindow::PlaylistWindow()
 	mShuffleBtn->setDownTexture(shuffleDown.c_str());
 	mShuffleBtn->setHoverTexture(shuffleHover.c_str());
 
+	std::string clearUp = FileManager::getContentAsset(std::string("Textures\\clear.png"));
+	std::string clearDown = FileManager::getContentAsset(std::string("Textures\\clear_down.png"));
+	std::string clearHover = FileManager::getContentAsset(std::string("Textures\\clear_hover.png"));
+	mClearBtn = snew Button(50.0f, 50.0f, 50.0f, 50.0f, clearUp, button_callback, this);
+	mClearBtn->setDownTexture(clearDown.c_str());
+	mClearBtn->setHoverTexture(clearHover.c_str());
+
 	mCurrSongIndex = -1;
 	
 //	mListBox->setBgColor(D3DXCOLOR(1.0f, 1.0f, .9f, 1.0f));
@@ -67,6 +74,8 @@ PlaylistWindow::PlaylistWindow()
 
 	mWidgets.push_back(mListBox);
 	mWidgets.push_back(mShuffleBtn);
+	mWidgets.push_back(mClearBtn);
+	readFile();
 }
 PlaylistWindow::~PlaylistWindow()
 {
@@ -137,6 +146,9 @@ void PlaylistWindow::update(float dt)
 		mShuffleBtn->setPos(mBackground->getX() + 5,
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
+		mClearBtn->setPos(mBackground->getX() + 50.0f,
+			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
+
 		mResized = false;
 	}
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
@@ -176,7 +188,7 @@ void PlaylistWindow::addItem(Track *item)
 
 	writeFile();
 }
-void PlaylistWindow::addItems(std::vector<Track*> items)
+void PlaylistWindow::addItems(std::vector<Track*> items, bool doWriteFile)
 {
 	std::vector<ListItem*> trackItems(items.size());
 	for (unsigned int i = 0; i < items.size(); i++)
@@ -185,7 +197,10 @@ void PlaylistWindow::addItems(std::vector<Track*> items)
 	}
 	mListBox->addItems(trackItems);
 
-	writeFile();
+	if (doWriteFile)
+	{
+		writeFile();
+	}
 }
 
 void PlaylistWindow::modifyItem(Track *item)
@@ -221,6 +236,7 @@ bool PlaylistWindow::playNextSong()
 		}
 		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
 		mListBox->setCurrentTrack(mCurrSongIndex);
+		writeFile();
 		return true;
 	}
 	return false;
@@ -239,11 +255,23 @@ bool PlaylistWindow::playPreviousSong()
 		}
 		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
 		mListBox->setCurrentTrack(mCurrSongIndex);
+		writeFile();
 		return true;
 	}
 	return false;
 }
-
+bool PlaylistWindow::playCurrentSong()
+{
+	ListItem* item = mListBox->getItem(mListBox->getHighlightedIndex());
+	if (item  != NULL)
+	{
+		TrackListItem* t = (TrackListItem*)item;
+		SoundManager::instance()->playFile(t->getTrack()->Filename.c_str());
+		mCurrSongIndex = mListBox->getHighlightedIndex();
+		return true;
+	}
+	return false;
+}
 void PlaylistWindow::addTrackToQueueEnd(int id)
 {
 	Track* t = snew Track();
@@ -364,6 +392,7 @@ void PlaylistWindow::onItemSelected(ListItem* item, int index)
 		SoundManager::instance()->playFile(trackItem->getTrack()->Filename.c_str());
 		mListBox->setCurrentTrack(index);
 		mCurrSongIndex = index;
+		writeFile();
 	}
 }
 
@@ -372,6 +401,13 @@ void PlaylistWindow::onBtnClicked(Button* btn)
 	if (btn == mShuffleBtn)
 	{
 		mListBox->shuffleItems();
+		writeFile();
+	}
+	else if (btn == mClearBtn)
+	{
+		mListBox->clearItems();
+		writeFile();
+		mCurrSongIndex = -1;
 	}
 }
 bool PlaylistWindow::onMouseEvent(MouseEvent ev)
@@ -425,19 +461,16 @@ void PlaylistWindow::writeFile()
 {
 	try 
 	{
-
 		vector<ListItem*> items = mListBox->getItems();
 
-		if (items.size() > 0)
-		{
-			ofstream outfile(getFilename().c_str());
+		ofstream outfile(getFilename().c_str());
+		outfile << mListBox->getHighlightedIndex();
 
-			for (unsigned int i = max(0, mListBox->getHighlightedIndex()); i < items.size(); i++)
-			{
-				outfile << ((TrackListItem*)items[i])->getTrack()->Filename << std::endl;
-			}
-			outfile.close();
+		for (unsigned int i = 0; i < items.size(); i++)
+		{
+			outfile << ((TrackListItem*)items[i])->getTrack()->Filename << std::endl;
 		}
+		outfile.close();
 	}
 	catch (...)
 	{
@@ -445,6 +478,38 @@ void PlaylistWindow::writeFile()
 }
 void PlaylistWindow::readFile()
 {
+	try
+	{
+		ifstream infile(getFilename().c_str());
+
+		vector<Track*> tracks;
+		string currLine;
+		int index = -1;
+
+		infile >> index;
+
+		while (infile.good())
+		{
+			getline(infile, currLine);
+
+			if (currLine != "")
+			{
+				Track *t = snew Track();
+				DatabaseManager::instance()->getTrack(currLine, t);
+
+				if (t->Id >= 0)
+				{
+					tracks.push_back(t);
+				}
+			}
+		}
+		infile.close();
+
+		addItems(tracks, false);
+		mListBox->setHighlightedItem(index);
+		mCurrSongIndex = index;
+	}
+	catch (...) {}
 }
 string PlaylistWindow::getFilename()
 {

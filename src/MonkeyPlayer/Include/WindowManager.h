@@ -76,6 +76,7 @@ namespace MonkeyPlayer
 		void openContextMenu(float mouseX, float mouseY, vector<ListItem*> items, IDrawable* owner);
 		static void contextMenu_callback(void* obj, ItemListBox* listBox);
 
+		void openSearch();
 		static UINT searchThread(LPVOID pParam);
 
 	private:

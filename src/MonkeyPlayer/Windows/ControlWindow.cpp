@@ -126,6 +126,17 @@ ControlWindow::ControlWindow()
 	mTimeLabel->setCallback(labelCB, this);
 	mWidgets.push_back(mTimeLabel);
 	setTimeFormat(Settings::instance()->getIntValue("TIME_LABEL_FORMAT", 0));
+	
+	// speed
+	mSpeedSlider = snew Slider(0, 0, VOLUME_WIDTH, VOLUME_HEIGHT, SoundManager::MIN_SPEED, SoundManager::MAX_SPEED, .5f);
+	mSpeedSlider->setCallback(sliderCB, this);
+	mSpeedSlider->setValue(1.0f);
+	mWidgets.push_back(mSpeedSlider);
+
+	// speed label
+	mSpeedLabel = snew SimpleLabel(300,0, 200.0f, 200.0f, std::string("1.0x"), 20, 256,
+		D3DCOLOR_XRGB(255, 255, 255));
+	mWidgets.push_back(mSpeedLabel);
 
 	// register with SoundManager
 	SoundManager::instance()->addCallback(soundEventCB, this);
@@ -241,6 +252,9 @@ void ControlWindow::update(float dt)
 						gApp->getHeight() - (float)WINDOW_HEIGHT + (BUTTON_PLAY_SIZE - TIME_LABEL_HEIGHT) * .5f, // centered vertically
 						mStopButton->getX(),  // put it against stop button
 						TIME_LABEL_HEIGHT);
+
+		mSpeedLabel->setPos(0, gApp->getHeight() - (float)WINDOW_HEIGHT + 50.0f);
+		mSpeedSlider->setPos(50.0f, gApp->getHeight() - (float)WINDOW_HEIGHT + 50.0f);
 		mResized = false;
 	}
 
@@ -369,7 +383,14 @@ void ControlWindow::onBtnPushed(Button* btn)
 {
 	if (btn == mPlayButton || btn == mPauseButton)
 	{
-		SoundManager::instance()->togglePaused();
+		if (SoundManager::instance()->isSongLoaded())
+		{
+			SoundManager::instance()->togglePaused();
+		}
+		else
+		{
+			MusicLibrary::instance()->playCurrentSong();
+		}
 	}
 	else if (btn == mStopButton)
 	{
@@ -428,6 +449,14 @@ void ControlWindow::onSliderChanged(Slider* slider)
 	else if (slider == mTimeSlider)
 	{
 		SoundManager::instance()->setCurrPosition((unsigned int)slider->getValue());
+	}
+	else if (slider == mSpeedSlider)
+	{
+		float speed = slider->getValue();
+		stringstream str;
+		str << speed << "x";
+		mSpeedLabel->setString(str.str());
+		SoundManager::instance()->setSpeed(speed);
 	}
 }
 

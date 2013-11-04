@@ -59,12 +59,13 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		mgr->addWindowBelowMain(cw);
 
 		NowPlayingWindow* nowPlaying = snew NowPlayingWindow();
-		mgr->addWindow(nowPlaying);
-		mgr->addWindowAboveMain(nowPlaying);
 
 		PlaybackOptionsWindow* optionsWin = snew PlaybackOptionsWindow();
 		optionsWin->setX(nowPlaying->getWidth());
 		mgr->addWindow(optionsWin);
+
+		mgr->addWindow(nowPlaying);
+		mgr->addWindowAboveMain(nowPlaying);
 		
 		DirectoriesWindow* dirWin = snew DirectoriesWindow();
 		mgr->addWindow(dirWin);
@@ -75,7 +76,6 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 
 		MusicLoader::instance()->setPlaylistWindow(pl);
 		MusicLoader::instance()->setCollectionWindow(collWin);
-//		MusicLoader::instance()->loadDirectory("d:\\MP3s\\Ripped\\");
 	}
 
 	mCamera = snew Camera();

@@ -13,6 +13,7 @@
 using namespace MonkeyPlayer;
 
 MusicLibrary* MusicLibrary::mInstance = NULL;
+CONST string MusicLibrary::CURRENT_SONG = "CURRENT";
 
 MusicLibrary::MusicLibrary()
 {
@@ -49,7 +50,11 @@ void MusicLibrary::update(float dt)
 
 	if (mPlayNextSong)
 	{
-		if (mNextSong != "")
+		if (mNextSong == CURRENT_SONG)
+		{
+			mPlaylistWindow->playCurrentSong();
+		}
+		else if (mNextSong != "")
 		{
 			SoundManager::instance()->playFile(mNextSong.c_str());
 		}
@@ -101,6 +106,11 @@ void MusicLibrary::playSong(string song)
 {
 	mPlayNextSong = true;
 	mNextSong = song;
+}
+void MusicLibrary::playCurrentSong()
+{
+	mPlayNextSong = true;
+	mNextSong = CURRENT_SONG;
 }
 
 void MusicLibrary::playNextSong()
