@@ -143,7 +143,7 @@ void D3DApp::initDirect3D()
 	mPresParams.AutoDepthStencilFormat = D3DFMT_D24S8;
 	mPresParams.Flags = 0;
 	mPresParams.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	mPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	mPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;//D3DPRESENT_INTERVAL_DEFAULT;
 
 	// create device
 	HR(m3dObj->CreateDevice(D3DADAPTER_DEFAULT,

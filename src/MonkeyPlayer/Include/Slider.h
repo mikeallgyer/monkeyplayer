@@ -17,6 +17,8 @@ namespace MonkeyPlayer
 	class Slider : public IWidget
 	{
 	public:
+		static const float INF_STEPS;
+		
 		Slider(float x, float y, float width, float height, float min, float max, float step,
 			const char* handleFile, const char* handleHoverFile, const char* handleDownFile,
 			void (*sliderMovedCB)(void* ptrObj, Slider* btn) = NULL, void* callbackObj = NULL);
@@ -60,12 +62,14 @@ namespace MonkeyPlayer
 
 		Sprite* mHandleSprite;
 
+		vector<float> mSteps;
+
 		bool mStartedOnTop;
 		
 		void init(float x, float y, float width, float height, float min, float max, float step,
 			const char* handleFile, const char* handleHoverFile, const char* handleDownFile, 
 			void (*sliderMovedCB)(void* ptrObj, Slider* btn), void* callbackObj);
-
+		void createSteps();
 		void setHandlePosition();
 		bool isPointInside(int x, int y);
 		void updateValue(int mouseX);

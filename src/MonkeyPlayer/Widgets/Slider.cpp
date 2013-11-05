@@ -9,6 +9,7 @@
 
 using namespace MonkeyPlayer;
 
+const float Slider::INF_STEPS = 0;
 const int Slider::TEXTURE_UP = 0;
 const int Slider::TEXTURE_HOVER = 1;
 const int Slider::TEXTURE_DOWN = 2;
@@ -76,8 +77,20 @@ void Slider::init(float x, float y, float width, float height, float min, float 
 
 	mSprites.push_back(mHandleSprite);
 	setPos(x, y, width, height);
-
+	createSteps();
 	mStartedOnTop = false;
+}
+
+void Slider::createSteps()
+{
+	mSteps.clear();
+	mSteps.push_back(mMin);
+	mSteps.push_back(mMax);
+
+	for (float s = mMin + mStep; s < mMax; s += mStep)
+	{
+		mSteps.push_back(s);
+	}
 }
 Slider::~Slider()
 {
@@ -153,6 +166,7 @@ void Slider::setRange(float minValue, float maxValue)
 {
 	mMin = minValue;
 	mMax = maxValue;
+	createSteps();
 }
 
 std::vector<Sprite*> Slider::getSprites()
@@ -234,7 +248,26 @@ void Slider::updateValue(int mouseX)
 	float relPos = max(mX, min(mX + mWidth, (float)mouseX));
 	relPos -= mX;
 	float percent = relPos / (mWidth);
-	setValue(mMin + ((mMax - mMin) * percent));
+	float val = mMin + ((mMax - mMin) * percent);
+
+	if (mStep != INF_STEPS && val != mMin && val != mMax)
+	{
+		float stepped = mMin;
+		while (stepped < val)
+		{
+			stepped += mStep;
+		}
+		float prev = stepped - mStep;
+		if ((val - prev) < (stepped - val))
+		{
+			val = prev;
+		}
+		else
+		{
+			val = stepped;
+		}
+	}
+	setValue(val);
 
 	if (mCallback != NULL)
 	{

@@ -109,6 +109,8 @@ namespace MonkeyPlayer
 		SimpleLabel* mTimeLabel;
 		Slider* mSpeedSlider;
 		SimpleLabel* mSpeedLabel;
+		Slider* mPitchSlider;
+		SimpleLabel* mPitchLabel;
 
 		int mCurrWidth;
 		bool mResized;
@@ -127,6 +129,10 @@ namespace MonkeyPlayer
 		static const float TIME_HEIGHT;
 		static const float TIME_UPDATE_DELAY;
 		static const float TIME_LABEL_HEIGHT;
+		static const float SPEED_HEIGHT;
+		static const float SPEED_WIDTH;
+
+		void refreshSliders(float speed = 0, float pitch = 0);
 
 		void onBtnPushed(Button* btn);
 		void onSoundEvent(SoundManager::SoundEvent ev);

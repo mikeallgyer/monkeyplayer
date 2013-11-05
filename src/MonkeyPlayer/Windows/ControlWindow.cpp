@@ -4,6 +4,7 @@
 //
 // contains play/stop/etc buttons
 
+#include <iomanip>
 #include <vector>
 
 #include "d3dApp.h"
@@ -27,6 +28,8 @@ const float ControlWindow::VOLUME_HEIGHT = 25.0f;
 const float ControlWindow::TIME_HEIGHT = 16.0f;
 const float ControlWindow::TIME_UPDATE_DELAY = 1.0f;
 const float ControlWindow::TIME_LABEL_HEIGHT = 25.0f;
+const float ControlWindow::SPEED_HEIGHT = 15.0f;
+const float ControlWindow::SPEED_WIDTH = 100.0f;
 
 ControlWindow::ControlWindow()
 {
@@ -128,15 +131,26 @@ ControlWindow::ControlWindow()
 	setTimeFormat(Settings::instance()->getIntValue("TIME_LABEL_FORMAT", 0));
 	
 	// speed
-	mSpeedSlider = snew Slider(0, 0, VOLUME_WIDTH, VOLUME_HEIGHT, SoundManager::MIN_SPEED, SoundManager::MAX_SPEED, .5f);
+	mSpeedSlider = snew Slider(0, 0, SPEED_WIDTH, SPEED_HEIGHT, SoundManager::MIN_SPEED, SoundManager::MAX_SPEED, .25f);
 	mSpeedSlider->setCallback(sliderCB, this);
 	mSpeedSlider->setValue(1.0f);
 	mWidgets.push_back(mSpeedSlider);
 
 	// speed label
-	mSpeedLabel = snew SimpleLabel(300,0, 200.0f, 200.0f, std::string("1.0x"), 20, 256,
+	mSpeedLabel = snew SimpleLabel(300,0, 200.0f, 200.0f, std::string("Speed: 1.0x"), 16, 256,
 		D3DCOLOR_XRGB(255, 255, 255));
 	mWidgets.push_back(mSpeedLabel);
+
+	// pitch
+	mPitchSlider = snew Slider(0, 0, SPEED_WIDTH, SPEED_HEIGHT, SoundManager::MIN_SPEED, SoundManager::MAX_SPEED, .25f);
+	mPitchSlider->setCallback(sliderCB, this);
+	mPitchSlider->setValue(1.0f);
+	mWidgets.push_back(mPitchSlider);
+
+	// pitch label
+	mPitchLabel = snew SimpleLabel(300,0, 200.0f, 200.0f, std::string("Pitch: 1.0x"), 16, 256,
+		D3DCOLOR_XRGB(255, 255, 255));
+	mWidgets.push_back(mPitchLabel);
 
 	// register with SoundManager
 	SoundManager::instance()->addCallback(soundEventCB, this);
@@ -253,8 +267,11 @@ void ControlWindow::update(float dt)
 						mStopButton->getX(),  // put it against stop button
 						TIME_LABEL_HEIGHT);
 
-		mSpeedLabel->setPos(0, gApp->getHeight() - (float)WINDOW_HEIGHT + 50.0f);
-		mSpeedSlider->setPos(50.0f, gApp->getHeight() - (float)WINDOW_HEIGHT + 50.0f);
+		mSpeedLabel->setPos(5, gApp->getHeight() - (float)WINDOW_HEIGHT + 20.0f);
+		mSpeedSlider->setPos(100.0f, gApp->getHeight() - (float)WINDOW_HEIGHT + 20.0f);
+
+		mPitchLabel->setPos(5, gApp->getHeight() - (float)WINDOW_HEIGHT + 60.0f);
+		mPitchSlider->setPos(100.0f, gApp->getHeight() - (float)WINDOW_HEIGHT + 60.0f);
 		mResized = false;
 	}
 
@@ -379,6 +396,23 @@ void ControlWindow::onFocus()
 
 }
 
+void ControlWindow::refreshSliders(float speed, float pitch)
+{
+	if (speed > 0)
+	{
+		stringstream str;
+		str << std::fixed << std::setprecision(2) << "Speed: " << speed << "x";
+		mSpeedLabel->setString(str.str());
+		mSpeedSlider->setValue(speed);
+	}
+	if (pitch > 0)
+	{
+		stringstream str;
+		str << std::fixed << std::setprecision(2) << "Pitch: " << pitch << "x";
+		mPitchLabel->setString(str.str());
+		mPitchSlider->setValue(pitch);
+	}
+}
 void ControlWindow::onBtnPushed(Button* btn)
 {
 	if (btn == mPlayButton || btn == mPauseButton)
@@ -416,6 +450,7 @@ void ControlWindow::onSoundEvent(SoundManager::SoundEvent ev)
 	{
 	case SoundManager::START_EVENT:
 		mTimeSlider->setRange(0, (float)SoundManager::instance()->getCurrLength());
+		mSpeedSlider->setValue(SoundManager::instance()->getSpeed());
 	case SoundManager::UNPAUSE_EVENT:
 		mWidgets[mPlayIndex] = mPauseButton;
 		mPauseButton->refresh();
@@ -434,7 +469,12 @@ void ControlWindow::onSoundEvent(SoundManager::SoundEvent ev)
 		mWidgets[mMuteIndex] = mMuteButton;
 		mMuteButton->refresh();
 		break;
-
+	case SoundManager::SPEED_EVENT:
+		refreshSliders(SoundManager::instance()->getSpeed(), 0);
+		break;
+	case SoundManager::PITCH_EVENT:
+		refreshSliders(0, SoundManager::instance()->getPitch());
+	break;
 	}
 
 	// redraw time
@@ -453,10 +493,14 @@ void ControlWindow::onSliderChanged(Slider* slider)
 	else if (slider == mSpeedSlider)
 	{
 		float speed = slider->getValue();
-		stringstream str;
-		str << speed << "x";
-		mSpeedLabel->setString(str.str());
+		refreshSliders(speed, 0);
 		SoundManager::instance()->setSpeed(speed);
+	}
+	else if (slider == mPitchSlider)
+	{
+		float pitch = slider->getValue();
+		refreshSliders(0, pitch);
+		SoundManager::instance()->setPitch(pitch);
 	}
 }
 

@@ -109,6 +109,11 @@ void NowPlayingWindow::update(float dt)
 		}
 		mLabel->setPos(mLabelX, mLabel->getY());
 	}
+	else if (mLabel->getX() != mWidth)
+	{
+		mLabelX = mWidth;
+		mLabel->setPos(mLabelX, mLabel->getY());
+	}
 }
 
 void NowPlayingWindow::display()
@@ -170,11 +175,11 @@ void NowPlayingWindow::onSoundEvent(SoundManager::SoundEvent ev)
 				mCurrentAlbum.Id != currTrack.AlbumId))
 			{
 				updateCover(currTrack.Filename);
-				string text = currTrack.Artist + " - " + currTrack.Title;
-				mLabel->setString(text);
-				mIsPlaying = true;
-				DatabaseManager::instance()->getAlbum(currTrack.AlbumId, &mCurrentAlbum);
 			}
+			string text = currTrack.Artist + " - " + currTrack.Title;
+			mLabel->setString(text);
+			mIsPlaying = true;
+			DatabaseManager::instance()->getAlbum(currTrack.AlbumId, &mCurrentAlbum);
 			
 			break;
 		} 

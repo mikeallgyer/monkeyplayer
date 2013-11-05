@@ -53,6 +53,8 @@ SoundManager::SoundManager()
 	mChannel = NULL;
 
 	mVolume = max(0, min(1.0f, Settings::instance()->getFloatValue("Volume", .5f)));
+	mAlteredFreq = 1.0f;
+	mAlteredPitch = 1.0f;
 	mMuted = false;
 	mStopPermanately = false;
 	mStoppedManually = false;
@@ -139,6 +141,7 @@ void SoundManager::playFile(const char* filename)
 		mChannel->setCallback(&trackEnd);
 
 		mChannel->getFrequency(&mFreq);
+		setSpeed(1.0f);
 
 		mCurrFile = filename;
 		notifyAll(START_EVENT);
@@ -271,17 +274,42 @@ void SoundManager::setVolume(float volume)
 
 void SoundManager::setSpeed(float speed)
 {
-	speed = max(MIN_SPEED, min(MAX_SPEED, speed));
-	mChannel->setFrequency(mFreq * speed);
-	mPitch->remove();
-	mPitch->setParameter(FMOD_DSP_PITCHSHIFT_PITCH, 1.0f / speed);
-	mSystem->addDSP(mPitch, 0);
+	if (isSongLoaded())
+	{
+		mAlteredFreq = max(MIN_SPEED, min(MAX_SPEED, speed));
+		mChannel->setFrequency(mFreq * mAlteredFreq);
+		mPitch->remove();
+		mAlteredPitch = 1.0f / mAlteredFreq;
+		mPitch->setParameter(FMOD_DSP_PITCHSHIFT_PITCH, mAlteredPitch);
+		mSystem->addDSP(mPitch, 0);
+		notifyAll(SPEED_EVENT);
+		notifyAll(PITCH_EVENT);
+	}
+}
 
+void SoundManager::setPitch(float pitch)
+{
+	if (isSongLoaded())
+	{
+		mPitch->remove();
+		mAlteredPitch = pitch;//1.0f / mAlteredFreq;
+		mPitch->setParameter(FMOD_DSP_PITCHSHIFT_PITCH, mAlteredPitch);
+		mSystem->addDSP(mPitch, 0);
+		notifyAll(PITCH_EVENT);
+	}
 }
 
 float SoundManager::getVolume()
 {
 	return mVolume;
+}
+float SoundManager::getSpeed()
+{
+	return mAlteredFreq;
+}
+float SoundManager::getPitch()
+{
+	return mAlteredPitch;
 }
 unsigned int SoundManager::getCurrLength()
 {

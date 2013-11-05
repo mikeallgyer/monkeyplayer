@@ -21,8 +21,8 @@ namespace MonkeyPlayer
 	class SoundManager
 	{
 	public:
-		static enum SoundEvent { START_EVENT, STOP_EVENT, PAUSE_EVENT, UNPAUSE_EVENT, VOLUME_EVENT, SEEK_EVENT,
-			MUTE_EVENT, UNMUTE_EVENT, SOUND_FINISHED_EVENT};
+		static enum SoundEvent { START_EVENT, STOP_EVENT, PAUSE_EVENT, UNPAUSE_EVENT, VOLUME_EVENT, 
+			SPEED_EVENT, PITCH_EVENT, SEEK_EVENT, MUTE_EVENT, UNMUTE_EVENT, SOUND_FINISHED_EVENT};
 
 		static const float MAX_SPEED;
 		static const float MIN_SPEED;
@@ -43,7 +43,10 @@ namespace MonkeyPlayer
 		void play();
 		void setVolume(float volume);
 		float getVolume();
+		float getSpeed();
+		float getPitch();
 		void setSpeed(float speed);
+		void setPitch(float pitch);
 		unsigned int getCurrLength();  // milliseconds
 		unsigned int getCurrPosition();  // milliseconds
 		void setCurrPosition(unsigned int pos); // milliseconds
@@ -66,6 +69,8 @@ namespace MonkeyPlayer
 		float mVolume;
 		bool mMuted;
 		float mFreq;
+		float mAlteredFreq;
+		float mAlteredPitch;
 		FMOD::DSP* mPitch;
 		
 		std::vector<void (*)(void* ptrObj_EVENT, SoundEvent ev) > mCallbacks;
