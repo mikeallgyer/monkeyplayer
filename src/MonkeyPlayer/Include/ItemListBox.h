@@ -42,7 +42,7 @@ namespace MonkeyPlayer
 
 		std::vector<Sprite*> getSprites();
 		int getNumTriangles();
-		void clearItems();
+		virtual void clearItems();
 		virtual void shuffleItems();
 		void setItems(std::vector<ListItem*> items);
 		void addItems(std::vector<ListItem*> items);
@@ -51,6 +51,7 @@ namespace MonkeyPlayer
 		void addItems(std::vector<ListItem*> items, unsigned int index);
 		void modifyItems(std::vector<ListItem*> items); // updates if item with id exists...does NOT claim memory
 		void modifyItem(ListItem* item); // updates if item with id exists...does NOT claim memory
+		virtual void removeItems(vector<int> items); 
 		unsigned int getNumItemsDisplayed();
 		virtual bool onMouseEvent(MouseEvent e);
 		
@@ -60,12 +61,14 @@ namespace MonkeyPlayer
 		ListItem* getSelectedItem();
 		void setSelectedIndex(int index);
 		int getSelectedIndex();
+		vector<int> getSelectedIndices();
 		ListItem* getItem(int index);
 		vector<ListItem*> getItems();
 		int getNumItems();
 
 		bool getAllowSingleClickSelection();
 		void setAllowSingleClickSelection(bool allow);
+		void setAllowMultipleSelection(bool allow);
 
 		bool isPointInside(int x, int y);
 		int getItemAtPos(int x, int y);
@@ -100,6 +103,8 @@ namespace MonkeyPlayer
 		float mTextX, mTextY, mTextWidth, mTextHeight;
 		std::vector<int> mSelectedIndices;
 		int mCurrSelection;
+		bool mAllowMultipleSel;
+		int mMultipleSelBegin;
 
 		unsigned int mStartDisplayIndex;
 		unsigned int mEndDisplayIndex;

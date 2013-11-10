@@ -21,15 +21,17 @@ namespace MonkeyPlayer
 		void preRender();
 		void setCurrentTrack(int index);
 
+		void clearItems();
 		virtual void shuffleItems();
 		virtual int findItem(std::string &name);
 		virtual ListItem* setHighlightedItem(std::string &name);
 		virtual ListItem* setHighlightedItem(int index);
 		virtual int getHighlightedIndex();
+		void removeItems(vector<int> items); 
 
 	private:
 		int mTimeWidth;
-		int mHighightedIndex;
+		int mHighlightedIndex;
 	};
 }
 #endif

@@ -24,8 +24,6 @@ const float SmallAlbumManager::BUTTON_REPEAT_TIME = .05f;
 const float SmallAlbumManager::BUTTON_REPEAT_DELAY = .5f;
 // number of items to scroll when using page up/page down
 const int SmallAlbumManager::NUM_PAGING_ITEMS = 10;
-// magic scroll speed
-const float SmallAlbumManager::SCROLL_SPEED = .2f;
 const float SmallAlbumManager::ARTIST_LABEL_SIZE = 26.0f;
 
 // used for synchronization
@@ -252,7 +250,7 @@ void SmallAlbumManager::update(float dt)
 				// moveUp is faster, so try that first
 				moveUpToSmallSelection();
 
-				for (unsigned int j = 0; j < mSmallItems[j]->getTracks().size(); j++)
+				for (unsigned int j = 0; j < mSmallItems[i]->getTracks().size(); j++)
 				{
 					if (mSmallItems[i]->getTracks()[j]->Id == mGoToSongId)
 					{
@@ -624,12 +622,12 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 			// update list of items to display
 			if (ev.getExtraHiData() < 0)
 			{
-				mCurrDisplayAlbum += SCROLL_SPEED;
+				mCurrDisplayAlbum += CollectionWindow::SCROLL_SPEED;
 				mCurrDisplayAlbum = min((float)mSmallItems.size() - .1f, mCurrDisplayAlbum);
 			}
 			else
 			{
-				mCurrDisplayAlbum -= SCROLL_SPEED;
+				mCurrDisplayAlbum -= CollectionWindow::SCROLL_SPEED;
 				mCurrDisplayAlbum = max(0, mCurrDisplayAlbum);
 			}
 			updateSmallDisplay();
@@ -810,7 +808,14 @@ void SmallAlbumManager::goToSong(Album a, Track t, bool doHighlight)
 	mGoToSong = true;
 	mDoHighlight = doHighlight;
 }
-
+int SmallAlbumManager::getCurrentAlbum()
+{
+	if (mCurrSelAlbum >= 0 && mCurrSelAlbum < mSmallItems.size())
+	{
+		return (int)mSmallItems[mCurrSelAlbum]->getAlbum().Id;
+	}
+	return -1;
+}
 void SmallAlbumManager::updateSmallDisplay()
 {
 	CSingleLock lock(&mCritSection);

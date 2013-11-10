@@ -60,6 +60,7 @@ namespace MonkeyPlayer
 		static const string OPT_STOP_AFTER;
 		static const string OPT_STOP_AFTER_ON;
 		static const string OPT_GO_TO_SONG;
+		static const string LAST_ALBUM_VIEWED;
 	private:
 		Settings();
 		~Settings();

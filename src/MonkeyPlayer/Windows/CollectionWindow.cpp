@@ -36,6 +36,9 @@ const int CollectionWindow::ARTIST_QUEUE_NEXT = 9;
 const int CollectionWindow::ARTIST_QUEUE_END = 10;
 const int CollectionWindow::ARTIST_REPLACE_QUEUE = 11;
 
+// magic scroll speed
+const float CollectionWindow::SCROLL_SPEED = .2f;
+
 // used for synchronization
 CCriticalSection CollectionWindow::mCritSection;
 
@@ -129,9 +132,22 @@ CollectionWindow::CollectionWindow()
 	mGoToHover = false;
 
 	SoundManager::instance()->addCallback(sound_callback, this);
+
+	int index = Settings::instance()->getIntValue(Settings::LAST_ALBUM_VIEWED, -1);
+	Album album;
+	album.Id = index;
+	Track t;
+	mLargeAlbumWidget->goToSong(album, t, false);
+	mSmallAlbumManager->goToSong(album, t, false);
 }
 CollectionWindow::~CollectionWindow()
 {
+	int index = mSmallAlbumManager->getCurrentAlbum();
+	if (mCurrStyle == LargeAlbum)
+	{
+		index = mLargeAlbumWidget->getCurrentAlbum();
+	}
+	Settings::instance()->setValue(Settings::LAST_ALBUM_VIEWED, index); 
 	SoundManager::instance()->removeCallback(this);
 	ReleaseCOM(mFont);
 

@@ -59,6 +59,7 @@ namespace MonkeyPlayer
 		void getDrawableRange(int &topIndex, int &bottomIndex, float &fractPart);
 		void goToChar(char c);
 		void goToSong(Album a, Track t, bool doHighlight = false);
+		int getCurrentAlbum();
 
 		void addAlbum(Album* album);
 		void addTrack(Track* track);
@@ -70,8 +71,6 @@ namespace MonkeyPlayer
 		static const float BUTTON_REPEAT_DELAY;
 		// speed to scroll when using page up/page down
 		static const int NUM_PAGING_ITEMS;
-		// magic scroll speed
-		static const float SCROLL_SPEED;
 		// size of artist label
 		static const float ARTIST_LABEL_SIZE;
 

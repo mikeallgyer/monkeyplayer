@@ -20,7 +20,7 @@ TrackListBox::TrackListBox(float x, float y, float width, float height,
 	RECT r = { 0, 0, (int)100, mFontHeight };
 	HR(mFont->DrawText(0, "000:00:00", -1, &r, DT_NOCLIP | DT_CALCRECT, D3DCOLOR_XRGB(255, 255, 0)));
 	mTimeWidth = r.right;
-	mHighightedIndex = -1;
+	mHighlightedIndex = -1;
 }
 
 void TrackListBox::preRender()
@@ -64,7 +64,7 @@ void TrackListBox::preRender()
 					mHoverSprite->setColor(D3DXVECTOR4(0.35f, 0.35f, 0.6f, mHoverItems[i] / HOVER_DURATION));
 					gWindowMgr->drawSprite(mHoverSprite, mTextWidth, mTextHeight);
 				}
-				currColor = (i == mHighightedIndex) ? selColor : defColor;
+				currColor = (i == mHighlightedIndex) ? selColor : defColor;
 				int y = ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row;
 				RECT r = { ItemListBox::TEXT_MARGIN_LEFT, y, ItemListBox::TEXT_MARGIN_LEFT + (int)mTextWidth - mTimeWidth, y + mFontHeight };
 				sprintf_s(buf, 512, "%d. %s", i + 1, mItems[i]->toString().c_str());
@@ -83,9 +83,15 @@ void TrackListBox::preRender()
 
 	}
 }
+void TrackListBox::clearItems()
+{
+	mHighlightedIndex = -1;
+	ItemListBox::clearItems();
+}
 void TrackListBox::shuffleItems()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	ListItem* highlighted = getItem(getHighlightedIndex());
 	setHighlightedItem(-1);
 	std::random_shuffle(mItems.begin(), mItems.end());
@@ -106,11 +112,11 @@ void TrackListBox::setCurrentTrack(int index)
 {
 	if (index >= 0 && index < (int)mItems.size())
 	{
-		mHighightedIndex = index;
+		mHighlightedIndex = index;
 	}
 	else
 	{
-		mHighightedIndex = -1;
+		mHighlightedIndex = -1;
 	}
 	mDoRedraw = true;
 }
@@ -141,7 +147,7 @@ ListItem* TrackListBox::setHighlightedItem(std::string &name)
 }
 ListItem* TrackListBox::setHighlightedItem(int index)
 {
-	if (index == mHighightedIndex)
+	if (index == mHighlightedIndex)
 	{
 		if (index >= 0 && index < (int)mItems.size())
 		{
@@ -161,5 +167,28 @@ ListItem* TrackListBox::setHighlightedItem(int index)
 }
 int TrackListBox::getHighlightedIndex()
 {
-	return mHighightedIndex;
+	return mHighlightedIndex;
+}
+void TrackListBox::removeItems(vector<int> items)
+{
+	ItemListBox::removeItems(items);
+	
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	if (mHighlightedIndex >= 0)
+	{
+		for (unsigned int i = 0; i < items.size(); i++)
+		{
+			if (items[i] < mHighlightedIndex)
+			{
+				mHighlightedIndex--;
+			}
+			else if (items[i] == mHighlightedIndex)
+			{
+				mHighlightedIndex = -1;
+				break;
+			}
+		}
+	}
+	lock.Unlock();
 }

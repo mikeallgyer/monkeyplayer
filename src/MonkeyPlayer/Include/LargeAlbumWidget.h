@@ -58,6 +58,8 @@ namespace MonkeyPlayer
 		virtual void refresh();
 		void goToChar(char c);
 		void goToSong(Album a, Track t, bool doHighlight = true);
+		int getCurrentAlbum();
+
 		void onContextMenuSelected(ItemListBox* menu);
 
 		void addAlbum(Album* album);

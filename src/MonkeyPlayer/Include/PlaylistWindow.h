@@ -98,6 +98,7 @@ namespace MonkeyPlayer
 		TrackListBox *mListBox;
 		Button *mShuffleBtn;
 		Button *mClearBtn;
+		Button *mDelBtn;
 
 		int mPreferredWidth;
 		int mCurrWidth;

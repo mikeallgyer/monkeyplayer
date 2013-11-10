@@ -72,6 +72,7 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 	mScrollBarHeight = 30.0f;
 	
 	mAllowSingleClickSelection = false;
+	mAllowMultipleSel = false;
 	mStartedOnTop = false;
 
 	std::string whitePath = FileManager::getContentAsset(std::string("Textures\\white.png"));
@@ -87,6 +88,7 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 	mCurrHoverIndex = -1;
 
 	mCurrSelection = -1;
+	mMultipleSelBegin = -1;
 
 	mUpDownTimer = 0;
 	mPageTimer = 0;
@@ -210,6 +212,8 @@ void ItemListBox::update(float dt)
 			mHoldDelayPassed = false;
 		}
 
+		bool selMultiple = mAllowMultipleSel && mMultipleSelBegin != -1 && (gInput->isKeyDown(VK_SHIFT) || gInput->keyReleased(VK_SHIFT));
+
 		// arrow key
 		// user just started pressing
 		if (gInput->keyPressed(VK_DOWN))
@@ -297,15 +301,45 @@ void ItemListBox::update(float dt)
 
 		if (cursorDelta != 0)
 		{
-			if (mSelectedIndices.size() < 1)
+			if (!selMultiple)
 			{
-				mCurrSelection = 0;
-				mSelectedIndices.push_back(mCurrSelection);
+				mSelectedIndices.clear();
+				if (mCurrSelection < 0)
+				{
+					mCurrSelection = 0;
+					mSelectedIndices.push_back(mCurrSelection);
+				}
+				else
+				{
+					mCurrSelection = max(min(mCurrSelection + cursorDelta, (int)mItems.size() - 1), 0);
+					mSelectedIndices.push_back(mCurrSelection);
+				}
+				mMultipleSelBegin = mCurrSelection;
 			}
 			else
 			{
+				mSelectedIndices.clear();
 				mCurrSelection = max(min(mCurrSelection + cursorDelta, (int)mItems.size() - 1), 0);
-				mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
+				if (mCurrSelection < mMultipleSelBegin)
+				{
+					for (int i = mMultipleSelBegin; i >= mCurrSelection; i--)
+					{
+						if (i >= 0)
+						{
+							mSelectedIndices.push_back(i);
+						}
+					}
+				}
+				else
+				{
+					for (int i = mMultipleSelBegin; i <= mCurrSelection; i++)
+					{
+						if (i < (int)mItems.size())
+						{
+							mSelectedIndices.push_back(i);
+						}
+					}
+				}
 			}
 			selChanged = true;
 		}
@@ -604,6 +638,36 @@ void ItemListBox::modifyItem(ListItem* item)
 	mDoRedraw = true;
 	lock.Unlock();
 }
+void ItemListBox::removeItems(vector<int> items)
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	map<int, bool> indices;
+	for (unsigned int i = 0; i < items.size(); i++)
+	{
+		if (indices.find(items[i]) == indices.end())
+		{
+			indices[items[i]] = true;
+		}
+	}
+	
+	vector<ListItem*> newItems;
+	for (unsigned int i = 0; i < mItems.size(); i++)
+	{
+		if (indices.find(i) == indices.end())
+		{
+			newItems.push_back(mItems[i]);
+		}
+	}
+	mItems = newItems;
+	mStartDisplayIndex = min(mStartDisplayIndex, mItems.size() - 1);
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mSelectedIndices.clear();
+	mCurrSelection = -1;
+	mMultipleSelBegin = -1;
+	mDoRedraw = true;
+	lock.Unlock();
+}
 
 unsigned int ItemListBox::getNumItemsDisplayed()
 {
@@ -618,6 +682,9 @@ void ItemListBox::deleteItems()
 		delete mItems[i];
 	}
 	mDoRedraw = true;
+	mSelectedIndices.clear();
+	mCurrSelection = -1;
+	mMultipleSelBegin = -1;
 	mItems.clear();
 }
 
@@ -652,18 +719,12 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 			if (e.getEvent() == MouseEvent::LBUTTONDBLCLK)
 			{
 				int selected = getItemAtPos(e.getX(), e.getY());
+				mSelectedIndices.clear();
 				if (selected >= 0)
 				{
-					if (mSelectedIndices.size() < 1)
-					{
-						mCurrSelection = selected;
-						mSelectedIndices.push_back(mCurrSelection);
-					}
-					else
-					{
-						mCurrSelection = selected;
-						mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
-					}
+					mCurrSelection = selected;
+					mMultipleSelBegin = mCurrSelection;
+					mSelectedIndices.push_back(mCurrSelection);
 					if (mCallback != NULL)
 					{
 						mCallback(mCallbackObj, this);
@@ -675,18 +736,38 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 			}
 			else if (e.getEvent() == MouseEvent::LBUTTONDOWN)
 			{
+				mSelectedIndices.clear();
 				int selected = getItemAtPos(e.getX(), e.getY());
 				if (selected >= 0)
 				{
-					if (mSelectedIndices.size() < 1)
+					mCurrSelection = selected;
+					mSelectedIndices.push_back(mCurrSelection);
+					if (gInput->isKeyDown(VK_SHIFT) || gInput->keyReleased(VK_SHIFT))
 					{
-						mCurrSelection = selected;
-						mSelectedIndices.push_back(mCurrSelection);
+						if (mCurrSelection < mMultipleSelBegin)
+						{
+							for (int i = mMultipleSelBegin; i > mCurrSelection; i--)
+							{
+								if (i > 0)
+								{
+									mSelectedIndices.push_back(i);
+								}
+							}
+						}
+						else
+						{
+							for (int i = mMultipleSelBegin; i < mCurrSelection; i++)
+							{
+								if (i < (int)mItems.size())
+								{
+									mSelectedIndices.push_back(i);
+								}
+							}
+						}
 					}
 					else
 					{
-						mCurrSelection = selected;
-						mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
+						mMultipleSelBegin = mCurrSelection;
 					}
 					mStartedOnTop = true;
 				}
@@ -701,15 +782,34 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 					int selected = getItemAtPos(e.getX(), e.getY());
 					if (selected >= 0)
 					{
-						if (mSelectedIndices.size() < 1)
+						mCurrSelection = selected;
+						mSelectedIndices.push_back(mCurrSelection);
+						if (gInput->isKeyDown(VK_SHIFT) || gInput->keyReleased(VK_SHIFT))
 						{
-							mCurrSelection = selected;
-							mSelectedIndices.push_back(mCurrSelection);
+							if (mCurrSelection < mMultipleSelBegin)
+							{
+								for (int i = mMultipleSelBegin; i > mCurrSelection; i--)
+								{
+									if (i > 0)
+									{
+										mSelectedIndices.push_back(i);
+									}
+								}
+							}
+							else
+							{
+								for (int i = mMultipleSelBegin; i < mCurrSelection; i++)
+								{
+									if (i < (int)mItems.size())
+									{
+										mSelectedIndices.push_back(i);
+									}
+								}
+							}
 						}
 						else
 						{
-							mCurrSelection = selected;
-							mSelectedIndices[mSelectedIndices.size() - 1] = mCurrSelection;
+							mMultipleSelBegin = mCurrSelection;
 						}
 						if (mCallback != NULL)
 						{
@@ -799,6 +899,7 @@ void ItemListBox::setSelectedIndex(int index)
 	if (index < (int)mItems.size())
 	{
 		mCurrSelection = index;
+		mMultipleSelBegin = mCurrSelection;
 		mSelectedIndices.clear();
 		mSelectedIndices.push_back(index);
 		mDoRedraw = true;
@@ -808,6 +909,10 @@ void ItemListBox::setSelectedIndex(int index)
 int ItemListBox::getSelectedIndex()
 {
 	return mCurrSelection;
+}
+vector<int> ItemListBox::getSelectedIndices()
+{
+	return mSelectedIndices;
 }
 ListItem* ItemListBox::getItem(int index)
 {
@@ -870,4 +975,9 @@ void ItemListBox::setAllowSingleClickSelection(bool allow)
 bool ItemListBox::getAllowSingleClickSelection() 
 {
 	return mAllowSingleClickSelection;
+}
+
+void ItemListBox::setAllowMultipleSelection(bool allow)
+{
+	mAllowMultipleSel = allow;
 }

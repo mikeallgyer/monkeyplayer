@@ -50,7 +50,6 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 
 		PlaylistWindow* pl = snew PlaylistWindow();
 		mgr->addWindow(pl);
-		mgr->requestFocusedWindow(pl);
 		mgr->addWindowBesideMain(pl);
 		MusicLibrary::instance()->setPlaylistWindow(pl);
 		
@@ -73,6 +72,7 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		CollectionWindow* collWin = snew CollectionWindow();
 		mgr->addWindow(collWin);
 		mgr->setCollectionWindow(collWin);
+		mgr->requestFocusedWindow(collWin);
 
 		MusicLoader::instance()->setPlaylistWindow(pl);
 		MusicLoader::instance()->setCollectionWindow(collWin);

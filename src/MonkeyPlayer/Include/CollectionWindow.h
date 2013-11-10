@@ -33,6 +33,9 @@ namespace MonkeyPlayer
 	class CollectionWindow : public IWindow
 	{
 	public:
+		// magic scroll speed
+		static const float SCROLL_SPEED;
+
 		enum DISPLAY_STYLE { LargeAlbum, SmallAlbum, UNDEFINED_STYLE };
 		enum RIGHT_CLICKED_ITEM { RIGHT_ARTIST, RIGHT_TRACK, RIGHT_ALBUM, RIGHT_NONE };
 		enum SELECTED_THING { ARTIST, TRACK, ALBUM };

@@ -50,6 +50,7 @@ PlaylistWindow::PlaylistWindow()
 		listBox_callback,
 		this);
 	mListBox->setBgColor(D3DCOLOR_XRGB(50, 50, 50));
+	mListBox->setAllowMultipleSelection(true);
 
 	std::string shuffleUp = FileManager::getContentAsset(std::string("Textures\\shuffle_up.png"));
 	std::string shuffleDown = FileManager::getContentAsset(std::string("Textures\\shuffle_down.png"));
@@ -66,6 +67,13 @@ PlaylistWindow::PlaylistWindow()
 	mClearBtn->setDownTexture(clearDown.c_str());
 	mClearBtn->setHoverTexture(clearHover.c_str());
 
+	std::string delUp = FileManager::getContentAsset(std::string("Textures\\del.png"));
+	std::string delDown = FileManager::getContentAsset(std::string("Textures\\del_down.png"));
+	std::string delHover = FileManager::getContentAsset(std::string("Textures\\del_hover.png"));
+	mDelBtn = snew Button(50.0f, 50.0f, 50.0f, 50.0f, delUp, button_callback, this);
+	mDelBtn->setDownTexture(delDown.c_str());
+	mDelBtn->setHoverTexture(delHover.c_str());
+
 	mCurrSongIndex = -1;
 	
 //	mListBox->setBgColor(D3DXCOLOR(1.0f, 1.0f, .9f, 1.0f));
@@ -75,6 +83,7 @@ PlaylistWindow::PlaylistWindow()
 	mWidgets.push_back(mListBox);
 	mWidgets.push_back(mShuffleBtn);
 	mWidgets.push_back(mClearBtn);
+	mWidgets.push_back(mDelBtn);
 	readFile();
 }
 PlaylistWindow::~PlaylistWindow()
@@ -147,6 +156,9 @@ void PlaylistWindow::update(float dt)
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
 		mClearBtn->setPos(mBackground->getX() + 50.0f,
+			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
+
+		mDelBtn->setPos(mBackground->getX() + mBackground->getWidth() - 50.0f,
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
 		mResized = false;
@@ -408,6 +420,10 @@ void PlaylistWindow::onBtnClicked(Button* btn)
 		mListBox->clearItems();
 		writeFile();
 		mCurrSongIndex = -1;
+	}
+	else if (btn == mDelBtn)
+	{
+		mListBox->removeItems(mListBox->getSelectedIndices());
 	}
 }
 bool PlaylistWindow::onMouseEvent(MouseEvent ev)

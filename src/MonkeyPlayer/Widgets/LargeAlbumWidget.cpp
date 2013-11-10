@@ -662,6 +662,30 @@ int LargeAlbumWidget::getNumTriangles()
 }
 bool LargeAlbumWidget::onMouseEvent(MouseEvent ev)
 {
+	if(mHasFocus && !mTrackBox->getIsFocused())
+	{
+		if (ev.getEvent() == MouseEvent::MOUSEWHEEL)
+		{
+			CSingleLock lock(&mCritSection);
+			lock.Lock();
+			// update list of items to display
+			if (ev.getExtraHiData() < 0)
+			{
+				mAlbumIndex++;
+				mAlbumIndex = min((int)mLargeAlbums.size() - 1, mAlbumIndex);
+				setTracks();
+			}
+			else
+			{
+				mAlbumIndex--;
+				mAlbumIndex = max(0, mAlbumIndex);
+				setTracks();
+			}
+
+			lock.Unlock();
+			return true;
+		}
+	} // if mousewheel
 	// if clicked, give widget focus
 	if (ev.getEvent() == MouseEvent::LBUTTONDOWN ||
 		ev.getEvent() == MouseEvent::RBUTTONDOWN)
@@ -678,7 +702,7 @@ bool LargeAlbumWidget::onMouseEvent(MouseEvent ev)
 					mSelectedThing = CollectionWindow::TRACK;
 				}
 			}
-			else if (!mWidgets[i]->getIsFocused())
+			else if (mWidgets[i]->getIsFocused())
 			{
 				mWidgets[i]->blur();
 			}
@@ -816,7 +840,14 @@ void LargeAlbumWidget::goToSong(Album a, Track t, bool doHighlight)
 		}
 	}
 }
-
+int LargeAlbumWidget::getCurrentAlbum()
+{
+	if (mAlbumIndex >= 0 && mAlbumIndex < mLargeAlbums.size())
+	{
+		return (int)mLargeAlbums[mAlbumIndex]->getAlbum().Id;
+	}
+	return -1;
+}
 void LargeAlbumWidget::goToAlbum(int index)
 {
 	if (index >= 0 && index != mAlbumIndex)
