@@ -384,14 +384,14 @@ void DatabaseManager::getTrack(string &filename, Track* track)
 	lock.Unlock();
 }
 
-vector<Track*> DatabaseManager::getTracks(Album &album)
+vector<Track*> DatabaseManager::getTracks(int album)
 {
 	CSingleLock lock(&mCritSection, true);
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ALBUM=? ORDER BY TRACK_NUMBER", -1, &stmt, NULL);
-	sqlite3_bind_int(stmt, 1, album.Id);
+	sqlite3_bind_int(stmt, 1, album);
 
 	vector<Track*> tracks;
 	int result = sqlite3_step(stmt); 
@@ -419,6 +419,10 @@ vector<Track*> DatabaseManager::getTracks(Album &album)
 	sqlite3_finalize(stmt);
 	lock.Unlock();
 	return tracks;
+}
+vector<Track*> DatabaseManager::getTracks(Album &album)
+{
+	return getTracks(album.Id);
 }
 vector<Track*> DatabaseManager::getTracks(string &artist)
 {

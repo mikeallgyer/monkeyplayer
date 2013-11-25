@@ -98,6 +98,8 @@ namespace MonkeyPlayer
 		SimpleLabel* mArtistLbl;
 		Sprite* mSelectionSprite;
 		Button* mSearchBtn;
+		Button* mLeftBtn;
+		Button* mRightBtn;
 
 		vector<LargeAlbumItem*> mLargeAlbums;
 		std::vector<Album*> mAlbumsToAdd;

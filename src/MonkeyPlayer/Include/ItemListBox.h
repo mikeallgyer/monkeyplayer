@@ -140,5 +140,5 @@ namespace MonkeyPlayer
 		// synchronization
 		static CCriticalSection mCritSection;
 	};
-	}
+}
 #endif

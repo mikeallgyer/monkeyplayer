@@ -56,11 +56,16 @@ void RenderTarget::recreateTargets()
 	mViewport.MinZ = 0.0f;
 	mViewport.MaxZ = 1.0f;
 
-	D3DXCreateTexture(gDevice, (UINT)mWidth, (UINT)mHeight, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT,
+	HRESULT hr = D3DXCreateTexture(gDevice, (UINT)mWidth, (UINT)mHeight, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT,
 		&mTexture);
-	HR(D3DXCreateRenderToSurface(gDevice, (DWORD)mWidth, (DWORD)mHeight, D3DFMT_A8R8G8B8, true, D3DFMT_D24X8, &mRTS));
-	mTexture->GetSurfaceLevel(0, &mSurface);
-
+	if (hr == D3D_OK)
+	{
+		hr = D3DXCreateRenderToSurface(gDevice, (DWORD)mWidth, (DWORD)mHeight, D3DFMT_A8R8G8B8, true, D3DFMT_D24X8, &mRTS);
+		if (hr == D3D_OK)
+		{
+			mTexture->GetSurfaceLevel(0, &mSurface);
+		}
+	}
 }
 
 void RenderTarget::beginScene()

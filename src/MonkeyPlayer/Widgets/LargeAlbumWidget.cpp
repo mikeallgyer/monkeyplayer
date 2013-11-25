@@ -145,6 +145,22 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mSearchBtn->setHoverTexture(searchBtnHoverPath.c_str());
 	mWidgets.push_back(mSearchBtn);
 
+	std::string leftBtnPath = FileManager::getContentAsset(std::string("Textures\\arrow_left.png"));
+	std::string leftBtnHoverPath = FileManager::getContentAsset(std::string("Textures\\arrow_left_hover.png"));
+	std::string leftBtnDownPath = FileManager::getContentAsset(std::string("Textures\\arrow_left_down.png"));
+	mLeftBtn = snew Button(0,0, 40.0f, 40.0f, leftBtnPath, btn_callback, this);
+	mLeftBtn->setDownTexture(leftBtnDownPath.c_str());
+	mLeftBtn->setHoverTexture(leftBtnHoverPath.c_str());
+	mWidgets.push_back(mLeftBtn);
+
+	std::string rightBtnPath = FileManager::getContentAsset(std::string("Textures\\arrow_right.png"));
+	std::string rightBtnHoverPath = FileManager::getContentAsset(std::string("Textures\\arrow_right_hover.png"));
+	std::string rightBtnDownPath = FileManager::getContentAsset(std::string("Textures\\arrow_right_down.png"));
+	mRightBtn = snew Button(0,0, 40.0f, 40.0f, rightBtnPath, btn_callback, this);
+	mRightBtn->setDownTexture(rightBtnDownPath.c_str());
+	mRightBtn->setHoverTexture(rightBtnHoverPath.c_str());
+	mWidgets.push_back(mRightBtn);
+
 	setTracks();
 	mPlayingAlbum = -1;
 	mPlayingTrack = -1;
@@ -637,6 +653,8 @@ void LargeAlbumWidget::setPos(float x, float y, float width, float height)
 	mX2 = mX + mWidth;
 	mY2 = mY + mHeight;
 	mSearchBtn->setPos(mX + mWidth - 75.0f, mY + mHeight - 75.0f);
+	mLeftBtn->setPos(mX + 25.0f, mY + mHeight * .5f - mLeftBtn->getHeight() * .5f);
+	mRightBtn->setPos(mX + mWidth - mRightBtn->getWidth() - 25.0f, mY + mHeight * .5f - mRightBtn->getHeight() * .5f);
 
 	mTrackBox->setPos(mX + (mX2 - mX) * .5f - 200.0f, mY + 80.0f, 400.0f, 200.0f);
 	mLargeAlbumLbl->setPos(mWidth / 2.0f - mLargeAlbumLbl->getWidth() / 2.0f, mY + mHeight - 50.0f);
@@ -1151,5 +1169,17 @@ void LargeAlbumWidget::onItemSelected(ListItem* item, int index)
 
 void LargeAlbumWidget::onBtnClicked(Button* btn)
 {
-	gWindowMgr->openSearch();
+	if (btn == mSearchBtn)
+	{
+		gWindowMgr->openSearch();
+	}
+	else if (btn == mLeftBtn && mAlbumIndex > 0)
+	{
+		mAlbumIndex--;
+
+	}
+	else if (btn == mRightBtn && mAlbumIndex < mLargeAlbums.size() - 1)
+	{
+		mAlbumIndex++;
+	}
 }

@@ -11,6 +11,7 @@
 
 #include "d3dUtil.h"
 
+#include "AlbumTextureManager.h"
 #include "Camera.h"
 #include "ControlWindow.h"
 #include "CollectionWindow.h"
@@ -101,6 +102,7 @@ MonkeyPlayerApp::~MonkeyPlayerApp()
 	Settings::destroy();
 	Logger::destroy();
 	MusicLibrary::destroy();
+	AlbumTextureManager::destroy();
 }
 
 bool MonkeyPlayerApp::checkDeviceCaps()
@@ -163,16 +165,21 @@ bool MonkeyPlayerApp::checkDeviceCaps()
 }
 void MonkeyPlayerApp::onDeviceLost()
 {
-	Logger::instance()->write("Device Lost.");
-	mStats->onDeviceLost();
-	for (unsigned int i = 0; i < mDrawables.size(); i++)
+	if (!mAlreadyLost)
 	{
-		mDrawables[i]->onDeviceLost();
+		Logger::instance()->write("Device Lost.");
+		mStats->onDeviceLost();
+		for (unsigned int i = 0; i < mDrawables.size(); i++)
+		{
+			mDrawables[i]->onDeviceLost();
+		}
 	}
+	mAlreadyLost = true;
 }
 void MonkeyPlayerApp::onDeviceReset()
 {
 	Logger::instance()->write("Device Reset.");
+	mAlreadyLost = false;
 	mStats->onDeviceReset();
 
 	for (unsigned int i = 0; i < mDrawables.size(); i++)
@@ -219,6 +226,7 @@ void MonkeyPlayerApp::updateScene(float dt)
 	mStats->update(dt);
 	SoundManager::instance()->update();
 	MusicLibrary::instance()->update(dt);
+	AlbumTextureManager::instance()->update(dt);
 	for (unsigned int i = 0; i < mDrawables.size(); i++)
 	{
 		mDrawables[i]->update(dt);
@@ -245,6 +253,10 @@ void MonkeyPlayerApp::drawScene()
 
 	mStats->display();
 	HR(gDevice->EndScene());
-	HR(gDevice->Present(0, 0, 0, 0));
+	HRESULT res = gDevice->Present(0, 0, 0, 0);
+
+	if (res == D3DERR_DEVICELOST)
+	{
+	}
 
 }

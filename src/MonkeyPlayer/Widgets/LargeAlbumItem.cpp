@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "AlbumTextureManager.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
 #include "LargeAlbumItem.h"
@@ -175,5 +176,5 @@ void LargeAlbumItem::addDest(float x, float yRot, bool vis, float time)
 
 IDirect3DTexture9* LargeAlbumItem::getTexture()
 {
-	return mTexture;
+	return AlbumTextureManager::instance()->getTexture(mAlbum.Id);
 }

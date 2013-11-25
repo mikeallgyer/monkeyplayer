@@ -44,6 +44,7 @@ D3DApp::D3DApp(HINSTANCE hInstance, std::string caption, D3DDEVTYPE deviceType, 
 	m3dObj = 0;
 	mPaused = false;
 	mUpdateOnly = false;
+	mAlreadyLost = false;
 	ZeroMemory(&mPresParams, sizeof(mPresParams));
 
 	initMainWindow();
@@ -196,6 +197,13 @@ int D3DApp::run()
 					drawScene();
 				}
 
+				prevTimeStamp = currTimeStamp;
+			}
+			else
+			{
+				QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
+				float dt = (currTimeStamp - prevTimeStamp) * secsPerCount;
+				updateScene(dt);
 				prevTimeStamp = currTimeStamp;
 			}
 		}
@@ -411,8 +419,15 @@ bool D3DApp::isDeviceLost()
 	else if (hr == D3DERR_DEVICENOTRESET)
 	{
 		onDeviceLost();
-		HR(gDevice->Reset(&mPresParams));
-		onDeviceReset();
+		if (gDevice->Reset(&mPresParams) != D3DERR_DEVICELOST)
+		{
+			onDeviceReset();
+			mUpdateOnly = false;
+		}
+		else
+		{
+			mUpdateOnly = true;
+		}
 		return false;
 	}
 	return false;

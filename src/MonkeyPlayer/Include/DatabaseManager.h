@@ -39,6 +39,7 @@ namespace MonkeyPlayer
 		void getTrack(int id, Track* track);
 		void getTrack(string &filename, Track* track);
 		vector<Track*> getAllTracksVector();
+		vector<Track*> getTracks(int album);
 		vector<Track*> getTracks(Album& album);
 		vector<Track*> getTracks(string &artist);
 		map<string, Track*> getAllTracks();

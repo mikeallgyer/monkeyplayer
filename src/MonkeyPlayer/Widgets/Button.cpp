@@ -138,7 +138,9 @@ bool Button::onMouseEvent(MouseEvent e)
 			}
 		}
 	}
-	else if (!e.getConsumed() && e.getEvent() == MouseEvent::LBUTTONDOWN &&
+	// double click is weird...occurs when mouse down->mouse up->mouse down (not up)
+	// dbl clk is sent instead of mouse down!
+	else if (!e.getConsumed() && (e.getEvent() == MouseEvent::LBUTTONDOWN || e.getEvent() == MouseEvent::LBUTTONDBLCLK) &&
 		isPointInside(e.getX(), e.getY()))
 	{
 		mButtonSprite->setTextureIndex(TEXTURE_DOWN);

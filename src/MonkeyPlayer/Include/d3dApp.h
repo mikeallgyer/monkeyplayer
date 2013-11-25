@@ -74,6 +74,7 @@ namespace MonkeyPlayer
 		IDirect3D9* m3dObj;
 		bool mPaused;
 		bool mUpdateOnly;
+		bool mAlreadyLost;
 		D3DPRESENT_PARAMETERS mPresParams;
 
 		int mScreenWidth;
