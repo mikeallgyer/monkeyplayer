@@ -31,6 +31,7 @@ const string Settings::OPT_ORDER_BY = "OrderBy";
 const string Settings::OPT_STOP_AFTER = "StopAfter";
 const string Settings::OPT_STOP_AFTER_ON = "StopAfterOn";
 const string Settings::OPT_GO_TO_SONG = "GoToSong";
+const string Settings::OPT_AUDIO_TYPES = "AudioTypes";
 const string Settings::LAST_ALBUM_VIEWED = "LastAlbumIndex";
 
 Settings::Settings()

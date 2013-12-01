@@ -91,13 +91,13 @@ namespace MonkeyPlayer
 	private:
 		void setDisplayName(Track* track)
 		{
-			if (track->Title.length() > 0 && track->Artist.length() > 0)
+			if (track->Title.length() > 0 && track->Artist != DatabaseStructs::DEF_EMPTY_ARTIST)
 			{
 				mDisplayStr = track->Artist + " - " + track->Title;
 			} 
 			else
 			{
-				mDisplayStr = FileManager::getFileName(track->Filename);
+				mDisplayStr = FileManager::getFileName(track->Title);
 			}
 		}
 		void setDisplayTime()

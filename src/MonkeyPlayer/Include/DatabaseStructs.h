@@ -14,9 +14,10 @@ using namespace std;
 namespace DatabaseStructs
 {
 	const std::string DEF_EMPTY_STRING = "UNKNOWN_VALUE";
-	const std::string DEF_EMPTY_GENRE = "Unknown";
-	const std::string DEF_EMPTY_ARTIST = "Unknown";
-	const int DEF_EMPTY_YEAR = 0;
+	const std::string DEF_EMPTY_GENRE = "Unknown Genre";
+	const std::string DEF_EMPTY_ARTIST = "Unknown Artist";
+	const std::string DEF_EMPTY_ALBUM = "Unknown Album";
+	const int DEF_EMPTY_YEAR = 1900;
 	const long DEF_EMPTY_DATE = 0;
 	const int INVALID_ID = -1;
 	const std::string VARIOUS_ARTIST = "Various";
@@ -38,11 +39,11 @@ struct Genre
 };
 struct Album
 {
-	Album() : Id(DatabaseStructs::INVALID_ID), Title(DatabaseStructs::DEF_EMPTY_STRING), 
+	Album() : Id(DatabaseStructs::INVALID_ID), Title(DatabaseStructs::DEF_EMPTY_ALBUM), 
 		Year(0), Artist(DatabaseStructs::DEF_EMPTY_ARTIST) {}
 	Album(int numTracks, string title, int year, string artist)
 		: Id(DatabaseStructs::INVALID_ID), NumTracks(numTracks), Title(title), 
-		Year(year), Artist(artist) {}
+		Year(DatabaseStructs::DEF_EMPTY_YEAR), Artist(artist) {}
 	Album(int id, int numTracks, string title, int year, string artist)
 		: Id(id), NumTracks(numTracks), Title(title), Year(year), Artist(artist) {}
 
@@ -64,7 +65,8 @@ struct Album
 
 struct Track
 {
-	Track() : Id(DatabaseStructs::INVALID_ID), Filename(DatabaseStructs::DEF_EMPTY_STRING), Title(DatabaseStructs::DEF_EMPTY_STRING), Artist(DatabaseStructs::DEF_EMPTY_STRING), TrackNumber(DatabaseStructs::INVALID_ID), AlbumId(DatabaseStructs::INVALID_ID), Length(0), 
+	Track() : Id(DatabaseStructs::INVALID_ID), Filename(DatabaseStructs::DEF_EMPTY_STRING), Title(DatabaseStructs::DEF_EMPTY_STRING), Artist(DatabaseStructs::DEF_EMPTY_STRING), 
+		TrackNumber(DatabaseStructs::INVALID_ID), AlbumId(DatabaseStructs::INVALID_ID), Length(1), 
 		DateAdded(DatabaseStructs::INVALID_ID), Ignored(false), Genre(0), DateUsed(DatabaseStructs::INVALID_ID), NumPlayed(0) {}
 	Track(int id, string filename, string title, string artist, int trackNumber, int albumId, 
 		int length, int dateAdded, bool ignored, int genre, int dateUsed, int numPlayed) 

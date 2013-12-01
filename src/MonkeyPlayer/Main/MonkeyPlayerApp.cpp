@@ -78,7 +78,13 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		MusicLoader::instance()->setPlaylistWindow(pl);
 		MusicLoader::instance()->setCollectionWindow(collWin);
 	}
+	Album a;
+	Track t;
+	Genre g;
 
+	GUID guid;
+	MetadataReader::getTrackInfo("D:\\MP3s\\Ripped\\Kings of Leon\\Because of the Times\\Kings of Leon-Arizona.wma", &t, &a, &g);
+	MetadataReader::getAlbumGUID("D:\\MP3s\\Ripped\\Kings of Leon\\Because of the Times\\Kings of Leon-Arizona.wma", guid);
 	mCamera = snew Camera();
 	this->onDeviceReset();
 

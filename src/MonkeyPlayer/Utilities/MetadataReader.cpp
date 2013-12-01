@@ -18,9 +18,11 @@ using namespace std;
 using namespace TagLib;
 using namespace MonkeyPlayer;
 
-const int MetadataReader::GUID_LENGTH = 39;
+const int MetadataReader::HEADER_LENGTH = 39;
+const string MetadataReader::WMA_FILE_EXT = "WMA";
+const string MetadataReader::MP3_FILE_EXT = "MP3";
 
-std::string getString(TagLib::String s)
+/*static*/ std::string getString(TagLib::String s)
 {
 	if (s == TagLib::String::null)
 	{
@@ -28,7 +30,7 @@ std::string getString(TagLib::String s)
 	}
 	return std::string(s.toCString());
 }
-std::string getGenre(TagLib::String s)
+/*static*/ std::string getGenre(TagLib::String s)
 {
 	if (s == TagLib::String::null)
 	{
@@ -36,7 +38,7 @@ std::string getGenre(TagLib::String s)
 	}
 	return std::string(s.toCString());
 }
-int getInt(TagLib::uint ui)
+/*static*/ int getInt(TagLib::uint ui)
 {
 	if (ui == 0)
 	{
@@ -44,7 +46,7 @@ int getInt(TagLib::uint ui)
 	}
 	return (int)ui;
 }
-int getYear(TagLib::uint ui)
+/*static*/ int getYear(TagLib::uint ui)
 {
 	if (ui == 0)
 	{
@@ -52,7 +54,7 @@ int getYear(TagLib::uint ui)
 	}
 	return (int)ui;
 }
-int getDate(TagLib::uint ui)
+/*static*/ int getDate(TagLib::uint ui)
 {
 	if (ui == 0)
 	{
@@ -60,7 +62,7 @@ int getDate(TagLib::uint ui)
 	}
 	return (int)ui;
 }
-AlbumArt* MetadataReader::getAlbumArt(const ID3v2::Tag *tag)
+/*static*/ AlbumArt* MetadataReader::getAlbumArt(const ID3v2::Tag *tag)
 {
 	ID3v2::FrameList frames = tag->frameList("APIC");
 
@@ -98,7 +100,7 @@ AlbumArt* MetadataReader::getAlbumArt(const ID3v2::Tag *tag)
 	 return NULL;
 }
 
-AlbumArt* MetadataReader::getAlbumArt(const char* file)
+/*static*/ AlbumArt* MetadataReader::getAlbumArt(const char* file)
 {
 	GUID guid;
 	ZeroMemory(&guid, sizeof(GUID));
@@ -115,7 +117,7 @@ AlbumArt* MetadataReader::getAlbumArt(const char* file)
 	if (art == NULL && getAlbumGUID(file, guid))
 	{
 		string dir = FileManager::getContainingDirectory(file);
-		char guidStr[GUID_LENGTH];
+		char guidStr[HEADER_LENGTH];
 		toString(guid, guidStr);
 
 		string fullPath = dir + "\\AlbumArt_" + guidStr + "";
@@ -152,7 +154,7 @@ AlbumArt* MetadataReader::getAlbumArt(const char* file)
 
 	return art;
 }
-void MetadataReader::setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt)
+/*static*/ void MetadataReader::setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt)
 {
     ID3v2::FrameList frames = tag->frameList("APIC");
     ID3v2::AttachedPictureFrame *frame = 0;
@@ -178,7 +180,46 @@ void MetadataReader::setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt)
 	 }
 }
 
-void MetadataReader::getTrackInfo(const char *filename, Track* t, Album* a, Genre* g)
+/*static*/ void MetadataReader::getTrackInfo(const char *filename, Track* t, Album* a, Genre* g)
+{
+	MetadataReader::FILE_TYPE ftype = getFileType(filename);
+	string sansPath = FileManager::getFileName(filename);
+
+	// TRACK
+	t->Artist = DatabaseStructs::DEF_EMPTY_ARTIST;
+	t->DateAdded = DatabaseStructs::DEF_EMPTY_DATE;
+	t->Title = sansPath;
+	t->Genre = DatabaseStructs::INVALID_ID;
+	t->TrackNumber = 0;
+	t->Length = 1;
+	t->Filename = filename;
+
+	// ALBUM
+	a->Title = DatabaseStructs::DEF_EMPTY_ALBUM;
+	a->Year = DatabaseStructs::DEF_EMPTY_YEAR;
+	a->NumTracks = 1;
+	a->Artist = DatabaseStructs::DEF_EMPTY_ARTIST;
+
+	// GENRE
+	g->Title = DatabaseStructs::DEF_EMPTY_GENRE;
+	g->StandardId = 0;
+
+	bool success = false;
+	if (ftype == MonkeyPlayer::MetadataReader::MP3)
+	{
+		success = getTrackInfoMP3(filename, t, a, g);
+	}
+	else if (ftype == MonkeyPlayer::MetadataReader::WMA)
+	{
+		success = getTrackInfoWMA(filename, t, a, g);
+	}
+
+	if (!success)
+	{
+	}
+
+}
+/*static*/ bool MetadataReader::getTrackInfoMP3(const char *filename, Track* t, Album* a, Genre* g)
 {
 	TagLib::FileRef f(filename);
 	if (!f.isNull() && f.tag())
@@ -206,10 +247,419 @@ void MetadataReader::getTrackInfo(const char *filename, Track* t, Album* a, Genr
 		// GENRE
 		g->Title = getGenre(f.tag()->genre());
 		g->StandardId = 0;
+		return true;
 	}
+	return false;
 }
 
-bool MetadataReader::getAlbumGUID(const char* filename, GUID &guid)
+/*static*/ bool MetadataReader::getTrackInfoWMA(const char *filename, Track* t, Album* a, Genre* g)
+{
+	GUID guid;
+	return getTrackInfoWMA(filename, t, a, g, guid, false);
+}
+/*static*/ bool MetadataReader::getTrackInfoWMA(const char *filename, Track* t, Album* a, Genre* g,
+												GUID &guidOut, bool guidOnly)
+{
+	const int GUID_LENGTH = 16;
+	const int SIZE_LENGTH = 8;
+	const int SMALL_SIZE_LENGTH = 2;
+	const int NUM_OBJ_LENGTH = 4;
+	const string ART_GUID_RECORD_NAME = "WM/WMCollectionID";
+
+	GUID contentDescGuid, extContentGuid, filePropGuid, headerExtGuid, metadataLibGuid;
+	CLSIDFromString(L"{75B22633-668E-11CF-A6D9-00AA0062CE6C}",  &contentDescGuid);
+	CLSIDFromString(L"{D2D0A440-E307-11D2-97F0-00A0C95EA850}",  &extContentGuid);
+	CLSIDFromString(L"{8CABDCA1-A947-11CF-8EE4-00C00C205365}",  &filePropGuid);
+	CLSIDFromString(L"{5FBF03B5-A92E-11CF-8EE3-00C00C205365}",  &headerExtGuid);
+	CLSIDFromString(L"{44231C94-9498-49D1-A141-1D134E457054}",  &metadataLibGuid);
+	
+	bool retVal = false;
+	ifstream infile;
+	try
+	{
+		// read in file
+		infile.open(filename, ios::binary);
+		if (!infile.good())
+		{
+			return false;
+		}
+		char guidStr[HEADER_LENGTH];
+		GUID guid;
+		long size;
+		int numObj;
+
+		infile.seekg(0, ios::end);
+		long pos = infile.tellg();
+
+		infile.seekg(0, ios::beg);
+		char *entireFile = snew char[pos];
+		infile.read(entireFile, pos);
+		infile.close();
+
+		char* ptr = entireFile;
+		// read guid
+		memcpy(&guid, ptr, sizeof(GUID));
+		ptr += GUID_LENGTH;
+		toString(guid, guidStr);
+
+		// read long
+		memcpy(&size, ptr, sizeof(long));
+		ptr += SIZE_LENGTH;
+
+		// read int
+		memcpy(&numObj, ptr, sizeof(int));
+		ptr += NUM_OBJ_LENGTH;
+
+		// read reserved (1-byte value)
+		ptr += 1;
+
+		// read reserved (1-byte value)
+		byte sanityCheck = 0;
+		memcpy(&sanityCheck, ptr, 1);
+		ptr += 1;
+		if (sanityCheck != 2)
+		{
+			string msg = filename;
+			msg = "Error parsing " + msg + ". Reserved2 is incorrect.";
+			Logger::instance()->write(msg);
+			delete[] entireFile;
+			return false;
+		}
+		bool artistFound = false;
+		bool albumFound = false;
+		bool guidFound = false;
+		for (int i = 0; i < numObj; i++)
+		{
+			// read guid
+			memcpy(&guid, ptr, sizeof(GUID));
+			ptr += GUID_LENGTH;
+			toString(guid, guidStr);
+
+			long contentSize;
+			// read long
+			memcpy(&contentSize, ptr, sizeof(long));
+			ptr += SIZE_LENGTH;
+			if (!guidOnly && guid == contentDescGuid) // title, artist
+			{
+				short titleLen, authorLen, copyrightLen, descLen, ratingLen;
+				// read short
+				memcpy(&titleLen, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				// read short
+				memcpy(&authorLen, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				// read short
+				memcpy(&copyrightLen, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				// read short
+				memcpy(&descLen, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				// read short
+				memcpy(&ratingLen, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				
+				// read string
+				t->Title = readWMAString(&ptr, titleLen);
+				t->Artist = readWMAString(&ptr, authorLen);
+				string c = readWMAString(&ptr, copyrightLen);
+				string desc = readWMAString(&ptr, descLen);
+				string r = readWMAString(&ptr, ratingLen);
+				artistFound = true;
+			}
+			else if (!guidOnly && guid == extContentGuid) // year, album artist, album title, genre
+			{
+				short numDesc = 0; 
+				// read short
+				memcpy(&numDesc, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+				for (int j = 0; j <numDesc; j++)
+				{
+					short descNameLength, descValType, descValLength;
+
+					// read short
+					memcpy(&descNameLength, ptr, sizeof(short));
+					ptr += SMALL_SIZE_LENGTH;
+
+					// read name
+					string name = readWMAString(&ptr, descNameLength);
+					// read short
+					memcpy(&descValType, ptr, sizeof(short));
+					ptr += SMALL_SIZE_LENGTH;
+					// read short
+					memcpy(&descValLength, ptr, sizeof(short));
+					ptr += SMALL_SIZE_LENGTH;
+					if (descValType == 0)
+					{
+						string val = readWMAString(&ptr, descValLength);
+						
+						if (name == "WM/Year")
+						{
+							a->Year = atoi(val.c_str());
+						}
+						else if (name == "WM/AlbumArtist")
+						{
+							a->Artist = val;
+						}
+						else if (name == "WM/AlbumTitle")
+						{
+							a->Title = val;
+							albumFound = true;
+						}
+						else if (name == "WM/Genre")
+						{
+							g->Title = val;
+							g->StandardId = 0;
+						}
+						Logger::instance()->write(val);					
+					}
+					else if (descValType == 1)
+					{
+						ptr += descValLength;
+					}
+					else if (descValType == 2)
+					{
+						ptr += descValLength;
+					}
+					else if (descValType == 3)
+					{
+						if (name == "WM/TrackNumber")
+						{
+							int trackNo;
+							// read int
+							memcpy(&trackNo, ptr, sizeof(int));
+							ptr += descValLength;
+							t->TrackNumber = trackNo;
+						}
+						else
+						{
+							ptr += descValLength;
+						}
+					}
+					else if (descValType == 4)
+					{
+						ptr += descValLength;
+					}
+					else if (descValType == 5)
+					{
+						ptr += descValLength;
+					}
+					else
+					{
+						ptr += descValLength;
+					}
+				}
+			}
+			else if (!guidOnly && guid == filePropGuid) // track time
+			{
+				long remaining = contentSize - (GUID_LENGTH + SIZE_LENGTH);
+				GUID fileGuid;
+				// read GUID
+				memcpy(&fileGuid, ptr, sizeof(GUID));
+				ptr += GUID_LENGTH;
+				toString(fileGuid, guidStr);
+				remaining -= GUID_LENGTH;
+
+				// read long...file size
+				long junk;
+				memcpy(&junk, ptr, sizeof(long));
+				ptr += SIZE_LENGTH;
+				remaining -= SIZE_LENGTH;
+
+				// read long...date
+				memcpy(&junk, ptr, sizeof(long));
+				ptr += SIZE_LENGTH;
+				remaining -= SIZE_LENGTH;
+
+				// read long...packet count
+				memcpy(&junk, ptr, sizeof(long));
+				ptr += SIZE_LENGTH;
+				remaining -= SIZE_LENGTH;
+
+				// read long
+				unsigned long trackLen;
+				memcpy(&trackLen, ptr, sizeof(long));
+				ptr += SIZE_LENGTH;
+				t->Length = max((int)(trackLen / 1e7), 1);
+				remaining -= SIZE_LENGTH;
+				ptr += remaining;
+			}
+			else if (guidOnly && guid == headerExtGuid) // guid
+			{
+				// read guid
+				memcpy(&guid, ptr, sizeof(GUID));
+				ptr += GUID_LENGTH;
+				toString(guid, guidStr);
+				long remaining = contentSize - (GUID_LENGTH + SIZE_LENGTH + GUID_LENGTH);
+
+				short res1;
+				memcpy(&res1, ptr, sizeof(short));
+				ptr += SMALL_SIZE_LENGTH;
+
+				int dataSize;
+				// read int
+				memcpy(&dataSize, ptr, sizeof(int));
+				ptr += SIZE_LENGTH/2;
+
+				if (dataSize > 0)
+				{
+					// child objects...fml!
+					int index = 0; 
+					while (index < dataSize)
+					{
+						// read guid
+						memcpy(&guid, ptr + index, sizeof(GUID));
+						index += GUID_LENGTH;
+						toString(guid, guidStr);
+
+						long childContentSize;
+						// read long
+						memcpy(&childContentSize, ptr + index, sizeof(long));
+						index += SIZE_LENGTH;
+
+						if (guid == metadataLibGuid)
+						{
+							short recCount;
+							// read long
+							memcpy(&recCount, ptr + index, sizeof(short));
+							index += SMALL_SIZE_LENGTH;
+
+							for (long rec = 0; rec < recCount; rec++)
+							{
+								short listIndex, streamNo, nameLen, dataType;
+								int dataLen;
+								string recName;
+								string recVal;
+								memcpy(&listIndex, ptr + index, sizeof(short));
+								index += SMALL_SIZE_LENGTH;
+								memcpy(&streamNo, ptr + index, sizeof(short));
+								index += SMALL_SIZE_LENGTH;
+								memcpy(&nameLen, ptr + index, sizeof(short));
+								index += SMALL_SIZE_LENGTH;
+								memcpy(&dataType, ptr + index, sizeof(short));
+								index += SMALL_SIZE_LENGTH;
+								memcpy(&dataLen, ptr + index, sizeof(int));
+								index += SIZE_LENGTH / 2;
+								char* tmpPtr = ptr + index;
+								recName = readWMAString(&tmpPtr, nameLen);
+								index += nameLen;
+
+								if (dataType == 6 && recName == ART_GUID_RECORD_NAME)
+								{
+									memcpy(&guidOut, ptr + index, sizeof(GUID));
+									guidFound = true;
+								}
+								index += dataLen;
+							} // for recCount
+						} // if metadataLibGuid
+						else 
+						{
+							index += childContentSize - (GUID_LENGTH + SIZE_LENGTH);
+						}
+					} // while index < dataSize
+				} // if dataSize > 0
+				ptr += dataSize;
+			}
+			else // skip header
+			{
+				ptr += contentSize - (GUID_LENGTH + SIZE_LENGTH);
+			}
+		}
+		delete[] entireFile;
+		if (guidOnly)
+		{
+			retVal = guidFound;
+			if (!retVal)
+			{
+				string str = "No GUID found in ";
+				str += filename;
+				Logger::instance()->write(str);
+			}
+		}
+		else
+		{
+			retVal = albumFound && artistFound;
+			if (!retVal)
+			{
+				string str = "Metadata not found in ";
+				str += filename;
+				Logger::instance()->write(str);
+			}
+		}
+	}
+	catch (...)
+	{
+		retVal = false;
+		try
+		{
+			infile.close();
+		}
+		catch (...) {}
+	}
+
+	return retVal;
+}
+/*static*/ string MetadataReader::readWMAString(char** ptr, int length)
+{
+	if (length <= 0)
+	{
+		return "";
+	}
+	
+	char *textBuf = snew char[length];
+
+	char defChar = ' ';
+	WCHAR* title = snew WCHAR[length];
+	memcpy(title, *ptr, length);
+	*ptr += length;
+	WideCharToMultiByte(CP_ACP, 0, title, -1, textBuf, length, &defChar, NULL);
+	string retVal = textBuf;
+	delete title;
+	delete textBuf;
+	return retVal;
+}
+/*static*/ MetadataReader::FILE_TYPE MetadataReader::getFileType(const char* file)
+{
+	string filename = file;
+	size_t pos = filename.find_last_of('.');
+	MetadataReader::FILE_TYPE retVal = UNKNOWN;
+	if (pos == string::npos || pos == filename.length() - 1)
+	{
+		retVal = MetadataReader::UNKNOWN;
+	}
+	else
+	{
+		string ext = filename.substr(pos + 1);
+		for (size_t i = 0; i <ext.length(); i++)
+		{
+			ext[i] = toupper(ext[i]);
+		}
+		if (ext == MetadataReader::WMA_FILE_EXT)
+		{
+			retVal = MetadataReader::WMA;
+		}
+		else if (ext == MetadataReader::MP3_FILE_EXT)
+		{
+			retVal = MetadataReader::MP3;
+		}
+	}
+	return retVal;
+}
+
+/*static*/ bool MetadataReader::getAlbumGUID(const char* filename, GUID &guid)
+{
+	MetadataReader::FILE_TYPE ftype = getFileType(filename);
+	bool success = false;
+	if (ftype == MonkeyPlayer::MetadataReader::MP3)
+	{
+		return getAlbumGUIDMP3(filename, guid);
+	}
+	else if (ftype == MonkeyPlayer::MetadataReader::WMA)
+	{
+		return getAlbumGUIDWMA(filename, guid);
+	}
+	return false;
+}
+/*static*/ bool MetadataReader::getAlbumGUIDMP3(const char* filename, GUID &guid)
 {
 	const int HEADER_LENGTH = 10;
 	const int TAG_INDICATOR_LENGTH = 3;
@@ -326,10 +776,13 @@ bool MetadataReader::getAlbumGUID(const char* filename, GUID &guid)
 
 	return retValue;
 }
-
-void MetadataReader::toString(GUID & guid, char* guidStr)
+/*static*/ bool MetadataReader::getAlbumGUIDWMA(const char* filename, GUID &guid)
 {
-	sprintf_s(guidStr, GUID_LENGTH, "{%08lX-%04hX-%04hX-%02hX%02hX-%02hX%02hX%02hX%02hX%02hX%02hX}",
+	return getTrackInfoWMA(filename, NULL, NULL, NULL, guid, true);
+}
+/*static*/ void MetadataReader::toString(GUID & guid, char* guidStr)
+{
+	sprintf_s(guidStr, HEADER_LENGTH, "{%08lX-%04hX-%04hX-%02hX%02hX-%02hX%02hX%02hX%02hX%02hX%02hX}",
 		guid.Data1, guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3], guid.Data4[4], 
 		guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 }

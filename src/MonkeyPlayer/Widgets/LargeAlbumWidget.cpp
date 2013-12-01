@@ -99,7 +99,8 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 		delete albums[i];
 	}
 	unsigned int midPos = mPositions.size() / 2;
-	for (unsigned int i = midPos; i < mPositions.size() && i < albums.size() - midPos; i++)
+	int halfAway = albums.size() - midPos;
+	for (unsigned int i = midPos; i < mPositions.size() && (int)i < halfAway; i++)
 	{
 		mLargeAlbums[i - midPos]->setPosition(mPositions[i].xPos, mPositions[i].yRotation);
 		mLargeAlbums[i - midPos]->setVisible(true);
@@ -129,11 +130,11 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, 50.0f, 50.0f);
 	mSelectedThing = CollectionWindow::ALBUM;
 
-	mLargeAlbumLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
+	mLargeAlbumLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string(""), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mLargeAlbumLbl->setSizeToFit(true);
 	mWidgets.push_back(mLargeAlbumLbl);
 
-	mArtistLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string("hello"), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
+	mArtistLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string(""), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mArtistLbl->setSizeToFit(true);
 	mWidgets.push_back(mArtistLbl);
 
@@ -913,6 +914,10 @@ void LargeAlbumWidget::goToAlbum(int index)
 }
 void LargeAlbumWidget::onContextMenuSelected(ItemListBox* menu)
 {
+	if (mLargeAlbums.size() <= 0)
+	{
+		return;
+	}
 	int sel = menu->getSelectedItem()->getId();
 
 	// tracks
@@ -973,6 +978,10 @@ void LargeAlbumWidget::onContextMenuSelected(ItemListBox* menu)
 }
 void LargeAlbumWidget::queueThing(CollectionWindow::SELECTED_THING thing)
 {
+	if (mLargeAlbums.size() <= 0)
+	{
+		return;
+	}
 	if (thing == CollectionWindow::ALBUM)
 	{
 		vector<Track*> tracks = DatabaseManager::instance()->getTracks(mLargeAlbums[mAlbumIndex]->getAlbum());
@@ -1089,7 +1098,7 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 	if (insertIndex >= 0)
 	{
 		int diff = (insertIndex - mAlbumIndex);
-		if (diff == 0)
+		if (diff == 0 && iter != mLargeAlbums.end())
 		{
 			iter++;
 			insertIndex++;

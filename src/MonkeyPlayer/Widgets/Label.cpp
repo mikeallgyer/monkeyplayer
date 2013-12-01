@@ -68,12 +68,13 @@ void SimpleLabel::onDeviceReset()
 }
 void SimpleLabel::recreateTargets()
 {
+	std::string tmpTxt = "." + mText + "."; // empty string breaks things
 	if (mSprite == NULL)
 	{
 		if (mSizeToFit)
 		{
 			RECT r = { 0, 0, (int)mWidth, (int)mHeight };
-			HR(mFont->DrawText(0, mText.c_str(), -1, &r, DT_CALCRECT, mTextColor));
+			HR(mFont->DrawText(0, tmpTxt.c_str(), -1, &r, DT_CALCRECT, mTextColor));
 			
 			mWidth = (float)r.right;
 			//mHeight = (float)r.bottom;
@@ -86,7 +87,7 @@ void SimpleLabel::recreateTargets()
 		if (mSizeToFit)
 		{
 			RECT r = { 0, 0, (int)mWidth, (int)mHeight };
-			HR(mFont->DrawText(0, mText.c_str(), -1, &r, DT_CALCRECT, mTextColor));
+			HR(mFont->DrawText(0, tmpTxt.c_str(), -1, &r, DT_CALCRECT, mTextColor));
 			
 			mWidth = (float)r.right;
 			//mHeight = (float)r.bottom;

@@ -54,7 +54,8 @@ void MusicLoader::terminate()
 void MusicLoader::loadDirectory(std::string dirPath)
 {
 	std::vector<std::string> files;
-	int count = FileManager::getAllFiles(files, dirPath, FileManager::FILE_TYPE_MUSIC);
+	int count = FileManager::getAllFiles(files, dirPath, 
+		Settings::instance()->getStringValue(Settings::OPT_AUDIO_TYPES, FileManager::FILE_TYPE_MUSIC));
 
 	MusicLoaderThreadObj* obj = snew MusicLoaderThreadObj(files, mPlaylistWindow, mCollectionWindow);
 	mThreads.push_back(obj);

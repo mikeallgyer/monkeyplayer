@@ -457,7 +457,7 @@ void SmallAlbumManager::moveSmallSelection(int cursorDelta)
 	}
 	while (cursorDelta != 0)
 	{
-		if (mSmallItems.size() >= 0)
+		if (mSmallItems.size() > 0)
 		{
 			if (cursorDelta > 0)
 			{
