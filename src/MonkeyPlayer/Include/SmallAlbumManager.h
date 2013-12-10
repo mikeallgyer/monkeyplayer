@@ -81,6 +81,7 @@ namespace MonkeyPlayer
 
 		std::vector<Sprite*> mSprites;
 		std::vector<IWidget*> mWidgets;
+		std::vector<IWidget*> mDrawableWidgets;
 		std::vector<SmallAlbumItem*> mSmallItems;
 		std::vector<SimpleLabel*> mArtistLabels;
 		std::vector<Album*> mAlbumsToAdd;

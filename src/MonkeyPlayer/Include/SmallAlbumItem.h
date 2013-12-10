@@ -105,6 +105,8 @@ namespace MonkeyPlayer
 		std::string mYearString;
 
 		bool mRedraw;
+		bool mTryTexture;
+		bool mTextureFailed;
 
 		bool mAlbumSelected;
 	protected:

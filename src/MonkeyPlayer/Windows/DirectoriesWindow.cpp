@@ -27,7 +27,11 @@ DirectoriesWindow::DirectoriesWindow()
 	mSprites.push_back(mBackground);
 
 	std::string playPath = FileManager::getContentAsset(std::string("Textures\\add.png"));
+	std::string playDownPath = FileManager::getContentAsset(std::string("Textures\\add_down.png"));
+	std::string playHoverPath = FileManager::getContentAsset(std::string("Textures\\add_hover.png"));
 	mAddBtn = snew Button(0, 0, 100, 100.0f, playPath, btn_callback, this);
+	mAddBtn->setDownTexture(playDownPath.c_str());
+	mAddBtn->setHoverTexture(playHoverPath.c_str());
 	mWidgets.push_back(mAddBtn);
 
 	mFolderList = snew ItemListBox(0, 0, 50.0f, 50.0f, NULL, NULL);

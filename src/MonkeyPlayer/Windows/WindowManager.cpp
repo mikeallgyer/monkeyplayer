@@ -207,56 +207,62 @@ void WindowManager::drawSprites(std::vector<Sprite*> sprites)
 {
 	for (unsigned int k = 0; k < sprites.size(); k++)
 	{
-		HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprites[k]->getX(),
-			sprites[k]->getY(),
-			sprites[k]->getWidth(),
-			sprites[k]->getHeight())));
+		if (sprites[k]->getTexture() != NULL)
+		{
+			HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprites[k]->getX(),
+				sprites[k]->getY(),
+				sprites[k]->getWidth(),
+				sprites[k]->getHeight())));
 
-		HR(mEffect->SetTexture(mTexture, sprites[k]->getTexture()));
-		HR(mEffect->SetVector(mSpriteColor, &sprites[k]->getColor()));
+			HR(mEffect->SetTexture(mTexture, sprites[k]->getTexture()));
+			HR(mEffect->SetVector(mSpriteColor, &sprites[k]->getColor()));
 
-		HR(mEffect->CommitChanges());
+			HR(mEffect->CommitChanges());
 
-		HR(gDevice->SetStreamSource(0, sprites[k]->getVertexBuffer(), 0, sprites[k]->getVertexStride()));
-		HR(gDevice->SetIndices(sprites[k]->getIndexBuffer()));
-		HR(gDevice->SetVertexDeclaration(sprites[k]->getVertexDeclaration()));
+			HR(gDevice->SetStreamSource(0, sprites[k]->getVertexBuffer(), 0, sprites[k]->getVertexStride()));
+			HR(gDevice->SetIndices(sprites[k]->getIndexBuffer()));
+			HR(gDevice->SetVertexDeclaration(sprites[k]->getVertexDeclaration()));
 
-		HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprites[k]->getNumVertices(), 0, 
-			sprites[k]->getNumTriangles()));
+			HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprites[k]->getNumVertices(), 0, 
+				sprites[k]->getNumTriangles()));
+		}
 	}
 }
 // should be called between Begin() and End()
 void WindowManager::drawSprite(Sprite* sprite, float width, float height)
 {
-	HR(mEffect->SetFloat(mScreenWidth, width));
-	HR(mEffect->SetFloat(mScreenHeight, height));
-	
-	HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprite->getX(),
-	sprite->getY(),
-	sprite->getWidth(),
-	sprite->getHeight())));
-
-	HR(mEffect->SetTexture(mTexture, sprite->getTexture()));
-	HR(mEffect->SetVector(mSpriteColor, &sprite->getColor()));
-
-	HR(mEffect->SetTechnique(mTechnique));
-	HR(mEffect->CommitChanges());	
-
-	UINT numPasses = 0;
-	HR(mEffect->Begin(&numPasses, 0));
-	for (UINT i = 0; i < numPasses; i++)
+	if (sprite->getTexture() != NULL)
 	{
-		HR(mEffect->BeginPass(i));
+		HR(mEffect->SetFloat(mScreenWidth, width));
+		HR(mEffect->SetFloat(mScreenHeight, height));
+		
+		HR(mEffect->SetVector(mRectHandle, &D3DXVECTOR4(sprite->getX(),
+		sprite->getY(),
+		sprite->getWidth(),
+		sprite->getHeight())));
 
-		HR(gDevice->SetStreamSource(0, sprite->getVertexBuffer(), 0, sprite->getVertexStride()));
-		HR(gDevice->SetIndices(sprite->getIndexBuffer()));
-		HR(gDevice->SetVertexDeclaration(sprite->getVertexDeclaration()));
+		HR(mEffect->SetTexture(mTexture, sprite->getTexture()));
+		HR(mEffect->SetVector(mSpriteColor, &sprite->getColor()));
 
-		HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprite->getNumVertices(), 0, 
-			sprite->getNumTriangles()));
-		HR(mEffect->EndPass());
+		HR(mEffect->SetTechnique(mTechnique));
+		HR(mEffect->CommitChanges());	
+
+		UINT numPasses = 0;
+		HR(mEffect->Begin(&numPasses, 0));
+		for (UINT i = 0; i < numPasses; i++)
+		{
+			HR(mEffect->BeginPass(i));
+
+			HR(gDevice->SetStreamSource(0, sprite->getVertexBuffer(), 0, sprite->getVertexStride()));
+			HR(gDevice->SetIndices(sprite->getIndexBuffer()));
+			HR(gDevice->SetVertexDeclaration(sprite->getVertexDeclaration()));
+
+			HR(gDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, sprite->getNumVertices(), 0, 
+				sprite->getNumTriangles()));
+			HR(mEffect->EndPass());
+		}
+		HR(mEffect->End());
 	}
-	HR(mEffect->End());
 }
 void WindowManager::drawWidgets(std::vector<IWidget*> widgets)
 {

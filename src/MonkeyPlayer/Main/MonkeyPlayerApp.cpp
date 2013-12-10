@@ -84,7 +84,7 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 
 	GUID guid;
 	MetadataReader::getTrackInfo("D:\\MP3s\\Ripped\\Kings of Leon\\Because of the Times\\Kings of Leon-Arizona.wma", &t, &a, &g);
-	MetadataReader::getAlbumGUID("D:\\MP3s\\Ripped\\Kings of Leon\\Because of the Times\\Kings of Leon-Arizona.wma", guid);
+	MetadataReader::getAlbumGUID("D:\\MP3s\\Bought On Amazon\\[Fleet Foxes] - 06 - Helplessness Blues.mp3", guid);
 	mCamera = snew Camera();
 	this->onDeviceReset();
 

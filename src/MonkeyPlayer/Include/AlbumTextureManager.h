@@ -25,6 +25,8 @@ namespace MonkeyPlayer
 
 		~AlbumTextureManager();
 		IDirect3DTexture9* getTexture(int albumId);
+		IDirect3DTexture9* getTexture(int albumId, bool &usedDefault);
+		bool isTextureBad(int albumId);
 		void update(float dt);
 
 	private:

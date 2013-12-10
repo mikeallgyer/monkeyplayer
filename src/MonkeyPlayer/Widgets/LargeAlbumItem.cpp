@@ -28,7 +28,7 @@ LargeAlbumItem::LargeAlbumItem(Album album) : mCurrDestination(0, 0, true, .5f)
 	
 	mTracks = DatabaseManager::instance()->getTracks(mAlbum);
 	// get cover art 
-	AlbumArt *art = NULL;
+/*	AlbumArt *art = NULL;
 	for (unsigned int i = 0; i < mTracks.size(); i++)
 	{
 		art = MetadataReader::getAlbumArt(mTracks[i]->Filename.c_str());
@@ -47,10 +47,11 @@ LargeAlbumItem::LargeAlbumItem(Album album) : mCurrDestination(0, 0, true, .5f)
 		string albumCoverFile = FileManager::getContentAsset(std::string("Textures\\UnknownAlbum.jpg"));
 		D3DXCreateTextureFromFile(gDevice, albumCoverFile.c_str(), &mTexture);
 	}
+	*/
 }
 LargeAlbumItem::~LargeAlbumItem()
 {
-	ReleaseCOM(mTexture);
+//	ReleaseCOM(mTexture);
 	for (unsigned int i = 0; i < mTracks.size(); i++)
 	{
 		delete mTracks[i];

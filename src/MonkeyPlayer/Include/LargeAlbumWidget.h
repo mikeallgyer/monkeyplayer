@@ -117,6 +117,7 @@ namespace MonkeyPlayer
 		bool mHasFocus;
 		int mPlayingTrack;
 		int mPlayingAlbum;
+		bool mDoGetTracks;
 		CollectionWindow::SELECTED_THING mSelectedThing;
 
 		CollectionWindow::RIGHT_CLICKED_ITEM mRightClicked;

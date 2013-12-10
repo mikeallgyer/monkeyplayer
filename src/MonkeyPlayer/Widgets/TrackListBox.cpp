@@ -67,7 +67,7 @@ void TrackListBox::preRender()
 				currColor = (i == mHighlightedIndex) ? selColor : defColor;
 				int y = ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row;
 				RECT r = { ItemListBox::TEXT_MARGIN_LEFT, y, ItemListBox::TEXT_MARGIN_LEFT + (int)mTextWidth - mTimeWidth, y + mFontHeight };
-				sprintf_s(buf, 512, "%d. %s", i + 1, mItems[i]->toString().c_str());
+				sprintf_s(buf, 512, "%d. %s", ((TrackListItem*)mItems[i])->getTrack()->TrackNumber, mItems[i]->toString().c_str());
 				HR(mFont->DrawText(0, buf, -1, &r, DT_LEFT, currColor));
 				
 				// time

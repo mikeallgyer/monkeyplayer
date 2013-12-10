@@ -58,11 +58,24 @@ AlbumTextureManager::~AlbumTextureManager()
 		mInstance = NULL;
 	}
 }
+bool AlbumTextureManager::isTextureBad(int albumId)
+{
+	if (mBadAlbums.find(albumId) != mBadAlbums.end())
+	{
+		return mBadAlbums[albumId];
+	}
+	return false;
+}
 
 IDirect3DTexture9* AlbumTextureManager::getTexture(int albumId)
 {
+	bool junk;
+	return getTexture(albumId, junk);
+}
+IDirect3DTexture9* AlbumTextureManager::getTexture(int albumId, bool &usedDefault)
+{
 	IDirect3DTexture9* tex = mDefaultTexture;
-
+	usedDefault = true;
 	if (albumId >= 0)
 	{
 		CSingleLock lock(&mCritSection);
@@ -75,6 +88,7 @@ IDirect3DTexture9* AlbumTextureManager::getTexture(int albumId)
 				{
 					tex = mTextures[i]->mTexture;
 					mTextures[i]->mWeight= min(MAX_WEIGHT, mTextures[i]->mWeight+ 1);
+					usedDefault = false;
 					break;
 				}
 			}
@@ -190,6 +204,11 @@ int AlbumTextureManager::getIndexToReplace()
 	if (art != NULL)
 	{
 		HRESULT hr = D3DXCreateTextureFromFileInMemory(gDevice, art->data, art->length, &tex);
+		if (hr != D3D_OK)
+		{
+			ReleaseCOM(tex);
+			tex = NULL;
+		}
 		delete art;
 	}
 	return tex;

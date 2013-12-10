@@ -15,6 +15,7 @@ namespace MonkeyPlayer
 	class Sprite
 	{
 	public:
+		Sprite(float x, float y, float width, float height);
 		Sprite(const char* textureFile, float x, float y, float width, float height);
 		Sprite(const char* textureFile, float x, float y, float width, float height, D3DXVECTOR4 color);
 		Sprite(IDirect3DTexture9* texture, float x, float y, float width, float height);

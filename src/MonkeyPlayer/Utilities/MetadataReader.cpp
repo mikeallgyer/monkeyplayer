@@ -87,11 +87,9 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 			
 			if (mimeType != AlbumArt::UNKNOWN)
 			{
-				const char* raw = frame->picture().data();
 				unsigned int rawSize = frame->picture().size();
 				char* rawCopy = snew char[rawSize];
-				memcpy(rawCopy, raw, rawSize);
-				
+				memcpy(rawCopy, frame->picture().data(), rawSize);
 				return snew AlbumArt(mimeType, rawCopy, rawSize);
 			}
 		}
@@ -104,16 +102,15 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 {
 	GUID guid;
 	ZeroMemory(&guid, sizeof(GUID));
+	AlbumArt* art = NULL;
 
 	MPEG::File f(file);
 
 	ID3v2::Tag *tag = f.ID3v2Tag();
-	AlbumArt* art = NULL;
 	if(tag)
 	{
 		art = getAlbumArt(tag);
 	}
-
 	if (art == NULL && getAlbumGUID(file, guid))
 	{
 		string dir = FileManager::getContainingDirectory(file);
@@ -151,7 +148,6 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 		}
 
 	}
-
 	return art;
 }
 /*static*/ void MetadataReader::setAlbumArt(ID3v2::Tag *tag, const AlbumArt &albumArt)

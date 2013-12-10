@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "AlbumTextureManager.h"
 #include "d3dApp.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
@@ -103,9 +104,12 @@ SmallAlbumItem::SmallAlbumItem(float x, float y, Album album,
 	mTargetSprite = NULL;
 
 	mRedraw = true;
+	mTryTexture = true;
+	mTextureFailed = false;
 
-	mAlbumCoverFile = FileManager::getContentAsset(std::string("Textures\\UnknownAlbum.jpg"));
-	mAlbumCoverSprite = snew Sprite(mAlbumCoverFile.c_str(), 0, (float)TEXT_MARGIN_TOP, (float)mAlbumDimension, (float)mAlbumDimension);
+//	mAlbumCoverFile = FileManager::getContentAsset(std::string("Textures\\UnknownAlbum.jpg"));
+	mAlbumCoverSprite = snew Sprite(0, (float)TEXT_MARGIN_TOP, (float)mAlbumDimension, (float)mAlbumDimension);
+	mAlbumCoverSprite->setTextureOwned(false);
 
 	std::string selBoxPath = FileManager::getContentAsset(std::string("Textures\\selectedBox.png"));
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, (float)mTrackTitleWidth + SELECTION_BOX_MARGIN, 
@@ -218,9 +222,16 @@ void SmallAlbumItem::preRender()
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
-	if (mRedraw)
+	if (mRedraw || (!mTextureFailed && mTryTexture))
 	{
 		mTarget->beginScene();
+		// don't keep trying if it didn't work before
+		if (!mTextureFailed)
+		{
+			mAlbumCoverSprite->replaceCurrentTexture(AlbumTextureManager::instance()->getTexture(mAlbum.Id, mTryTexture), false);
+		
+			mTextureFailed = AlbumTextureManager::instance()->isTextureBad(mAlbum.Id);
+		}
 
 		gWindowMgr->drawSprite(mAlbumCoverSprite, mWidth, mHeight);
 
@@ -460,7 +471,7 @@ void SmallAlbumItem::setAlbum(Album album)
 void SmallAlbumItem::getAlbumInfo()
 {
 	// get cover art 
-	AlbumArt *art = NULL;
+/*	AlbumArt *art = NULL;
 	for (unsigned int i = 0; i < mTracks.size(); i++)
 	{
 		art = MetadataReader::getAlbumArt(mTracks[i]->Filename.c_str());
@@ -487,7 +498,7 @@ void SmallAlbumItem::getAlbumInfo()
 	{
 		mAlbumCoverSprite->setTextureIndex(0);
 	}
-
+*/
 	// get year and genre
 	for (unsigned int i = 0; i < mTracks.size(); i++)
 	{

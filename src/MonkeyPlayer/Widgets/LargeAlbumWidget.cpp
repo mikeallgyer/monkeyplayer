@@ -99,11 +99,17 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 		delete albums[i];
 	}
 	unsigned int midPos = mPositions.size() / 2;
-	int halfAway = albums.size() - midPos;
-	for (unsigned int i = midPos; i < mPositions.size() && (int)i < halfAway; i++)
+
+	for (unsigned int i = 0; i < mPositions.size(); i++)
 	{
-		mLargeAlbums[i - midPos]->setPosition(mPositions[i].xPos, mPositions[i].yRotation);
-		mLargeAlbums[i - midPos]->setVisible(true);
+		int index = (int)mDisplayingAlbum - midPos + i;
+		if (index >= 0 && index < (int)mLargeAlbums.size())
+		{
+			float xPos = mPositions[i].xPos;
+			float yRot = mPositions[i].yRotation;
+			mLargeAlbums[index]->setPosition(xPos, yRot);
+			mLargeAlbums[index]->setVisible(true);
+		}
 	}
 
 	D3DXVECTOR3 up(0,1,0);
@@ -162,6 +168,7 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mRightBtn->setHoverTexture(rightBtnHoverPath.c_str());
 	mWidgets.push_back(mRightBtn);
 
+	mDoGetTracks = false;
 	setTracks();
 	mPlayingAlbum = -1;
 	mPlayingTrack = -1;
@@ -268,6 +275,12 @@ void LargeAlbumWidget::update(float dt)
 	mTracksToAdd.clear();
 
 	lock.Unlock();
+	
+	if (mDoGetTracks)
+	{
+		setTracks();
+		mDoGetTracks = false;;
+	}
 	int selTrack = mTrackBox->getSelectedIndex();
 
 
@@ -327,7 +340,7 @@ void LargeAlbumWidget::update(float dt)
 				setTracks();
 			}
 		}
-		else if (gInput->isKeyDown(VK_RIGHT) || gInput->isKeyDown(VK_SHIFT))
+		else if (gInput->isKeyDown(VK_RIGHT))
 		{
 			bool firstPress = mScrollingDuration < 0;
 			if (firstPress)
@@ -1063,45 +1076,43 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 	vector<LargeAlbumItem*>::iterator iter = mLargeAlbums.begin();
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
+		Album currAlbum = mLargeAlbums[i]->getAlbum();
 		if (mLargeAlbums[i]->getAlbum().Id == album->Id)
 		{
 			insertIndex = -1;
 			break;
 		}
-		else if (mLargeAlbums[i]->getAlbum().Artist == album->Artist)
+		else if (currAlbum.Artist == album->Artist)
 		{
 			insertIndex = i;
-			for (unsigned int j = i; j < mLargeAlbums.size() && mLargeAlbums[j]->getAlbum().Artist == album->Artist; j++)
+			for (unsigned int j = i; j < mLargeAlbums.size() && currAlbum.Artist == album->Artist && album->Title >= currAlbum.Title; j++)
 			{
-				if (mLargeAlbums[j]->getAlbum().Title == album->Title)
+				currAlbum = mLargeAlbums[j]->getAlbum();
+				if (currAlbum.Title == album->Title)
 				{
 					insertIndex = -1;
 					break;
 				}
-				else if (mLargeAlbums[j]->getAlbum().Title > album->Title)
-				{
-					insertIndex = j;
-					break;
-				}
-				iter++;
+				insertIndex++;
 			}
 			break;
 		}
-		else if (mLargeAlbums[i]->getAlbum().Artist >= album->Artist)
+		else if (currAlbum.Artist > album->Artist)
 		{
-			insertIndex = i;
+			insertIndex =  i;
 			break;
 		}
-		iter++;
+		insertIndex++;
 	}
 
 	if (insertIndex >= 0)
 	{
+		iter += insertIndex;
 		int diff = (insertIndex - mAlbumIndex);
 		if (diff == 0 && iter != mLargeAlbums.end())
 		{
-			iter++;
-			insertIndex++;
+			//iter++;
+			//insertIndex++;
 		}
 		mLargeAlbums.insert(iter, snew LargeAlbumItem(*album));
 
@@ -1116,6 +1127,8 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 			}
 		}
 	}
+	mDoGetTracks = true;
+
 }
 
 void LargeAlbumWidget::addTrack(Track* track)
@@ -1146,6 +1159,7 @@ void LargeAlbumWidget::addTrack(Track* track)
 	}
 	lock.Unlock();
 */
+	mDoGetTracks = true;
 }
 void LargeAlbumWidget::doAddTrack(Track* track)
 {

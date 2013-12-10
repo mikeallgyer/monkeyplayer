@@ -10,6 +10,16 @@
 
 using namespace MonkeyPlayer;
 
+Sprite::Sprite(float x, float y, float width, float height)
+{
+	mTextures[0] = NULL;
+	mCurrIndex = 0;
+
+	createBuffers();
+	setDest(x, y, width, height);
+	setColor(D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
 Sprite::Sprite(const char* textureFile, float x, float y, float width, float height)
 {
 	Logger::instance()->write(string("Sprite is loading texture: ") + textureFile);
@@ -53,7 +63,10 @@ Sprite::~Sprite()
 		std::map<int, IDirect3DTexture9*>::iterator iter;
 		for (iter = mTextures.begin(); iter != mTextures.end(); iter++)
 		{
-			ReleaseCOM((*iter).second);
+			if (((*iter).second) != NULL)
+			{
+				ReleaseCOM((*iter).second);
+			}
 		}
 		ReleaseCOM(mVertexBuffer);
 		ReleaseCOM(mIndexBuffer);
@@ -178,7 +191,7 @@ int Sprite::getCurrentIndex()
 
 void Sprite::addTexture(int index, IDirect3DTexture9* tex, bool useNow, bool deleteOld)
 {
-	if (deleteOld && mTextures.find(index) != mTextures.end())
+	if (deleteOld && mTextures.find(index) != mTextures.end() && mTextures[index] != NULL)
 	{
 		ReleaseCOM(mTextures[index]);
 	}
@@ -203,7 +216,7 @@ void Sprite::setTextureIndex(int index)
 }
 void Sprite::replaceCurrentTexture(IDirect3DTexture9* tex, bool dispose)
 {
-	if (dispose)
+	if (dispose && mTextures[mCurrIndex] != NULL)
 	{
 		ReleaseCOM(mTextures[mCurrIndex]);
 	}
