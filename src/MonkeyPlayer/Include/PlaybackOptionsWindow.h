@@ -101,7 +101,7 @@ namespace MonkeyPlayer
 		void onChkPushed(Checkbox* btn);
 		void onComboSelected(ComboBox* combo);
 
-		static enum ORDER_BY { SONG, ALBUM, ARTIST, NEVER };
+		static enum ORDER_BY { SONG, ALBUM, ARTIST, QUEUE, NEVER };
 	};
 }
 #endif

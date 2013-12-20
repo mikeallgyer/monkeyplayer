@@ -48,6 +48,7 @@ namespace MonkeyPlayer
 		bool getIsToggle();
 		void setToggled(bool toggled);
 		bool getToggled();
+		bool isPointInside(int x, int y);
 
 	protected:
 
@@ -63,7 +64,6 @@ namespace MonkeyPlayer
 		bool mIsToggle;
 		bool mToggled;
 
-		bool isPointInside(int x, int y);
 
 		// callback
 		void (*mCallback)(void* ptrObj, Button* selItem);

@@ -14,6 +14,7 @@
 #include "ItemListBox.h"
 #include "IWindow.h"
 #include "ProgressBar.h"
+#include "ToolTip.h"
 #include <MonkeyInput.h>
 
 #include <vector>
@@ -70,6 +71,7 @@ namespace MonkeyPlayer
 		void addWindowAboveMain(IWindow* win);
 		void addWindowBelowMain(IWindow* win);
 		ProgressBar* getProgressBar() { return mProgressBar; }
+		ToolTip* getToolTip() { return mToolTip; }
 		CollectionWindow* getCollectionWindow() { return mCollectionWin; }
 		void setCollectionWindow(CollectionWindow*  win) { mCollectionWin = win; }
 
@@ -104,6 +106,7 @@ namespace MonkeyPlayer
 		std::vector<void*> mMouseCallbackObj; 
 
 		ProgressBar* mProgressBar;
+		ToolTip* mToolTip;
 		CollectionWindow* mCollectionWin;
 
 		ItemListBox* mContextMenu;

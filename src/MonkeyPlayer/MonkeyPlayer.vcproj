@@ -50,6 +50,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ShowIncludes="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -297,6 +298,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Widgets\PlaylistListBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Windows\PlaylistWindow.cpp"
 				>
 			</File>
@@ -306,6 +311,14 @@
 			</File>
 			<File
 				RelativePath=".\Utilities\RenderTarget.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Windows\SavedPlaylistsWindow.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WinForms\SavePlaylistForm.cpp"
 				>
 			</File>
 			<File
@@ -334,6 +347,10 @@
 			</File>
 			<File
 				RelativePath=".\Main\Sprite.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Widgets\ToolTip.cpp"
 				>
 			</File>
 			<File
@@ -475,6 +492,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\PlaylistListBox.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Include\PlaylistWindow.h"
 				>
 			</File>
@@ -484,6 +505,15 @@
 			</File>
 			<File
 				RelativePath=".\Include\RenderTarget.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\SavedPlaylistsWindow.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WinForms\SavePlaylistForm.h"
+				FileType="3"
 				>
 			</File>
 			<File
@@ -520,6 +550,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\ToolTip.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Widgets\TrackListBox.cpp"
 				>
 			</File>
@@ -541,6 +575,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\WinForms\SavePlaylistForm.resx"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\Windows\NowPlayingWindow.cpp"

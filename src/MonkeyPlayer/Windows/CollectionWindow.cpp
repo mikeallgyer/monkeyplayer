@@ -366,7 +366,7 @@ bool CollectionWindow::onMouseEvent(MouseEvent ev)
 			mLetterLabel->setString(string(1, mHoverChar));
 			mLetterLabel->setPos(mAlphabetLabel->getX() + (float)index * mAlphabetLabel->getWidth() / 26.0f - 10.0f,
 				mAlphabetLabel->getY(), 80.0f, 80.0f);
-			mMagnifier->setPos(mLetterLabel->getX() - 9.0f, mLetterLabel->getY() + 0.0f);
+			mMagnifier->setPos(mLetterLabel->getX() + 15.0f, mLetterLabel->getY() + 0.0f);
 		}
 		else if (mLetterLabel->getX() >= 0) // hide
 		{

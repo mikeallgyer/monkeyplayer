@@ -810,7 +810,7 @@ void SmallAlbumManager::goToSong(Album a, Track t, bool doHighlight)
 }
 int SmallAlbumManager::getCurrentAlbum()
 {
-	if (mCurrSelAlbum >= 0 && mCurrSelAlbum < mSmallItems.size())
+	if (mCurrSelAlbum >= 0 && mCurrSelAlbum < (int)mSmallItems.size())
 	{
 		return (int)mSmallItems[mCurrSelAlbum]->getAlbum().Id;
 	}

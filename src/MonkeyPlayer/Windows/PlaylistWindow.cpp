@@ -4,13 +4,13 @@
 //
 // contains a playlist of songs
 
+#include "../Winforms/SavePlaylistForm.h"
+
 #include <fstream>
 #include <vector>
 
-#include "Button.h"
 #include "d3dApp.h"
 #include "DatabaseManager.h"
-#include "FileManager.h"
 #include "MetadataReader.h"
 #include "MusicLibrary.h"
 #include "PlaylistWindow.h"
@@ -74,17 +74,27 @@ PlaylistWindow::PlaylistWindow()
 	mDelBtn->setDownTexture(delDown.c_str());
 	mDelBtn->setHoverTexture(delHover.c_str());
 
+	std::string saveUp = FileManager::getContentAsset(std::string("Textures\\save.png"));
+	std::string saveDown = FileManager::getContentAsset(std::string("Textures\\save_down.png"));
+	std::string saveHover = FileManager::getContentAsset(std::string("Textures\\save_hover.png"));
+	mSaveBtn = snew Button(50.0f, 50.0f, 50.0f, 50.0f, saveUp, button_callback, this);
+	mSaveBtn->setDownTexture(saveDown.c_str());
+	mSaveBtn->setHoverTexture(saveHover.c_str());
+
 	mCurrSongIndex = -1;
 	
-//	mListBox->setBgColor(D3DXCOLOR(1.0f, 1.0f, .9f, 1.0f));
+	mHeaderLbl = snew SimpleLabel(0, 0, 50.0f, 50.0f, std::string("Queue"), 24);
+	mHeaderLbl->setTextColor(D3DXCOLOR(0xffa0f6f9));
+	mHeaderLbl->setSizeToFit(true);
 
-	//mListBox->focus();
-
+	mWidgets.push_back(mHeaderLbl);
 	mWidgets.push_back(mListBox);
 	mWidgets.push_back(mShuffleBtn);
 	mWidgets.push_back(mClearBtn);
 	mWidgets.push_back(mDelBtn);
+	mWidgets.push_back(mSaveBtn);
 	readFile();
+	setPlaylistName(mPlaylistName, false);
 }
 PlaylistWindow::~PlaylistWindow()
 {
@@ -125,6 +135,11 @@ void PlaylistWindow::onDeviceReset()
 	}
 	mResized = true;
 }
+
+void PlaylistWindow::setTopPos(int pos)
+{
+	mTopPos = pos;
+}
 int PlaylistWindow::getWidth()
 {
 	return (int)mCurrWidth;
@@ -132,7 +147,7 @@ int PlaylistWindow::getWidth()
 
 int PlaylistWindow::getHeight()
 {
-	return (int)mBackground->getHeight();
+	return mCurrHeight;
 }
 
 void PlaylistWindow::update(float dt)
@@ -143,14 +158,17 @@ void PlaylistWindow::update(float dt)
 		GetClientRect(gApp->getMainWnd(), &r);
 
 		mCurrWidth = min(r.right/2, mPreferredWidth);
-		int height = r.bottom - gWindowMgr->getMainContentTop();
-		mBackground->setDest(r.right - mCurrWidth, gWindowMgr->getMainContentTop(), 
-			mCurrWidth, height);
+		mCurrHeight = r.bottom - mTopPos;
+		int currX = r.right - mCurrWidth;
+		mBackground->setDest(currX, mTopPos, 
+			mCurrWidth, mCurrHeight);
+
+		mHeaderLbl->setPos((float)currX + 5.0f, mTopPos + 2.0f);
 
 		mListBox->setPos(mBackground->getX() + 5,
-			mBackground->getY() + 5,
+			mBackground->getY() + 30.0f,
 			mBackground->getWidth() - 10,
-			mBackground->getHeight() - 80);
+			mBackground->getHeight() - 110);
 
 		mShuffleBtn->setPos(mBackground->getX() + 5,
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
@@ -159,6 +177,9 @@ void PlaylistWindow::update(float dt)
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
 		mDelBtn->setPos(mBackground->getX() + mBackground->getWidth() - 50.0f,
+			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
+
+		mSaveBtn->setPos(mBackground->getX() + mBackground->getWidth() - 100.0f,
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
 		mResized = false;
@@ -192,7 +213,8 @@ void PlaylistWindow::clearItems()
 	mListBox->setHighlightedItem(-1);
 	mCurrSongIndex = -1;
 
-	writeFile();
+	setPlaylistName("");
+	// done by setPlaylistName(): writeFile();
 }
 void PlaylistWindow::addItem(Track *item)
 {
@@ -395,6 +417,25 @@ void PlaylistWindow::replaceQueueWithArtist(string &name)
 
 	writeFile();
 }
+void PlaylistWindow::setPlaylistName(string name, bool doWriteFile)
+{
+	mPlaylistName = name;
+	if (mPlaylistName == "")
+	{
+		mHeaderLbl->setString(string("Queue"));
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Queue (" << mPlaylistName << ")";
+
+		mHeaderLbl->setString(ss.str());
+	}
+	if (doWriteFile)
+	{
+		writeFile();
+	}
+}
 
 void PlaylistWindow::onItemSelected(ListItem* item, int index)
 {
@@ -424,6 +465,30 @@ void PlaylistWindow::onBtnClicked(Button* btn)
 	else if (btn == mDelBtn)
 	{
 		mListBox->removeItems(mListBox->getSelectedIndices());
+	}
+	else if (btn == mSaveBtn)
+	{
+		SavePlaylistForm^ form = gcnew SavePlaylistForm();
+		if (mPlaylistName != "")
+		{
+			form->setPlaylistName(mPlaylistName);
+		}
+		form->ShowDialog();
+
+		if (form->getIsFinished())
+		{
+			string name = form->getPlaylistName();
+			vector<ListItem*> items = mListBox->getItems();
+			vector<Track*> tracks;
+			for (unsigned int i = 0; i < items.size(); i++)
+			{
+				Track* t = ((TrackListItem*)items[i])->getTrack();
+				tracks.push_back(t);
+			}
+
+			DatabaseManager::instance()->savePlaylist(name, tracks);
+			setPlaylistName(name);
+		}
 	}
 }
 bool PlaylistWindow::onMouseEvent(MouseEvent ev)
@@ -480,7 +545,8 @@ void PlaylistWindow::writeFile()
 		vector<ListItem*> items = mListBox->getItems();
 
 		ofstream outfile(getFilename().c_str());
-		outfile << mListBox->getHighlightedIndex();
+		outfile << mListBox->getHighlightedIndex() << std::endl;
+		outfile << mPlaylistName << std::endl;
 
 		for (unsigned int i = 0; i < items.size(); i++)
 		{
@@ -503,6 +569,9 @@ void PlaylistWindow::readFile()
 		int index = -1;
 
 		infile >> index;
+
+		getline(infile, mPlaylistName);
+		getline(infile, mPlaylistName);
 
 		while (infile.good())
 		{

@@ -71,6 +71,7 @@ PlaybackOptionsWindow::PlaybackOptionsWindow()
 	repeatList.push_back(snew SimpleListItem("Song", (int)SONG));
 	repeatList.push_back(snew SimpleListItem("Album", (int)ALBUM));
 	repeatList.push_back(snew SimpleListItem("Artist", (int)ARTIST));
+	repeatList.push_back(snew SimpleListItem("Queue", (int)QUEUE));
 	repeatList.push_back(snew SimpleListItem("Never", (int)NEVER));
 	mStopAfterCombo->setList(repeatList);
 	mStopAfterCombo->setText(repeatList[0]->toString());

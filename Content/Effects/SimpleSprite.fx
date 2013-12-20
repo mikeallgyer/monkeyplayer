@@ -35,7 +35,8 @@ OutputVS TransformVS(float3 posL : POSITION0, float2 texCoords: TEXCOORD0)
 float4 TransformPS(float2 texCoords : TEXCOORD0) : COLOR
 {
 	float4 texColor = tex2D(texSampler, texCoords).rgba;
-	return texColor * spriteColor;;
+	float4 outColor = texColor * spriteColor;
+	return outColor;
 }
 
 technique SpriteTechnique

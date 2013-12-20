@@ -19,7 +19,7 @@ SimpleLabel::SimpleLabel(float x, float y, float width, float height, std::strin
 	font.Italic = false;
 	font.CharSet = DEFAULT_CHARSET;
 	font.OutputPrecision = OUT_DEFAULT_PRECIS;
-	font.Quality = ANTIALIASED_QUALITY;//DEFAULT_QUALITY;
+	font.Quality = DEFAULT_QUALITY; // ANTIALIASED_QUALITY
 	font.PitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 	_tcscpy_s(font.FaceName, _T(fontName));
 

@@ -1,4 +1,4 @@
-// DirectoriesWindow.cpp
+// SavedPlaylistsWindow.cpp
 //
 // (C) 2013 Mike Allgyer.  All Rights Reserved.
 //
@@ -7,21 +7,23 @@
 #include "d3dApp.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
-#include "DirectoriesWindow.h"
+#include "SavedPlaylistsWindow.h"
 #include "MusicLoader.h"
 
 #include <Shlobj.h>
 
 using namespace MonkeyPlayer;
 
-const float DirectoriesWindow::WINDOW_WIDTH = 350.0f;
-const float DirectoriesWindow::BUTTON_SIZE = 50.0f;
+const float SavedPlaylistsWindow::WINDOW_WIDTH = 350.0f;
+const float SavedPlaylistsWindow::WINDOW_HEIGHT = 200.0f;
+const float SavedPlaylistsWindow::BUTTON_SIZE = 50.0f;
 
-DirectoriesWindow::DirectoriesWindow()
+SavedPlaylistsWindow::SavedPlaylistsWindow()
 {
 	std::string bgPath = FileManager::getContentAsset(std::string("Textures\\white.png"));
 
 	mWidth = (float)Settings::instance()->getIntValue("PLAYLIST_WIDTH", (int)WINDOW_WIDTH);
+	mHeight = WINDOW_HEIGHT;
 
 	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mWidth, 300.0f, D3DXVECTOR4(0,0,0,1.0f));
 	mSprites.push_back(mBackground);
@@ -34,17 +36,18 @@ DirectoriesWindow::DirectoriesWindow()
 	mAddBtn->setHoverTexture(playHoverPath.c_str());
 	mWidgets.push_back(mAddBtn);
 
-	mFolderList = snew ItemListBox(0, 0, 50.0f, 50.0f, NULL, NULL);
-	mFolderList->setBgColor(D3DCOLOR_XRGB(50, 50, 50));
-	mWidgets.push_back(mFolderList);
-	setFolders();
+	mPlaylistList = snew PlaylistListBox(0, 0, 50.0f, 50.0f, listBox_callback, this);
+	mPlaylistList->setBgColor(D3DCOLOR_XRGB(50, 50, 50));
+	mWidgets.push_back(mPlaylistList);
+	setPlaylists();
 
-	mFolderLabel = snew SimpleLabel(0, 0, 50.0f, 50.0f, std::string("Music Folders"), 24);
+	mFolderLabel = snew SimpleLabel(0, 0, 50.0f, 50.0f, std::string("Playlists"), 24);
 	mFolderLabel->setTextColor(D3DXCOLOR(0xffa0f6f9));
 	mWidgets.push_back(mFolderLabel);
 
+	mPlaylistWindow = NULL;
 }
-DirectoriesWindow::~DirectoriesWindow()
+SavedPlaylistsWindow::~SavedPlaylistsWindow()
 {
 	for (unsigned int i = 0; i < mSprites.size(); i++)
 	{
@@ -56,7 +59,7 @@ DirectoriesWindow::~DirectoriesWindow()
 	}
 }
 
-void DirectoriesWindow::onDeviceLost()
+void SavedPlaylistsWindow::onDeviceLost()
 {
 	for (unsigned int i = 0; i < mSprites.size(); i++)
 	{
@@ -67,7 +70,7 @@ void DirectoriesWindow::onDeviceLost()
 		mWidgets[i]->onDeviceLost();
 	}
 }
-void DirectoriesWindow::onDeviceReset()
+void SavedPlaylistsWindow::onDeviceReset()
 {
 	for (unsigned int i = 0; i < mSprites.size(); i++)
 	{
@@ -80,16 +83,16 @@ void DirectoriesWindow::onDeviceReset()
 	mResized = true;
 }
 
-int DirectoriesWindow::getWidth()
+int SavedPlaylistsWindow::getWidth()
 {
 	return (int)mWidth;
 }
-int DirectoriesWindow::getHeight()
+int SavedPlaylistsWindow::getHeight()
 {
 	return (int)mHeight;
 }
 
-void DirectoriesWindow::update(float dt)
+void SavedPlaylistsWindow::update(float dt)
 {
 
 	if (mResized)
@@ -97,17 +100,15 @@ void DirectoriesWindow::update(float dt)
 		RECT r;
 		GetClientRect(gApp->getMainWnd(), &r);
 
-		mWidth = WINDOW_WIDTH;
-		int height = gWindowMgr->getMainContentTop();
 		int currX = r.right - (int)mWidth;
+		int currY = gWindowMgr->getMainContentTop();
 
-		mBackground->setDest(currX, 0, 
-			(int)mWidth, height);
+		mBackground->setDest(currX, currY, 
+			(int)mWidth, (int)mHeight);
 
-
-		mAddBtn->setPos(r.right - 50.0f, (float)height - BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
-		mFolderLabel->setPos((float)currX + 5.0f, 2.0f, mWidth - 10.0f, 25.0);
-		mFolderList->setPos((float)currX + 5.0f, 25.0f, mWidth - 10.0f, (float)height - (45.0f + 25.0f));
+		mAddBtn->setPos(r.right - 50.0f, currY + mHeight - BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+		mFolderLabel->setPos((float)currX + 5.0f, currY + 2.0f, mWidth - 10.0f, 25.0);
+		mPlaylistList->setPos((float)currX + 5.0f, currY + 25.0f, mWidth - 10.0f, mHeight - (45.0f + 25.0f));
 
 		mResized = false;
 	}
@@ -117,19 +118,19 @@ void DirectoriesWindow::update(float dt)
 	}
 }
 
-void DirectoriesWindow::display()
+void SavedPlaylistsWindow::display()
 {
 }
 
-std::vector<Sprite*> DirectoriesWindow::getSprites()
+std::vector<Sprite*> SavedPlaylistsWindow::getSprites()
 {
 	return mSprites;
 }
-std::vector<IWidget*> DirectoriesWindow::getWidgets()
+std::vector<IWidget*> SavedPlaylistsWindow::getWidgets()
 {
 	return mWidgets;
 }
-bool DirectoriesWindow::onMouseEvent(MouseEvent ev)
+bool SavedPlaylistsWindow::onMouseEvent(MouseEvent ev)
 {
 	// if clicked, give widget focus
 	if (ev.getEvent() == MouseEvent::LBUTTONDOWN ||
@@ -161,7 +162,7 @@ bool DirectoriesWindow::onMouseEvent(MouseEvent ev)
 	return consumed;
 }
 
-void DirectoriesWindow::onBlur()
+void SavedPlaylistsWindow::onBlur()
 {
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{
@@ -171,49 +172,48 @@ void DirectoriesWindow::onBlur()
 		}
 	}
 }
-void DirectoriesWindow::onFocus()
+void SavedPlaylistsWindow::onFocus()
 {
 }
 
-void DirectoriesWindow::setFolders()
+void SavedPlaylistsWindow::setPlaylists()
 {
-	mFolderList->clearItems();
-	std::vector<std::string> folders = DatabaseManager::instance()->getAllDirs();
-	for (unsigned int i = 0; i < folders.size(); i++)
+	mPlaylistList->clearItems();
+	std::vector<Playlist*> playlists = DatabaseManager::instance()->getAllPlaylists();
+	for (unsigned int i = 0; i < playlists.size(); i++)
 	{
-		mFolderList->addItem(snew SimpleListItem(folders[i].c_str(), 0));
+		vector<Track*> tracks = DatabaseManager::instance()->getTracksInPlaylist(playlists[i]->Id);
+		mPlaylistList->addItem(snew PlaylistListItem(playlists[i]->Id, playlists[i]->Name.c_str(), tracks));
+		for (unsigned int j = 0; j < tracks.size(); j++)
+		{
+			delete tracks[j];
+		}
 	}
 
 }
 
-void DirectoriesWindow::onBtnPushed(Button* btn)
+void SavedPlaylistsWindow::setPlaylistWindow(MonkeyPlayer::PlaylistWindow *win)
+{
+	mPlaylistWindow = win;
+}
+
+void SavedPlaylistsWindow::onBtnPushed(Button* btn)
 {
 	if (btn == mAddBtn)
 	{
-		BROWSEINFO bi = { 0 };
-		TCHAR path[MAX_PATH];
-		bi.lpszTitle = _T("Pick a Music Directory");
-		bi.pszDisplayName = path;
-		LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
-		if ( pidl != 0 )
-		{
-			TCHAR fullPath[MAX_PATH];
-			SHGetPathFromIDList(pidl, fullPath);
+	}
+}
 
-			// free memory used
-			IMalloc * imalloc = 0;
-			if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
-			{
-				imalloc->Free ( pidl );
-				imalloc->Release ( );
-			}
+void SavedPlaylistsWindow::onItemSelected(ListItem* item, int index)
+{
+	PlaylistListItem* playlistItem = static_cast<PlaylistListItem*>(item);
+	if (playlistItem != NULL && mPlaylistWindow != NULL)
+	{
+		vector<Track*> tracks = DatabaseManager::instance()->getTracksInPlaylist(playlistItem->getId());
 
-			if (strlen(fullPath) > 0)
-			{
-				DatabaseManager::instance()->addDir(std::string(fullPath));
-				MusicLoader::instance()->loadDirectory(fullPath);
-				setFolders();
-			}
-		}
+		mPlaylistWindow->clearItems();
+		mPlaylistWindow->addItems(tracks);
+		mPlaylistWindow->setPlaylistName(playlistItem->toString());
+
 	}
 }

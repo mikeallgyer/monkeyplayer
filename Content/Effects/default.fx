@@ -40,7 +40,7 @@ VSOutput BasicVS(float3 position : POSITION0, float3 normal : NORMAL0,
 
 	output.Normal = mul(float4(normal, 0.0), world).xyz;
 	output.TexCoord = TexCoord;
-	output.TexCoord.y = 1+output.TexCoord.y;
+	output.TexCoord.y = 1 + output.TexCoord.y;
 	return output;
 }
 	

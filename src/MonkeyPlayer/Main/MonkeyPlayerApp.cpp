@@ -22,6 +22,7 @@
 #include "NowPlayingWindow.h"
 #include "PlaylistWindow.h"
 #include "PlaybackOptionsWindow.h"
+#include "SavedPlaylistsWindow.h"
 #include "SoundManager.h"
 #include "Vertex.h"
 #include "WindowManager.h"
@@ -69,6 +70,12 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		
 		DirectoriesWindow* dirWin = snew DirectoriesWindow();
 		mgr->addWindow(dirWin);
+
+		SavedPlaylistsWindow* spWin = snew SavedPlaylistsWindow();
+		mgr->addWindow(spWin);
+		spWin->setPlaylistWindow(pl);
+
+		pl->setTopPos(mgr->getMainContentTop() + spWin->getHeight());
 
 		CollectionWindow* collWin = snew CollectionWindow();
 		mgr->addWindow(collWin);

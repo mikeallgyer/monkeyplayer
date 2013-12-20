@@ -21,6 +21,7 @@ TrackListBox::TrackListBox(float x, float y, float width, float height,
 	HR(mFont->DrawText(0, "000:00:00", -1, &r, DT_NOCLIP | DT_CALCRECT, D3DCOLOR_XRGB(255, 255, 0)));
 	mTimeWidth = r.right;
 	mHighlightedIndex = -1;
+	mUseTrackNumbers = false;
 }
 
 void TrackListBox::preRender()
@@ -67,7 +68,14 @@ void TrackListBox::preRender()
 				currColor = (i == mHighlightedIndex) ? selColor : defColor;
 				int y = ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row;
 				RECT r = { ItemListBox::TEXT_MARGIN_LEFT, y, ItemListBox::TEXT_MARGIN_LEFT + (int)mTextWidth - mTimeWidth, y + mFontHeight };
-				sprintf_s(buf, 512, "%d. %s", ((TrackListItem*)mItems[i])->getTrack()->TrackNumber, mItems[i]->toString().c_str());
+				if (mUseTrackNumbers)
+				{
+					sprintf_s(buf, 512, "%d. %s", ((TrackListItem*)mItems[i])->getTrack()->TrackNumber, mItems[i]->toString().c_str());
+				}
+				else
+				{
+					sprintf_s(buf, 512, "%d. %s", (i + 1), mItems[i]->toString().c_str());
+				}
 				HR(mFont->DrawText(0, buf, -1, &r, DT_LEFT, currColor));
 				
 				// time
@@ -191,4 +199,9 @@ void TrackListBox::removeItems(vector<int> items)
 		}
 	}
 	lock.Unlock();
+}
+
+void TrackListBox::setUseTrackNumbers(bool useTrackNo)
+{
+	mUseTrackNumbers = useTrackNo;
 }

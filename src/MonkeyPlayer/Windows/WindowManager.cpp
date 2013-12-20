@@ -40,6 +40,8 @@ WindowManager::WindowManager()
 	mProgressBar = snew ProgressBar(0, 0, 100.0f, 100.0f);
 	mProgressBar->setVisible(false);
 
+	mToolTip = snew ToolTip(0, 0, "hi");
+
 	mContextMenu = snew ItemListBox(-999.0f, -999.0f, 150.0f, 50.0, contextMenu_callback, this, D3DCOLOR_XRGB(116, 116, 64));
 	mContextMenu->setAllowSingleClickSelection(true);
 	mContextMenuOwner = NULL;
@@ -61,6 +63,7 @@ WindowManager::~WindowManager()
 		delete mWindows[i];
 	}
 	delete mProgressBar;
+	delete mToolTip;
 	delete mContextMenu;
 	if (mSearchThread != NULL)
 	{
@@ -79,6 +82,7 @@ void WindowManager::onDeviceLost()
 		mWindows[i]->onDeviceLost();
 	}
 	mProgressBar->onDeviceLost();
+	mToolTip->onDeviceLost();
 	mContextMenu->onDeviceLost();
 	HR(mEffect->OnLostDevice());
 }
@@ -89,6 +93,7 @@ void WindowManager::onDeviceReset()
 		mWindows[i]->onDeviceReset();
 	}
 	mProgressBar->onDeviceReset();
+	mToolTip->onDeviceReset();
 	mContextMenu->onDeviceReset();
 	HR(mEffect->OnResetDevice());
 
@@ -160,6 +165,7 @@ void WindowManager::update(float dt)
 		mResized = false;
 	}
 	mProgressBar->update(dt);
+	mToolTip->update(dt);
 }
 
 void WindowManager::preRender()
@@ -170,6 +176,7 @@ void WindowManager::preRender()
 		mWindows[i]->preRender();
 	}
 	mContextMenu->preRender();
+	mToolTip->preRender();
 }
 void WindowManager::display()
 {
@@ -194,6 +201,7 @@ void WindowManager::display()
 			mNumTriangles += mWindows[j]->getNumTriangles();
 		}
 		drawSprites(mProgressBar->getSprites());
+		drawSprites(mToolTip->getSprites());
 		drawSprites(mContextMenu->getSprites());
 		mNumTriangles += mProgressBar->getNumTriangles();
 		mNumTriangles += mContextMenu->getNumTriangles();
@@ -304,6 +312,7 @@ void WindowManager::mouseEventCallback(void* obj, MouseEvent e)
 void WindowManager::onMouseEvent(MouseEvent e)
 {
 	mContextMenu->onMouseEvent(e);
+	mToolTip->onMouseEvent(e);
 	if (((!mContextMenu->isPointInside(e.getX(), e.getY()) && 
 		(e.getEvent() == MouseEvent::LBUTTONDOWN || e.getEvent() == MouseEvent::RBUTTONDOWN))) &&
 		e.getEvent() != MouseEvent::MOUSEWHEEL)

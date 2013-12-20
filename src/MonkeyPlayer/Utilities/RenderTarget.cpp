@@ -56,7 +56,8 @@ void RenderTarget::recreateTargets()
 	mViewport.MinZ = 0.0f;
 	mViewport.MaxZ = 1.0f;
 
-	HRESULT hr = D3DXCreateTexture(gDevice, (UINT)mWidth, (UINT)mHeight, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT,
+	HRESULT hr = D3DXCreateTexture(gDevice, (UINT)mWidth, (UINT)mHeight, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP,
+		D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT,
 		&mTexture);
 	if (hr == D3D_OK)
 	{

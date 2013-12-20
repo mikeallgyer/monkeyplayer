@@ -32,6 +32,7 @@ namespace MonkeyPlayer
 		void onDeviceLost();
 		void onDeviceReset();
 
+		void setTopPos(int pos);
 		int getWidth();
 		int getHeight();
 
@@ -63,6 +64,7 @@ namespace MonkeyPlayer
 		void insertArtistToQueueNext(string &name);
 		void replaceQueueWithArtist(string &name);
 
+		void setPlaylistName(string name, bool doWriteFile = true);
 
 		static void listBox_callback(void* obj, ItemListBox* listBox)
 		{
@@ -96,14 +98,19 @@ namespace MonkeyPlayer
 		Sprite* mBackground;
 
 		TrackListBox *mListBox;
+		SimpleLabel* mHeaderLbl;
 		Button *mShuffleBtn;
 		Button *mClearBtn;
 		Button *mDelBtn;
+		Button *mSaveBtn;
 
 		int mPreferredWidth;
 		int mCurrWidth;
+		int mCurrHeight;
 		bool mResized;
 		int mCurrSongIndex;
+		int mTopPos;
+		string mPlaylistName;
 
 		static const int MIN_WINDOW_WIDTH;
 

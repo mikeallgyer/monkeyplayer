@@ -59,6 +59,15 @@ namespace MonkeyPlayer
 		bool dirExists(std::string &path);
 		vector<std::string> getAllDirs();
 
+		// playlists
+		void savePlaylist(string name, vector<Track*> tracks, bool overwrite = true);
+		vector<Playlist*> getAllPlaylists();
+		void getPlaylist(string name, Playlist* list);
+		vector<PlaylistTrack*> getPlaylistTracks(string name);
+		vector<PlaylistTrack*> getPlaylistTracks(int id);
+		vector<Track*> getTracksInPlaylist(int id);
+		void deletePlaylist(int id);
+
 		// DB defaults
 		DBDefault getDefault(string name);
 		DBDefault getDefault(string name, string defaultStrValue, int defaultIntValue);

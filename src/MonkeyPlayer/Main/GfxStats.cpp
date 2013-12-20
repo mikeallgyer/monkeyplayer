@@ -92,5 +92,5 @@ void GfxStats::display()
 		mFps, mFrameDuration, mNumTriangles);
 
 	RECT r = { 0, 0, 0, 0 };
-	HR(mFont->DrawText(0, buffer, -1, &r, DT_NOCLIP, D3DCOLOR_XRGB(255, 0, 0)));
+	HR(mFont->DrawText(0, buffer, -1, &r, DT_NOCLIP, D3DCOLOR_XRGB(0,0,0)));
 }

@@ -130,6 +130,7 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mTargetSprite = NULL;
 
 	mTrackBox = snew TrackListBox(mX, mY, 200.0, 200.0f, listBox_callback, this);
+	mTrackBox->setUseTrackNumbers(true);
 	mWidgets.push_back(mTrackBox);
 
 	std::string selBoxPath = FileManager::getContentAsset(std::string("Textures\\cdHighlight.png"));
@@ -874,7 +875,7 @@ void LargeAlbumWidget::goToSong(Album a, Track t, bool doHighlight)
 }
 int LargeAlbumWidget::getCurrentAlbum()
 {
-	if (mAlbumIndex >= 0 && mAlbumIndex < mLargeAlbums.size())
+	if (mAlbumIndex >= 0 && mAlbumIndex < (int)mLargeAlbums.size())
 	{
 		return (int)mLargeAlbums[mAlbumIndex]->getAlbum().Id;
 	}
@@ -1201,7 +1202,7 @@ void LargeAlbumWidget::onBtnClicked(Button* btn)
 		mAlbumIndex--;
 
 	}
-	else if (btn == mRightBtn && mAlbumIndex < mLargeAlbums.size() - 1)
+	else if (btn == mRightBtn && mAlbumIndex < (int)mLargeAlbums.size() - 1)
 	{
 		mAlbumIndex++;
 	}

@@ -230,7 +230,8 @@ void DatabaseManager::endTransaction()
 }
 vector<string> DatabaseManager::getAllArtists()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT DISTINCT ARTIST FROM ALBUMS ORDER BY ARTIST", -1, &stmt, NULL);
@@ -251,7 +252,8 @@ vector<string> DatabaseManager::getAllArtists()
 
 void DatabaseManager::getGenre(int id, Genre* genre)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 
 	genre->Id = -1;
 	sqlite3_stmt* stmt = NULL;
@@ -272,7 +274,8 @@ void DatabaseManager::getGenre(int id, Genre* genre)
 }
 void DatabaseManager::getGenre(string title, Genre* genre)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	genre->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
@@ -299,7 +302,8 @@ void DatabaseManager::addGenre(Genre &genre)
 	// only add if it doesn't exist
 	if (existing.Id == DatabaseStructs::INVALID_ID)
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "INSERT INTO GENRES (TITLE, STANDARD_ID) VALUES (?, ?)", -1, &stmt, NULL);
@@ -323,7 +327,8 @@ void DatabaseManager::addGenre(Genre &genre)
 
 void DatabaseManager::getTrack(int id, Track* track)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	track->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
@@ -354,7 +359,8 @@ void DatabaseManager::getTrack(int id, Track* track)
 
 void DatabaseManager::getTrack(string &filename, Track* track)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	track->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
@@ -386,7 +392,8 @@ void DatabaseManager::getTrack(string &filename, Track* track)
 
 vector<Track*> DatabaseManager::getTracks(int album)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
@@ -426,7 +433,8 @@ vector<Track*> DatabaseManager::getTracks(Album &album)
 }
 vector<Track*> DatabaseManager::getTracks(string &artist)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
@@ -464,7 +472,8 @@ vector<Track*> DatabaseManager::getTracks(string &artist)
 
 map<string, Track*> DatabaseManager::getAllTracks()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
@@ -499,7 +508,8 @@ map<string, Track*> DatabaseManager::getAllTracks()
 }
 vector<Track*> DatabaseManager::getAllTracksVector()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
@@ -542,7 +552,8 @@ void DatabaseManager::addTrack(Track& track)
 	// only add if it doesn't exist
 	if (existing.Id == DatabaseStructs::INVALID_ID)
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "INSERT INTO TRACKS (FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
@@ -608,7 +619,8 @@ bool DatabaseManager::modifyTrack(Track& track)
 	// only update if it exists
 	if (trackId != DatabaseStructs::INVALID_ID)
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "UPDATE TRACKS SET FILENAME=?, TITLE=?, "
@@ -659,7 +671,8 @@ bool DatabaseManager::modifyTrack(Track& track)
 }
 vector<Track*> DatabaseManager::searchTracks(string search)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 	
 	search = "%" + search + "%";
@@ -701,7 +714,8 @@ vector<Track*> DatabaseManager::searchTracks(string search)
 void DatabaseManager::getAlbum(int id, Album* album)
 {
 	album->Id = DatabaseStructs::INVALID_ID;
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	album->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
@@ -724,7 +738,8 @@ void DatabaseManager::getAlbum(int id, Album* album)
 
 void DatabaseManager::getAlbum(string title, int year, Album* album)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	album->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
@@ -754,7 +769,8 @@ void DatabaseManager::addAlbum(Album &album)
 	// only add if it doesn't exist
 	if (existing.Id == DatabaseStructs::INVALID_ID)
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "INSERT INTO ALBUMS (NUM_TRACKS, TITLE, YEAR, ARTIST) VALUES (?, ?, ?, ?)", -1, &stmt, NULL);
@@ -785,7 +801,8 @@ void DatabaseManager::addAlbum(Album &album)
 
 vector<Album*> DatabaseManager::getAllAlbums()
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
@@ -812,7 +829,8 @@ vector<Album*> DatabaseManager::getAllAlbums()
 }
 vector<Album*> DatabaseManager::getAllAlbums(string artist)
 {
-	CSingleLock lock(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR FROM ALBUMS WHERE ARTIST=? ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
@@ -844,7 +862,8 @@ void DatabaseManager::addDir(std::string &path)
 	// only add if it doesn't exist
 	if (!dirExists(path))
 	{
-		CSingleLock lock(&mCritSection, true);
+		CSingleLock lock(&mCritSection);
+		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "INSERT INTO MUSIC_DIRECTORIES (PATH) VALUES (?)", -1, &stmt, NULL);
@@ -858,7 +877,8 @@ void DatabaseManager::addDir(std::string &path)
 }
 bool DatabaseManager::dirExists(std::string &path)
 {
-	CSingleLock lock1(&mCritSection, true);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
 	sqlite3_stmt* stmt1 = NULL;
 
 	sqlite3_prepare_v2(mDB, "SELECT PATH FROM MUSIC_DIRECTORIES WHERE PATH=?", -1, &stmt1, NULL);
@@ -872,7 +892,7 @@ bool DatabaseManager::dirExists(std::string &path)
 		exists = true;
 	}
 	sqlite3_finalize(stmt1);
-	lock1.Unlock();
+	lock.Unlock();
 
 	return exists;
 }
@@ -896,6 +916,194 @@ vector<std::string> DatabaseManager::getAllDirs()
 	sqlite3_finalize(stmt);
 	lock.Unlock();
 	return paths;
+}
+/*
+	query = "CREATE TABLE PLAYLISTS (ID INTEGER PRIMARY KEY, "
+		"NAME VARCHAR(255), "
+		"FILENAME VARCHAR(255))";
+
+	query = "CREATE TABLE PLAYLIST_TRACKS (ID INTEGER PRIMARY KEY, "
+		"TRACK INTEGER, "
+		"PLAYLIST INTEGER, "
+		"T_INDEX INTEGER, "
+		"FOREIGN KEY(TRACK) REFERENCES TRACKS(ID), "
+		"FOREIGN KEY(PLAYLIST) REFERENCES PLAYLISTS(ID))";
+*/
+
+void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool overwrite)
+{
+	Playlist existing;
+	getPlaylist(name, &existing);
+	if (existing.Id != DatabaseStructs::INVALID_ID)
+	{
+		if (!overwrite)
+		{
+			return;
+		}
+
+		deletePlaylist(existing.Id);
+	}
+
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "INSERT INTO PLAYLISTS (NAME, FILENAME) VALUES (?, ?)", -1, &stmt, NULL);
+	sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 2, "NO_FILE", -1, SQLITE_STATIC);
+
+	int index = addRow(stmt);
+
+	for (unsigned int i = 0; i < tracks.size(); i++)
+	{
+		sqlite3_clear_bindings(stmt);
+
+		sqlite3_prepare_v2(mDB, "INSERT INTO PLAYLIST_TRACKS (TRACK, PLAYLIST, T_INDEX) VALUES (?, ?, ?)", -1, &stmt, NULL);
+		sqlite3_bind_int(stmt, 1, tracks[i]->Id);
+		sqlite3_bind_int(stmt, 2, index);
+		sqlite3_bind_int(stmt, 3, i + 1);
+		addRow(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+}
+vector<Playlist*> DatabaseManager::getAllPlaylists()
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, NAME, FILENAME FROM PLAYLISTS", -1, &stmt, NULL);
+
+	vector<Playlist*> lists;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Playlist* list = snew Playlist();
+		list->Id = getIntColumn(stmt, 0);
+		list->Name = getStringColumn(stmt, 1);
+		list->Filename = getStringColumn(stmt, 2);
+		lists.push_back(list);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return lists;
+}
+void DatabaseManager::getPlaylist(string name, Playlist* list)
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, NAME, FILENAME FROM PLAYLISTS where NAME=?", -1, &stmt, NULL);
+	sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+
+	list->Id = DatabaseStructs::INVALID_ID;
+
+	int result = sqlite3_step(stmt); 
+
+	if (result == SQLITE_ROW)
+	{
+		list->Id = getIntColumn(stmt, 0);
+		list->Name = getStringColumn(stmt, 1);
+		list->Filename = getStringColumn(stmt, 2);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+}
+
+vector<PlaylistTrack*> DatabaseManager::getPlaylistTracks(string name)
+{
+	Playlist list;
+	getPlaylist(name, &list);
+
+	return getPlaylistTracks(list.Id);
+}
+vector<PlaylistTrack*> DatabaseManager::getPlaylistTracks(int id)
+{
+	CSingleLock lock(&mCritSection, true);
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, TRACK, PLAYLIST, T_INDEX FROM PLAYLIST_TRACKS WHERE PLAYLIST=? ORDER BY T_INDEX", -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, id);
+
+	vector<PlaylistTrack*> lists;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		PlaylistTrack* list = snew PlaylistTrack();
+		list->Id = getIntColumn(stmt, 0);
+		list->TrackId = getIntColumn(stmt, 1);
+		list->PlaylistId = getIntColumn(stmt, 2);
+		list->T_Index = getIntColumn(stmt, 3);
+		lists.push_back(list);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return lists;
+}
+vector<Track*> DatabaseManager::getTracksInPlaylist(int id)
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT T.ID, T.FILENAME, T.TITLE, T.ARTIST, T.TRACK_NUMBER, T.ALBUM, T.LENGTH, T.DATE_ADDED, "
+		"T.IGNORED, T.GENRE, T.DATE_USED, T.NUM_PLAYED FROM TRACKS T, PLAYLIST_TRACKS WHERE "
+		"T.ID = PLAYLIST_TRACKS.TRACK AND PLAYLIST_TRACKS.PLAYLIST = ? ORDER BY PLAYLIST_TRACKS.T_INDEX", -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, id);
+
+	vector<Track*> tracks;
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Track* track = snew Track();
+		track->Id = getIntColumn(stmt, 0);
+		track->Filename = getStringColumn(stmt, 1);
+		track->Title = getStringColumn(stmt, 2);
+		track->Artist = getStringColumn(stmt, 3);
+		track->TrackNumber = getIntColumn(stmt, 4);
+		track->AlbumId = getIntColumn(stmt, 5);
+		track->Length = getIntColumn(stmt, 6);
+		track->DateAdded = getLongColumn(stmt, 7);
+		track->Ignored = getBoolColumn(stmt, 8);
+		track->Genre = getIntColumn(stmt, 9);
+		track->DateUsed = getLongColumn(stmt, 10);
+		track->NumPlayed = getIntColumn(stmt, 11);
+
+		tracks.push_back(track);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+	return tracks;
+}
+
+void DatabaseManager::deletePlaylist(int id)
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "DELETE FROM PLAYLIST_TRACKS WHERE PLAYLIST = ?", -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, id);
+
+	sqlite3_step(stmt);
+
+	sqlite3_clear_bindings(stmt);
+
+	sqlite3_prepare_v2(mDB, "DELETE FROM PLAYLISTS WHERE ID = ?", -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, id);
+
+	sqlite3_step(stmt);
+
+	lock.Unlock();
 }
 
 DBDefault DatabaseManager::getDefault(string name)

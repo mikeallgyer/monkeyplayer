@@ -375,6 +375,36 @@ bool ControlWindow::onMouseEvent(MouseEvent ev)
 			}
 		}
 	}
+	else if (ev.getEvent() == MouseEvent::MOUSEMOVE)
+	{
+		if (mPlayButton->isPointInside(ev.getX(), ev.getY()))
+		{
+			if (SoundManager::instance()->isPlaying())
+			{
+				gWindowMgr->getToolTip()->setup(mPlayButton, "Pause", ev.getX(), ev.getY());
+			}
+			else
+			{
+				gWindowMgr->getToolTip()->setup(mPlayButton, "Play", ev.getX(), ev.getY());
+			}
+		}
+		else if (mStopButton->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mStopButton, "Stop", ev.getX(), ev.getY());
+		}
+		else if (mPreviousButton->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mPreviousButton, "Previous", ev.getX(), ev.getY());
+		}
+		else if (mNextButton->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mNextButton, "Next", ev.getX(), ev.getY());
+		}
+		else if (mMuteButton->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mMuteButton, "Toggle Mute", ev.getX(), ev.getY());
+		}
+	}
 	bool consumed = false;
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{

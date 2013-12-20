@@ -115,5 +115,49 @@ namespace MonkeyPlayer
 		std::string mDisplayTime;
 		bool mManageMemory;
 	};
+
+	class PlaylistListItem : public ListItem
+	{
+	public:
+		PlaylistListItem()
+		{
+			mId = -1;
+			mDisplayStr = "<No data available>";
+			mDisplayTime = "";
+		}
+		// does not claim memory!
+		PlaylistListItem(int id, string name, vector<Track*> t)
+		{
+			mId = id;
+			mDisplayStr = name;
+			int total = 0;
+
+			for (unsigned int i=0; i < t.size(); i++)
+			{
+				total += t[i]->Length;
+			}
+			mDisplayTime = SoundManager::getTimeString(total * 1000);
+		}
+		~PlaylistListItem()
+		{
+		}
+		int getId() { return mId; }
+		std::string toString() { return mDisplayStr; }
+
+		void setData(ListItem* item)
+		{
+			mDisplayStr = ((PlaylistListItem*)item)->mDisplayStr;
+			mDisplayTime = ((PlaylistListItem*)item)->mDisplayTime;
+		}
+		std::string getTime()
+		{
+			return mDisplayTime;
+		}
+
+	private:
+		int mId;
+		std::string mDisplayStr;
+		std::string mDisplayTime;
+	};
 }
 #endif
