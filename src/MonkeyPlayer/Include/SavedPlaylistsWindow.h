@@ -71,6 +71,14 @@ namespace MonkeyPlayer
 				win->onItemSelected(listBox->getSelectedItem(), ((TrackListBox*)listBox)->getSelectedIndex());
 			}
 		}
+		static void db_playlist_callback(void* obj)
+		{
+			SavedPlaylistsWindow* win = static_cast<SavedPlaylistsWindow*>(obj);
+			if (win)
+			{
+				win->onDBPlaylistEvent();
+			}
+		}
 	private:
 		std::vector<Sprite*> mSprites;
 		std::vector<IWidget*> mWidgets;
@@ -88,6 +96,7 @@ namespace MonkeyPlayer
 		void setPlaylists();
 		void onBtnPushed(Button* btn);
 		void onItemSelected(ListItem* item, int index);
+		void onDBPlaylistEvent();
 	};
 }
 #endif

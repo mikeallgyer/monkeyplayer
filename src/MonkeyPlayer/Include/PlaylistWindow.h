@@ -44,13 +44,18 @@ namespace MonkeyPlayer
 		std::vector<IWidget*> getWidgets();
 
 		void clearItems();
+		vector<ListItem*> getItems() { return mListBox->getItems(); }
+		int getHighlightedIndex() { return mListBox->getHighlightedIndex(); }
 		void addItem(Track* item);
 		void addItems(std::vector<Track*> items, bool doWriteFile = true);
 		void modifyItem(Track* item);
 		void modifyItems(std::vector<Track*> items);
-		bool playNextSong();
+		bool playNextSong(bool loop);
+		Track* getNextSong(bool loop, int &index);
 		bool playPreviousSong();
+		Track* getPreviousSong();
 		bool playCurrentSong();
+		bool hasNextSong();
 
 		void addTrackToQueueEnd(int id);
 		void insertTrackToQueueNext(int id);
@@ -99,6 +104,7 @@ namespace MonkeyPlayer
 
 		TrackListBox *mListBox;
 		SimpleLabel* mHeaderLbl;
+		SimpleLabel* mLengthLbl;
 		Button *mShuffleBtn;
 		Button *mClearBtn;
 		Button *mDelBtn;

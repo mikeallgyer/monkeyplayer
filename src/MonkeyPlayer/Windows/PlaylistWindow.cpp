@@ -87,12 +87,17 @@ PlaylistWindow::PlaylistWindow()
 	mHeaderLbl->setTextColor(D3DXCOLOR(0xffa0f6f9));
 	mHeaderLbl->setSizeToFit(true);
 
-	mWidgets.push_back(mHeaderLbl);
+	mLengthLbl = snew SimpleLabel(0, 0, 50.0f, 50.0f, std::string("00:00"), 18);
+	mLengthLbl->setTextColor(D3DXCOLOR(0xffa0f6f9));
+	mLengthLbl->setSizeToFit(true);
+
+	mWidgets.push_back(mLengthLbl);
 	mWidgets.push_back(mListBox);
 	mWidgets.push_back(mShuffleBtn);
 	mWidgets.push_back(mClearBtn);
 	mWidgets.push_back(mDelBtn);
 	mWidgets.push_back(mSaveBtn);
+	mWidgets.push_back(mHeaderLbl);
 	readFile();
 	setPlaylistName(mPlaylistName, false);
 }
@@ -170,6 +175,9 @@ void PlaylistWindow::update(float dt)
 			mBackground->getWidth() - 10,
 			mBackground->getHeight() - 110);
 
+		mLengthLbl->setPos(mListBox->getX() + mListBox->getWidth() - mLengthLbl->getWidth(), 
+			mListBox->getY() + mListBox->getHeight() + 2.0f);
+
 		mShuffleBtn->setPos(mBackground->getX() + 5,
 			mBackground->getY() + mBackground->getHeight() - mShuffleBtn->getHeight() - 10);
 
@@ -184,6 +192,14 @@ void PlaylistWindow::update(float dt)
 
 		mResized = false;
 	}
+
+	if (gInput->keyPressed(VK_DELETE))
+	{
+		mListBox->removeItems(mListBox->getSelectedIndices());
+		writeFile();
+		setPlaylistName(mPlaylistName, false);
+	}
+
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{
 		mWidgets[i]->update(dt);
@@ -220,6 +236,7 @@ void PlaylistWindow::addItem(Track *item)
 {
 	mListBox->addItem(snew TrackListItem(item));
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::addItems(std::vector<Track*> items, bool doWriteFile)
@@ -230,6 +247,7 @@ void PlaylistWindow::addItems(std::vector<Track*> items, bool doWriteFile)
 		trackItems[i] = snew TrackListItem(items[i]);
 	}
 	mListBox->addItems(trackItems);
+	setPlaylistName(mPlaylistName, false);
 
 	if (doWriteFile)
 	{
@@ -256,43 +274,72 @@ void PlaylistWindow::modifyItems(std::vector<Track*> items)
 		delete trackItems[i];
 	}
 }
-bool PlaylistWindow::playNextSong()
+bool PlaylistWindow::playNextSong(bool loop)
 {
-	if (mCurrSongIndex < (mListBox->getNumItems() - 1))
+	int index;
+	Track *t = getNextSong(loop, index);
+	if (t != NULL)
 	{
-		if (mCurrSongIndex < 0)
-		{
-			mCurrSongIndex = 0;
-		}
-		else 
-		{
-			mCurrSongIndex++;
-		}
-		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
-		mListBox->setCurrentTrack(mCurrSongIndex);
+		SoundManager::instance()->playFile(t->Filename.c_str());
+		mCurrSongIndex = index;
+		mListBox->setHighlightedItem(mCurrSongIndex);
+		mListBox->scrollToIndex(mCurrSongIndex);
 		writeFile();
 		return true;
 	}
 	return false;
 }
-bool PlaylistWindow::playPreviousSong()
+Track* PlaylistWindow::getNextSong(bool loop, int &index)
 {
-	if (mCurrSongIndex > 0)
+	if (mListBox->getNumItems() - 1 > 0 && (mCurrSongIndex < (mListBox->getNumItems() - 1) || loop))
 	{
-		if (mCurrSongIndex > mListBox->getNumItems() - 1)
+		index = mCurrSongIndex;
+		if (mCurrSongIndex < 0)
 		{
-			mCurrSongIndex = mListBox->getNumItems() - 1;
+			index = 0;
 		}
 		else 
 		{
-			mCurrSongIndex--;
+			index++;
+			if (index >= mListBox->getNumItems())
+			{
+				index = 0;
+			}
 		}
-		SoundManager::instance()->playFile(((TrackListItem*)mListBox->getItem(mCurrSongIndex))->getTrack()->Filename.c_str());
-		mListBox->setCurrentTrack(mCurrSongIndex);
+		return ((TrackListItem*)mListBox->getItem(index))->getTrack();
+	}
+	return NULL;
+}
+bool PlaylistWindow::playPreviousSong()
+{
+	Track *t = getPreviousSong();
+	if (t != NULL)
+	{
+		SoundManager::instance()->playFile(t->Filename.c_str());
+		mCurrSongIndex--;
+		mListBox->setHighlightedItem(mCurrSongIndex);
+		mListBox->scrollToIndex(mCurrSongIndex);
 		writeFile();
 		return true;
 	}
 	return false;
+}
+Track* PlaylistWindow::getPreviousSong()
+{
+	int index = mCurrSongIndex;
+	if (mListBox->getNumItems() > 0 && mCurrSongIndex > 0)
+	{
+		if (mCurrSongIndex > mListBox->getNumItems() - 1)
+		{
+			index = mListBox->getNumItems() - 1;
+		}
+		else 
+		{
+			index--;
+		}
+		return ((TrackListItem*)mListBox->getItem(index))->getTrack();
+	}
+	return NULL;
 }
 bool PlaylistWindow::playCurrentSong()
 {
@@ -301,10 +348,15 @@ bool PlaylistWindow::playCurrentSong()
 	{
 		TrackListItem* t = (TrackListItem*)item;
 		SoundManager::instance()->playFile(t->getTrack()->Filename.c_str());
+		mListBox->scrollToIndex(mCurrSongIndex);
 		mCurrSongIndex = mListBox->getHighlightedIndex();
 		return true;
 	}
 	return false;
+}
+bool PlaylistWindow::hasNextSong()
+{
+	return mListBox->getNumItems() > 0 && mListBox->getHighlightedIndex() < (mListBox->getNumItems() - 1);
 }
 void PlaylistWindow::addTrackToQueueEnd(int id)
 {
@@ -314,6 +366,7 @@ void PlaylistWindow::addTrackToQueueEnd(int id)
 	{
 		mListBox->addItem(snew TrackListItem(t));
 	}
+	setPlaylistName(mPlaylistName, false);
 
 	writeFile();
 }
@@ -327,6 +380,7 @@ void PlaylistWindow::insertTrackToQueueNext(int id)
 		mListBox->addItem(snew TrackListItem(t), index >= 0 ? (unsigned int)index + 1 : 0);
 	}
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::replaceQueueWithTrack(int id)
@@ -338,6 +392,7 @@ void PlaylistWindow::replaceQueueWithTrack(int id)
 		mListBox->clearItems();
 		mListBox->addItem(snew TrackListItem(t));
 	}
+	setPlaylistName(mPlaylistName, false);
 
 	writeFile();
 }
@@ -351,7 +406,7 @@ void PlaylistWindow::addAlbumToQueueEnd(Album a)
 		items[i] = snew TrackListItem(tracks[i]);
 	}
 	mListBox->addItems(items);
-
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::insertAlbumToQueueNext(Album a)
@@ -366,6 +421,7 @@ void PlaylistWindow::insertAlbumToQueueNext(Album a)
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::replaceQueueWithAlbum(Album a)
@@ -379,6 +435,7 @@ void PlaylistWindow::replaceQueueWithAlbum(Album a)
 	}
 	mListBox->addItems(items);
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 
@@ -393,6 +450,7 @@ void PlaylistWindow::addArtistToQueueEnd(string &name)
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items);
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 
@@ -407,6 +465,7 @@ void PlaylistWindow::insertArtistToQueueNext(string &name)
 	int index = mListBox->getHighlightedIndex();
 	mListBox->addItems(items, index >= 0 ? (unsigned int)index + 1 : 0);
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::replaceQueueWithArtist(string &name)
@@ -415,22 +474,34 @@ void PlaylistWindow::replaceQueueWithArtist(string &name)
 	clearItems();
 	addItems(tracks);
 
+	setPlaylistName(mPlaylistName, false);
 	writeFile();
 }
 void PlaylistWindow::setPlaylistName(string name, bool doWriteFile)
 {
 	mPlaylistName = name;
+	int count = mListBox->getItems().size();
+	int length = 0;
+	vector<ListItem*> items = mListBox->getItems();
+	for (unsigned int i = 0; i < items.size(); i++)
+	{
+		length += ((TrackListItem*)items[i])->getTrack()->Length;
+	}
 	if (mPlaylistName == "")
 	{
-		mHeaderLbl->setString(string("Queue"));
+		std::stringstream ss;
+		ss << "Queue - " << count << " songs";
+		mHeaderLbl->setString(ss.str());
+		mLengthLbl->setString(SoundManager::getTimeString(length * 1000));
 	}
 	else
 	{
 		std::stringstream ss;
-		ss << "Queue (" << mPlaylistName << ")";
-
+		ss << "Queue (" << mPlaylistName << ") - " << count << " songs";
 		mHeaderLbl->setString(ss.str());
+		mLengthLbl->setString(SoundManager::getTimeString(length * 1000));
 	}
+	mResized = true; // set flag so time label is positioned correctly
 	if (doWriteFile)
 	{
 		writeFile();
@@ -461,10 +532,13 @@ void PlaylistWindow::onBtnClicked(Button* btn)
 		mListBox->clearItems();
 		writeFile();
 		mCurrSongIndex = -1;
+		setPlaylistName(mPlaylistName, false);
 	}
 	else if (btn == mDelBtn)
 	{
 		mListBox->removeItems(mListBox->getSelectedIndices());
+		writeFile();
+		setPlaylistName(mPlaylistName, false);
 	}
 	else if (btn == mSaveBtn)
 	{

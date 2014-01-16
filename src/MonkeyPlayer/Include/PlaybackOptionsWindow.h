@@ -77,6 +77,26 @@ namespace MonkeyPlayer
 		void setX(int x);
 		void setWidth(int width);
 
+		Track* getNextSong(int &index);
+		bool playNextSong();
+		bool playPreviousSong();
+		Track* getCurrentSong();
+		bool playCurrentSong();
+		bool isRepeatOn(); // excludes repeat playlist
+		bool isRepeatPlaylistOn();
+		bool isStopAfterOn();
+		int getRepeat();
+		int getStopAfter();
+
+		static void soundEventCB(void *obj, SoundManager::SoundEvent ev)
+		{
+			PlaybackOptionsWindow* win = static_cast<PlaybackOptionsWindow*>(obj);
+			if (win)
+			{
+				win->onSoundEvent(ev);
+			}
+		}
+
 	private:
 		std::vector<Sprite*> mSprites;
 		std::vector<IWidget*> mWidgets;
@@ -91,16 +111,32 @@ namespace MonkeyPlayer
 		Checkbox* mRepeatChk;
 		ComboBox* mStopAfterCombo;
 
+		vector<Track*> mHiddenList;
+		int mHiddenListIndex;
+
+		int mLastPlayedId;
+		int mLastConfigedAlbum;
+		string mLastConfigedArtist;
+
 		int mX;
 		int mCurrWidth;
 		bool mResized;
 
 		static const int WINDOW_HEIGHT;
 
+		void initHiddenList(bool tryReadFirst = false);
+		string getFilename();
+		void readList();
+		void writeList();
+		vector<Track*> populateList();
+		void createRepeatingList();
+		void onSoundEvent(SoundManager::SoundEvent ev);
+
 		void onBtnPushed(Button* btn);
 		void onChkPushed(Checkbox* btn);
 		void onComboSelected(ComboBox* combo);
 
+	public:
 		static enum ORDER_BY { SONG, ALBUM, ARTIST, QUEUE, NEVER };
 	};
 }

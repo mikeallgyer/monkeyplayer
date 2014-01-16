@@ -37,6 +37,7 @@ namespace MonkeyPlayer
 		void display() {}
 		void setPos(float x, float y, float width = 0, float height = 0);
 		void setRange(float minValue, float maxValue);
+		void setRangeAndStep(float minValue, float maxValue, float step);
 
 		std::vector<Sprite*> getSprites();
 		int getNumTriangles();
@@ -48,6 +49,7 @@ namespace MonkeyPlayer
 		static const int TEXTURE_UP;
 		static const int TEXTURE_HOVER;
 		static const int TEXTURE_DOWN;
+		static const float MAX_STEPS;
 
 		std::vector<Sprite*> mSprites; 
 

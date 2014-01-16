@@ -755,7 +755,7 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 				if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
 				{
 					MusicLibrary::instance()->getPlaylistWindow()->replaceQueueWithArtist(clickedLabel->getString());
-					MusicLibrary::instance()->getPlaylistWindow()->playNextSong();
+					MusicLibrary::instance()->getPlaylistWindow()->playNextSong(false);
 				}
 				else
 				{
@@ -799,6 +799,40 @@ void SmallAlbumManager::goToChar(char c)
 {
 	mGoToChar = true;
 	mChar = c;
+}
+void SmallAlbumManager::goToString(string &s)
+{
+	int index = -1;
+	unsigned int strLen = s.length();
+	for (unsigned int i = 0; i < mSmallItems.size(); i++)
+	{
+		string caps = FileManager::toUpper(mSmallItems[i]->getAlbum().Artist);
+		unsigned int albumLen = caps.length();
+		unsigned int j = 0;
+		while (j < strLen && j < albumLen && s[j] == caps[j])
+		{
+			j++;
+		}
+		if (j == strLen)
+		{
+			index = (int)i;
+			break;
+		}
+	}
+
+	if (index >= 0)
+	{
+		mGoToAlbumId = mSmallItems[index]->getAlbum().Id;
+		if (mSmallItems[index]->getTracks().size() > 0)
+		{
+			mGoToSongId = mSmallItems[index]->getTracks()[0]->Id;
+		}
+		else 
+		{
+			mGoToSongId = -1;
+		}
+		mGoToSong = true;
+	}
 }
 
 void SmallAlbumManager::goToSong(Album a, Track t, bool doHighlight)

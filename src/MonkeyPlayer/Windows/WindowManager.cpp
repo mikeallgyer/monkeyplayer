@@ -276,11 +276,18 @@ void WindowManager::drawWidgets(std::vector<IWidget*> widgets)
 {
 	for (unsigned int k = 0; k < widgets.size(); k++)
 	{
-		drawSprites(widgets[k]->getSprites());
+		if (widgets[k]->getVisible())
+		{
+			drawWidgets(widgets[k]->getWidgets());
+		}
 	}
+
 	for (unsigned int k = 0; k < widgets.size(); k++)
 	{
-		drawWidgets(widgets[k]->getWidgets());
+		if (widgets[k]->getVisible())
+		{
+			drawSprites(widgets[k]->getSprites());
+		}
 	}
 }
 int WindowManager::getNumTriangles()

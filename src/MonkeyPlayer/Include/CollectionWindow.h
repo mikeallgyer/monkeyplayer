@@ -55,6 +55,8 @@ namespace MonkeyPlayer
 		static const int ARTIST_QUEUE_END;
 		static const int ARTIST_REPLACE_QUEUE;
 
+		static const float TYPED_TIME;
+
 		CollectionWindow();
 		~CollectionWindow();
 
@@ -131,11 +133,12 @@ namespace MonkeyPlayer
 		Button* mSmallAlbumBtn;
 		Button* mLargeAlbumBtn;
 		Checkbox* mGoToSongChk;
+		SimpleLabel* mTypedLabel;
 		std::vector<Album*> mAlbumsToAdd;
 		std::vector<Track*> mTracksToAdd;
 
 		float mX, mY;
-		int mCurrWidth;
+		int mCurrWidth, mCurrHeight;
 		bool mResized;
 
 		float mUpDownTimer;
@@ -146,6 +149,7 @@ namespace MonkeyPlayer
 		bool mMouseAlphabetStartedDown;
 		char mHoverChar;
 		bool mGoToHover;
+		float mTypedTimer;
 
 	protected:
 

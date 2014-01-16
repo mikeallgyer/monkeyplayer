@@ -27,6 +27,7 @@ LargeAlbumItem::LargeAlbumItem(Album album) : mCurrDestination(0, 0, true, .5f)
 	mMoving = false;
 	
 	mTracks = DatabaseManager::instance()->getTracks(mAlbum);
+	mTracksDirty = false;
 	// get cover art 
 /*	AlbumArt *art = NULL;
 	for (unsigned int i = 0; i < mTracks.size(); i++)
@@ -66,6 +67,7 @@ void LargeAlbumItem::onDeviceReset()
 
 void LargeAlbumItem::update(float dt)
 {
+	// handled externally now
 	if (false && isMoving())
 	{
 		mCurrTime += dt;
@@ -131,6 +133,15 @@ Album LargeAlbumItem::getAlbum()
 }
 vector<Track*> LargeAlbumItem::getTracks()
 {
+	if (mTracksDirty)
+	{
+		for (unsigned int i = 0; i < mTracks.size(); i++)
+		{
+			delete mTracks[i];
+		}
+		mTracks = DatabaseManager::instance()->getTracks(mAlbum);
+		mTracksDirty = false;
+	}
 	return mTracks;
 }
 D3DXMATRIX LargeAlbumItem::getWorld()
@@ -179,3 +190,8 @@ IDirect3DTexture9* LargeAlbumItem::getTexture()
 {
 	return AlbumTextureManager::instance()->getTexture(mAlbum.Id);
 }
+
+void LargeAlbumItem::setTracksDirty()
+{
+	mTracksDirty = true;
+};

@@ -37,6 +37,8 @@ namespace MonkeyPlayer
 		virtual float getHeight() { return 0; }
 		virtual float getWidth() { return 0; }
 		virtual bool isPointInside(int x, int y) = 0;
+		virtual void setVisible(bool vis) {}
+		virtual bool getVisible() { return true; }
 		
 		
 	protected:

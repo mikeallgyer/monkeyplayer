@@ -57,6 +57,7 @@ namespace MonkeyPlayer
 		void blur();
 		virtual void refresh();
 		void goToChar(char c);
+		void goToString(string &s);
 		void goToSong(Album a, Track t, bool doHighlight = true);
 		int getCurrentAlbum();
 

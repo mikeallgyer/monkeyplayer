@@ -1,0 +1,315 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="TARGETDIR">
+            <Directory Id="dir7F6A83305924CEB48D845829C5C8D3E6" Name="Content">
+                <Directory Id="dirB74562595922C10E95D2442D299BA9F0" Name="Effects">
+                    <Component Id="cmp582F0965E350DBEF60512B624CC4DE32" Guid="{BDDF9EAD-296E-4C89-AEFD-1052E1EE7EDB}">
+                        <File Id="fil158C4985DBC9A36B484AE24DAFA5FD8C" KeyPath="yes" Source="SourceDir\Effects\default.fx" />
+                    </Component>
+                    <Component Id="cmpD192F9724BB004468925E0E33F7F5681" Guid="{9CCDC8B0-C178-4B79-8971-88CBEC279201}">
+                        <File Id="fil5BF64172CA813DFD2DC2901E6E662595" KeyPath="yes" Source="SourceDir\Effects\includeFile.inc" />
+                    </Component>
+                    <Component Id="cmpC3A65A981AC002DB665E02602A53D0FA" Guid="{10875756-E18B-4933-BE15-BBFE12994775}">
+                        <File Id="fil9CCDB2EADC6242275FC8A7726B53DE8B" KeyPath="yes" Source="SourceDir\Effects\simpleIncludeFile.inc" />
+                    </Component>
+                    <Component Id="cmp5E4F3FFECF49C037A2A55067A37B267F" Guid="{9B7B6695-9BAC-406F-84C3-43A99D3BF11C}">
+                        <File Id="filFA20BA6EFADAC17C85C7B5270E4ED52F" KeyPath="yes" Source="SourceDir\Effects\SimpleSprite.fx" />
+                    </Component>
+                </Directory>
+                <Directory Id="dir7D83E229BE70F1E6595D017AD08B0B1E" Name="Textures">
+                    <Component Id="cmp840F4141BACCFB919394BB14208D9431" Guid="{058B7F75-64D3-49C4-8D1F-41F6C5813FD0}">
+                        <File Id="filF385AB7B534B89C633B6C5B9D16D0E39" KeyPath="yes" Source="SourceDir\Textures\add.png" />
+                    </Component>
+                    <Component Id="cmp61C285F1C6D7FCE4CD43DDC89519D883" Guid="{FEA12496-7B8C-4371-A246-339A13560FE7}">
+                        <File Id="fil7BD7A7046C2011C653316296793ED52C" KeyPath="yes" Source="SourceDir\Textures\add_down.png" />
+                    </Component>
+                    <Component Id="cmp5DFD6EDFC9E31969E9F2C9324DCBFA30" Guid="{CEF8ED02-840C-40BD-99A3-EAE025CE4794}">
+                        <File Id="fil5D635622EF5E04C2430FDF136C473424" KeyPath="yes" Source="SourceDir\Textures\add_hover.png" />
+                    </Component>
+                    <Component Id="cmpAA33E29D196F3EEEDEFE19D0A888A199" Guid="{F37700D2-FB85-4B1A-A292-A30C5D714EE4}">
+                        <File Id="fil96517A5AB66C4DD7CF94E5A28BAA0218" KeyPath="yes" Source="SourceDir\Textures\album_style.xcf" />
+                    </Component>
+                    <Component Id="cmp11F4DE085857791A8C1835E1AD3FDB5F" Guid="{4FAD5760-640A-492C-994B-8D185FFC5470}">
+                        <File Id="filDDA95244484678199240450DA19BDE5D" KeyPath="yes" Source="SourceDir\Textures\arrow_left.png" />
+                    </Component>
+                    <Component Id="cmp63250849610B31D0628DCD3B5BC2EBF2" Guid="{5C06D038-F1D4-4443-BAFE-1A0E6D8BAAAA}">
+                        <File Id="fil940DE907A1598D14DB3ACEA7F1A1CE28" KeyPath="yes" Source="SourceDir\Textures\arrow_left_down.png" />
+                    </Component>
+                    <Component Id="cmp096298599FCDE1820B3CC807B34BB289" Guid="{ADEC9497-357C-4B6F-836E-4023D40BAC32}">
+                        <File Id="fil8E95083C6FFB4B94913676A3CAE060D0" KeyPath="yes" Source="SourceDir\Textures\arrow_left_hover.png" />
+                    </Component>
+                    <Component Id="cmpEBEAFA06868B437B442A60509723F2AF" Guid="{E4AD93BF-DFFB-4468-9AD3-04F706C6D7B2}">
+                        <File Id="filB281A97A580627710D2CC4F32FD43B36" KeyPath="yes" Source="SourceDir\Textures\arrow_right.png" />
+                    </Component>
+                    <Component Id="cmp003B240B821D055CEDF15DFF722FAD3E" Guid="{4B3F43D2-C43F-44E2-A20B-F4167DC298F6}">
+                        <File Id="fil1D562A7E9D126B1B42FAC4A94A1C80F4" KeyPath="yes" Source="SourceDir\Textures\arrow_right_down.png" />
+                    </Component>
+                    <Component Id="cmpB479710564BBBFA0ADD0E3F9F5C745B7" Guid="{679DA956-AAAA-4C75-AFFF-4FCD9419C72F}">
+                        <File Id="filA1E2156BA5044980466AB7723A9DF5FE" KeyPath="yes" Source="SourceDir\Textures\arrow_right_hover.png" />
+                    </Component>
+                    <Component Id="cmp822AB5E9DF35DF5469A4FF65A583077C" Guid="{27D4E852-B51F-4EB1-B8EC-B21DCBFEC751}">
+                        <File Id="fil0259DFF42F223BA9E36335779B462ECA" KeyPath="yes" Source="SourceDir\Textures\border_bottom.png" />
+                    </Component>
+                    <Component Id="cmp459D7B4D9BA3565937D487F69BA798F0" Guid="{8C0517EA-CF2E-42AA-A7E1-7FD9D17869B0}">
+                        <File Id="filE01138DD096A3BE243BD6A7D7E3A15C2" KeyPath="yes" Source="SourceDir\Textures\border_bottom_left.png" />
+                    </Component>
+                    <Component Id="cmpE3044C2F6885759C821DEE490969C712" Guid="{49B7B087-0475-49B9-B7D3-2F73DF524788}">
+                        <File Id="fil16B8B3C6232439D1FB4CD1479E278A99" KeyPath="yes" Source="SourceDir\Textures\border_bottom_right.png" />
+                    </Component>
+                    <Component Id="cmp91C7977103C34209F5772014E8422309" Guid="{41480D83-437C-4F30-9013-071A261AB2A8}">
+                        <File Id="fil50B4F39FB8003D2205F308E406146B7E" KeyPath="yes" Source="SourceDir\Textures\border_left.png" />
+                    </Component>
+                    <Component Id="cmp707E5E8F0E7218117B1D444516A479B3" Guid="{75F4C80C-9B94-401D-8CC1-AE7C6D595CF9}">
+                        <File Id="fil55AE983BBFAAAA090A794EB69BEA9CFA" KeyPath="yes" Source="SourceDir\Textures\border_right.png" />
+                    </Component>
+                    <Component Id="cmp8EFD9B7AB4BBCCA5D4EA887E13FF7B2B" Guid="{4150FE55-5705-474F-A28C-EF2E932D8C04}">
+                        <File Id="fil4680BDC8FCA6B5F5B80E7317ECA65980" KeyPath="yes" Source="SourceDir\Textures\border_top.png" />
+                    </Component>
+                    <Component Id="cmp08B084662F4A15879DEFFB546A858BEE" Guid="{76826DAD-07CC-427D-849C-0DDA0351F975}">
+                        <File Id="fil277D19E40603D5D7995EA479697A385D" KeyPath="yes" Source="SourceDir\Textures\border_top_left.png" />
+                    </Component>
+                    <Component Id="cmpF5899F070AD68A5059FD65B23C8A662B" Guid="{DCEF0367-37C1-4AB4-B715-3052B155391B}">
+                        <File Id="filE6BBAC48603D57C8978FAB61661C306A" KeyPath="yes" Source="SourceDir\Textures\border_top_right.png" />
+                    </Component>
+                    <Component Id="cmp4733BFBFD584D645E8EE382E9D8DA29E" Guid="{10640A72-D869-45AD-80F6-AFAAF8B599B8}">
+                        <File Id="filC5191A99D9593884B1C64B38DBAD769A" KeyPath="yes" Source="SourceDir\Textures\cdHighlight.png" />
+                    </Component>
+                    <Component Id="cmp42EE58E88247AD46E01118E41AAEF3A9" Guid="{1CB8E11E-E299-40FC-94FD-460ABABD3524}">
+                        <File Id="fil3D15362EB6A11750FDDF135A79B1F2A0" KeyPath="yes" Source="SourceDir\Textures\checkbox.png" />
+                    </Component>
+                    <Component Id="cmp456E579EAAFFC39E7D60FB0550D90036" Guid="{15AB02B0-4695-432F-90B8-8A07BED39561}">
+                        <File Id="fil25078FE4A32494C8BDE92C74C941FD60" KeyPath="yes" Source="SourceDir\Textures\checkbox_down.png" />
+                    </Component>
+                    <Component Id="cmpAC27ABF248CEE597FF39AB7DCB3370C8" Guid="{86FBBFD9-D782-4BDC-AD7F-A99DA20ABD89}">
+                        <File Id="fil25C871F5813DDD7CCDC5D4F7E97589C9" KeyPath="yes" Source="SourceDir\Textures\checkbox_hover.png" />
+                    </Component>
+                    <Component Id="cmp663D6FBDD8707EF6763BED5ADBBF1A99" Guid="{E813A253-3AD1-40EA-BBFC-B57CCCD7D497}">
+                        <File Id="fil2B4D1D4CE5249A04B76E409EA58324BE" KeyPath="yes" Source="SourceDir\Textures\clear.png" />
+                    </Component>
+                    <Component Id="cmp5A59AF305EFEEA1F7D11077DF421A72C" Guid="{DCC3F8F9-8AE4-4B7A-B5EB-6B80B0A5B39E}">
+                        <File Id="filBA3C4ADE004AF8825A58C61314B006A1" KeyPath="yes" Source="SourceDir\Textures\clear_down.png" />
+                    </Component>
+                    <Component Id="cmp98140DF0B6ADCE099F7581F1A2C70490" Guid="{5529FC05-CBCF-4C49-961F-A6941B0FA222}">
+                        <File Id="fil411552104E72C7B620CC6A7345CCB3A9" KeyPath="yes" Source="SourceDir\Textures\clear_hover.png" />
+                    </Component>
+                    <Component Id="cmpEFF8FA9B3C01C1FC2D0EDE1A1AF6DAF8" Guid="{E060C571-7D88-4BB2-A31C-CF5C34ABDC87}">
+                        <File Id="filE4E2FF70CE8FF76F9075FCBF7B88EF6F" KeyPath="yes" Source="SourceDir\Textures\combo_back.png" />
+                    </Component>
+                    <Component Id="cmp9FF09FB01E73E4689E460AA90A550C7A" Guid="{7AEA2A1C-6236-4650-B2DF-79C4F9B2BC31}">
+                        <File Id="fil41B4D876596FE73DD7E90A635D13256C" KeyPath="yes" Source="SourceDir\Textures\combo_back_down.png" />
+                    </Component>
+                    <Component Id="cmp6D020463F3E5CF345929620BBD7E43CD" Guid="{E4BE66C3-D925-4F28-A49E-117830A634E7}">
+                        <File Id="filE542D45E5149B6ACC104495869BB64EA" KeyPath="yes" Source="SourceDir\Textures\del.png" />
+                    </Component>
+                    <Component Id="cmp4DF44C8BFEED3138500D496A2A807C9F" Guid="{4048A17C-A3F0-4AD7-85D2-F21A1E754814}">
+                        <File Id="fil8B8511B3B982C836B2075F932A6A18DF" KeyPath="yes" Source="SourceDir\Textures\del_down.png" />
+                    </Component>
+                    <Component Id="cmp6836A6DA87DFC8F55E6BCA6A26A7F5B2" Guid="{AD6F4BA7-E51B-4727-A672-DEA32CD6CCB6}">
+                        <File Id="filC8EEFA9EA61DDEE7617277B309335CE4" KeyPath="yes" Source="SourceDir\Textures\del_hover.png" />
+                    </Component>
+                    <Component Id="cmp7D8D7ACAFCE08E1AF149579EC4CA4AB1" Guid="{5DD04B43-F35F-46A3-B189-E34CE41286B9}">
+                        <File Id="fil8EF530C53D5F1A0838FAC4B67212DB7E" KeyPath="yes" Source="SourceDir\Textures\down_arrow.png" />
+                    </Component>
+                    <Component Id="cmpE6ABB705B9CD527D78AA8234F32471A3" Guid="{49F18CB1-F486-4B0C-B843-B4101B4A76BA}">
+                        <File Id="fil23D24EC2071695C18094D7B0329AD68B" KeyPath="yes" Source="SourceDir\Textures\down_arrow_down.png" />
+                    </Component>
+                    <Component Id="cmp745D8B13B1BCF4DC0F88DCDF6B59FD6D" Guid="{947397AB-28D5-4B7F-ABD5-344DB6FE8A3A}">
+                        <File Id="filBEDD196223D245A7491194D8C536827F" KeyPath="yes" Source="SourceDir\Textures\down_arrow_hover.png" />
+                    </Component>
+                    <Component Id="cmp979D47840E9A3C73F182F3D3B73F5EC6" Guid="{4CEB52B0-FFDB-45C7-A9C1-F84619F51BEC}">
+                        <File Id="fil1FECDA8A5316021858CC8437CBF8A02B" KeyPath="yes" Source="SourceDir\Textures\empty.png" />
+                    </Component>
+                    <Component Id="cmp3676123FDE3C6FF3792B73B7A59ABF7D" Guid="{BE1F7D26-FA9A-4C43-929E-933D72831116}">
+                        <File Id="filCB19387030308DCB0E411FA20DD9CB13" KeyPath="yes" Source="SourceDir\Textures\empty_down.png" />
+                    </Component>
+                    <Component Id="cmp5792778E827ED1A62554749857A5FC4F" Guid="{0CF827E3-D85F-44E4-92B7-80D404BECD98}">
+                        <File Id="fil8517E15542AB08DA9808B5547E1DA761" KeyPath="yes" Source="SourceDir\Textures\empty_hover.png" />
+                    </Component>
+                    <Component Id="cmpA7CC42A1B675F5C23BD4E33ADC5361F7" Guid="{242D0E09-944A-491D-8F03-5EA5A054AF16}">
+                        <File Id="fil86081E6F004CF86577FC1613B8864EC1" KeyPath="yes" Source="SourceDir\Textures\empty_square.png" />
+                    </Component>
+                    <Component Id="cmp53B178B06FC7252E6B994C593DD71AAC" Guid="{311DE55B-E542-4AD4-AE18-CFCF9F2CC73C}">
+                        <File Id="fil109BFF912208270985DE22E27C0BFD9B" KeyPath="yes" Source="SourceDir\Textures\empty_square_down.png" />
+                    </Component>
+                    <Component Id="cmp171C89156ACD1A546D3D4EBD03379453" Guid="{A8BFB0D7-E324-4E30-9131-4F054A973A17}">
+                        <File Id="fil227AB36408CD1561E9987BC6BAB1D1DD" KeyPath="yes" Source="SourceDir\Textures\empty_square_hover.png" />
+                    </Component>
+                    <Component Id="cmp26E5124213B1EA230A8441295CA6CCF8" Guid="{2CFFBE8A-19EC-4825-9ED6-A5BC4B0574E7}">
+                        <File Id="fil74AD50C18349850595B4D9B6EDC34069" KeyPath="yes" Source="SourceDir\Textures\fastforward.png" />
+                    </Component>
+                    <Component Id="cmpD41ACFFD160B7FDEC916178D76D4152D" Guid="{AA46D289-DA0D-451B-B633-1BBBE1041419}">
+                        <File Id="filB8514E5F0F4D45C81AD87B67EE37A475" KeyPath="yes" Source="SourceDir\Textures\large_album.png" />
+                    </Component>
+                    <Component Id="cmpEEC1F8BCCAE04E3C042EAC52DB5E47B4" Guid="{6B08600C-79CC-40E0-B798-41970981CA16}">
+                        <File Id="fil003C143100A4000B134D8E9C6FA8B09D" KeyPath="yes" Source="SourceDir\Textures\large_album_down.png" />
+                    </Component>
+                    <Component Id="cmpF252C5C05CB0C67E17E80CAC0AB64442" Guid="{5F5C434E-E980-4AF5-868C-8A65A1C5D928}">
+                        <File Id="fil9B48F2DA271382C92F25960D56D6BF23" KeyPath="yes" Source="SourceDir\Textures\large_album_hover.png" />
+                    </Component>
+                    <Component Id="cmpEBCB30AE62E629F94FA961F775833860" Guid="{67B7F8D6-BD7F-4491-99CC-4483EFDDEDE1}">
+                        <File Id="filA8BE888A7C83F5020A4AC2A86AF88F33" KeyPath="yes" Source="SourceDir\Textures\list_btn.png" />
+                    </Component>
+                    <Component Id="cmpA8214CD6E964E7D8A39F449A53D79892" Guid="{C56881D8-09E5-4FA4-974E-C64359B539F1}">
+                        <File Id="fil9E8E8432DB0F29920EFF4D5C11C5EE52" KeyPath="yes" Source="SourceDir\Textures\list_down.png" />
+                    </Component>
+                    <Component Id="cmpB42F22B100B17D3ABA6E44115F9B38E4" Guid="{2BFC37B4-C49A-40CB-A4E7-035B656616CC}">
+                        <File Id="fil9F0432D5C1845613A669C34526FC165B" KeyPath="yes" Source="SourceDir\Textures\list_hover.png" />
+                    </Component>
+                    <Component Id="cmp095C18B187C898D32D11821823DC70CA" Guid="{2F1F965A-5B9E-4204-80E1-4ECD663E72B9}">
+                        <File Id="filC2B52C8995CBC760ADE0BDC04569D353" KeyPath="yes" Source="SourceDir\Textures\magnifier.png" />
+                    </Component>
+                    <Component Id="cmp83106226D914F19658305652F4B355B5" Guid="{72AE3AD4-98D1-455A-A0FA-0CCAD0CA1681}">
+                        <File Id="filB8F632AAB386707146E0A1FF81A95C7F" KeyPath="yes" Source="SourceDir\Textures\mute.png" />
+                    </Component>
+                    <Component Id="cmpC8E3560A711826642A9AB8035664C4CF" Guid="{D0632594-5534-4888-9BCD-3B4D92BC1763}">
+                        <File Id="fil172D79F3E28412E922479EF5A16A46A9" KeyPath="yes" Source="SourceDir\Textures\mute_down.png" />
+                    </Component>
+                    <Component Id="cmpE8E14DEEC46202A49ACF68874ED13DDD" Guid="{C8191A4C-67DE-4041-9A48-E68082D57C34}">
+                        <File Id="fil09295C4238460D2A4D922258B6A419BD" KeyPath="yes" Source="SourceDir\Textures\mute_hover.png" />
+                    </Component>
+                    <Component Id="cmp0A34C3A4FC6A9D48C8CE18C713C229A5" Guid="{AC908CEB-2250-4F4E-A59B-2B9FDC03A3A4}">
+                        <File Id="fil122144081A1000B3147D6160DC0056DA" KeyPath="yes" Source="SourceDir\Textures\next.png" />
+                    </Component>
+                    <Component Id="cmp218ED70C8D6A6532340871216341D5D2" Guid="{56CBE3A1-F29B-4AF9-8CB0-E6A00B75BDD3}">
+                        <File Id="filFAE6E13AB0DE1D45A5B87606567229E7" KeyPath="yes" Source="SourceDir\Textures\next_down.png" />
+                    </Component>
+                    <Component Id="cmp44E3051E8F8E8570C54D1EED6710A3EE" Guid="{94D009EF-F2AC-4B40-BF8C-9A039005A569}">
+                        <File Id="fil43D0D1FBC9E9157BB1E92242CD203977" KeyPath="yes" Source="SourceDir\Textures\next_hover.png" />
+                    </Component>
+                    <Component Id="cmp27489DDAF100BAB8CB4AF6A9FD789011" Guid="{C6EEB7C4-492E-40CB-A22C-BABC2B244199}">
+                        <File Id="fil8EF8BB1B006F4ACAB23F46427AD3EA93" KeyPath="yes" Source="SourceDir\Textures\pause.png" />
+                    </Component>
+                    <Component Id="cmp3569079C714F3E222E1A8FF990623856" Guid="{845DCE2F-557C-48AE-A8C1-E30C6A7A810B}">
+                        <File Id="fil7DE5E6FF0E5E4EBDCE2DA69EA0D57487" KeyPath="yes" Source="SourceDir\Textures\pause_down.png" />
+                    </Component>
+                    <Component Id="cmpA34F2876C69FE0E5967BB22D06AEBEBC" Guid="{22C0C363-9A3E-4DC2-BD90-FAD87880124D}">
+                        <File Id="filD5C330668FFE725D35AF702B6C6E0F2F" KeyPath="yes" Source="SourceDir\Textures\pause_hover.png" />
+                    </Component>
+                    <Component Id="cmpB38910C72C1391E3D5C1C262439632CF" Guid="{AFA21967-8B7F-4539-8561-B56848C0374F}">
+                        <File Id="fil4AE431E1B0441E584DAC229C6CFD1309" KeyPath="yes" Source="SourceDir\Textures\play.png" />
+                    </Component>
+                    <Component Id="cmp7A850993A05473A710BED8CB65C44EEA" Guid="{86A02E60-E7F0-4377-ACB5-9E6C18D2591E}">
+                        <File Id="filCD4ED31A6A124572E0F308FF4362C80B" KeyPath="yes" Source="SourceDir\Textures\play_down.png" />
+                    </Component>
+                    <Component Id="cmpD45C312C8A0FFBD43BC252AB7985D7B4" Guid="{AC0B2740-8FA7-4214-BE9B-6C3C79E3C15D}">
+                        <File Id="fil4ED8675C9BBED7B97C39B51CBDB80EAC" KeyPath="yes" Source="SourceDir\Textures\play_hover.png" />
+                    </Component>
+                    <Component Id="cmp895A4F10112B132C773F4C0B751F0B29" Guid="{F25D53A9-5435-49EB-946D-3506773686FC}">
+                        <File Id="fil30C8333E91E7B3433CEAE7527D75CD28" KeyPath="yes" Source="SourceDir\Textures\previous.png" />
+                    </Component>
+                    <Component Id="cmpEED392940EB4F0E545CDFB144EFB74AB" Guid="{0546F3B3-4D7C-43E8-A46B-74BF890C6990}">
+                        <File Id="fil0253AC79726B3436DC6D5FFDC2CE5085" KeyPath="yes" Source="SourceDir\Textures\previous_down.png" />
+                    </Component>
+                    <Component Id="cmp94FFA99A2B4A0275065D0405D50A1DFB" Guid="{CE3F852B-26D3-4E24-AA04-3B48F5AA981F}">
+                        <File Id="fil6BC81789350CF7CC8AE1575F0890DD46" KeyPath="yes" Source="SourceDir\Textures\previous_hover.png" />
+                    </Component>
+                    <Component Id="cmp4D603ED5FDDCA66A70E4327BFFDD3D81" Guid="{B85FD1B9-D79F-42FD-A158-C677BFAC1A4D}">
+                        <File Id="fil95A55FC6790CDC24B7AC25CB1482C6BF" KeyPath="yes" Source="SourceDir\Textures\rewind.png" />
+                    </Component>
+                    <Component Id="cmp9DDD9A17DD6DD6BB9D1203B60536FCEF" Guid="{9BC76010-DD62-4570-B8D6-9F60BB406201}">
+                        <File Id="fil78B0D75063BADBEBA298ADAE132E012E" KeyPath="yes" Source="SourceDir\Textures\save.png" />
+                    </Component>
+                    <Component Id="cmp245C3C8D1848C3D2FBB490FDA9ADDAAB" Guid="{0B4DACE5-B73D-4F2B-B33C-6518141634E5}">
+                        <File Id="fil00F3B5CF06490A9AC77C91149D61D5D6" KeyPath="yes" Source="SourceDir\Textures\save_down.png" />
+                    </Component>
+                    <Component Id="cmpAB31B1721B091CBCE108CD03405BDDE4" Guid="{9D4EAFE1-25EF-425B-AD5B-DA59DAD570AD}">
+                        <File Id="fil03BDE56CE1CF9F5F80FD0D8F8AF286BB" KeyPath="yes" Source="SourceDir\Textures\save_hover.png" />
+                    </Component>
+                    <Component Id="cmpFFA43C110EFC9B482DE9A6AE96484F97" Guid="{87D30226-F166-404B-991A-A5CA6D0CAD9E}">
+                        <File Id="filADB74149C1961C1CE51BE442C6FCFCAE" KeyPath="yes" Source="SourceDir\Textures\scrollHandle.png" />
+                    </Component>
+                    <Component Id="cmp9E520E81049E19F0AC57178FE538214A" Guid="{88A29A8F-F2CB-49B4-B52F-181F9E211940}">
+                        <File Id="fil4BAD952BF044950CCB1349C72D6C67A0" KeyPath="yes" Source="SourceDir\Textures\search.png" />
+                    </Component>
+                    <Component Id="cmp4D732CFCCDD5D0008EF2E715E0A7D4CF" Guid="{1EB2425D-2781-4BE8-A16B-D124B26F06EB}">
+                        <File Id="filFA27282AA1EE8F43AA573789BDC13DBA" KeyPath="yes" Source="SourceDir\Textures\search_down.png" />
+                    </Component>
+                    <Component Id="cmpDE6E910CFBEF0D3740FD811BDC16EE9A" Guid="{785CC50A-86C9-4B74-BA35-F59F883870CF}">
+                        <File Id="fil320DEF4008ADC627FB506553A010B8E8" KeyPath="yes" Source="SourceDir\Textures\search_hover.png" />
+                    </Component>
+                    <Component Id="cmpDB611F9CD7C6FFE2F8B802CD0B228E4D" Guid="{F6FE0219-9717-450D-A746-425B0A70CB26}">
+                        <File Id="filBC589C7DAFF9B8D457BA997B78CABAC6" KeyPath="yes" Source="SourceDir\Textures\selectedBox.png" />
+                    </Component>
+                    <Component Id="cmp5C211A8CB7353E808FCF0F3B89140F6A" Guid="{72720F39-ACB1-45FD-B12B-D635DB3E9B1F}">
+                        <File Id="fil25565610DBA35C8E8ECDE531A68B9675" KeyPath="yes" Source="SourceDir\Textures\shuffle_down.png" />
+                    </Component>
+                    <Component Id="cmp31B74D6F67070C92909E94BBFA6488AC" Guid="{A1567A23-E53B-4AE6-AC88-6D5FE7345BB2}">
+                        <File Id="fil59BD033A2337801983856E06A6D45F3D" KeyPath="yes" Source="SourceDir\Textures\shuffle_hover.png" />
+                    </Component>
+                    <Component Id="cmp1CB85B52FE16D1A831718C1FC9FB9461" Guid="{585D76A3-2936-4E92-AAEB-5930D7E0C88C}">
+                        <File Id="fil47DA23DDD7C981317FD2FB8D7420EB20" KeyPath="yes" Source="SourceDir\Textures\shuffle_up.png" />
+                    </Component>
+                    <Component Id="cmp247026DAEAFADAE94710BEC81810FC5B" Guid="{A55C08EC-75C2-4B77-9488-FCA637511A18}">
+                        <File Id="fil109AF1A7FCB0D67BA35C41814F68DB6E" KeyPath="yes" Source="SourceDir\Textures\slider_in.png" />
+                    </Component>
+                    <Component Id="cmp87FD1950A3D679BB24CE4B62B729DFDE" Guid="{D2E8A7EC-1BED-4DD3-84A8-CD79C25F05FB}">
+                        <File Id="fil7FEB609EFF781F889A26149C75BFCB72" KeyPath="yes" Source="SourceDir\Textures\slider_in_left.png" />
+                    </Component>
+                    <Component Id="cmpA2C352F5A858AC1DA078595EC85CA4EF" Guid="{B6D76E04-6155-4F25-B606-27D756AC987E}">
+                        <File Id="filE7FCFB590D2C402B7E1E530C0C8F9695" KeyPath="yes" Source="SourceDir\Textures\slider_in_mid.png" />
+                    </Component>
+                    <Component Id="cmp36582B37DD62E5BF47AA4AA1A135E18B" Guid="{58133BD4-0EA8-4E90-9EEF-1E4BE0082491}">
+                        <File Id="filE1D6287890F395DAA0101ACA80E2DC3B" KeyPath="yes" Source="SourceDir\Textures\slider_in_right.png" />
+                    </Component>
+                    <Component Id="cmpF38F52BF5C1519310CD81194615E7365" Guid="{E49738FF-EBBE-4104-8804-5B0CC6EB6916}">
+                        <File Id="filBDF380AB377A559C970D981BF3963283" KeyPath="yes" Source="SourceDir\Textures\slider_out.png" />
+                    </Component>
+                    <Component Id="cmp4C125C17A9EF7D3025CEAA01719F1293" Guid="{DEE5327C-BE22-4275-BB31-BF38F0A5ED8D}">
+                        <File Id="filB344A57130C6DFDC799FE44D0D0CE743" KeyPath="yes" Source="SourceDir\Textures\slider_out_left.png" />
+                    </Component>
+                    <Component Id="cmp268F97202BC62FD277DD5CB055C7BB5A" Guid="{1509A143-D8D7-450F-BE41-366DD7576216}">
+                        <File Id="filCB9BAF855E22B582CAE3F97C7BF46045" KeyPath="yes" Source="SourceDir\Textures\slider_out_mid.png" />
+                    </Component>
+                    <Component Id="cmpCB16E3BEB96276812D1DC04523F0F7CE" Guid="{C0331A5A-EEA8-4C8E-9172-E0A71ADFA5F2}">
+                        <File Id="fil827FC6A3028DC5DD6C16D2607C2C6122" KeyPath="yes" Source="SourceDir\Textures\slider_out_right.png" />
+                    </Component>
+                    <Component Id="cmp6D766C6C908779F46CD4915F981B60B7" Guid="{1B62EBD0-C519-46A8-A1B4-4EADEE018E2E}">
+                        <File Id="fil0DEFD7E7212FF58AFDF916E984E32432" KeyPath="yes" Source="SourceDir\Textures\small_album.png" />
+                    </Component>
+                    <Component Id="cmp200452FC5F1A5ADB73BC8CDF3A12DDE8" Guid="{CCBAE660-8AEC-43A8-90F1-DB024A44DAA4}">
+                        <File Id="fil86FC0441E76AA66F3BE263F765D165CE" KeyPath="yes" Source="SourceDir\Textures\small_album_down.png" />
+                    </Component>
+                    <Component Id="cmpCD7806EA69B93E5DE3F67DB898321B23" Guid="{FD01FBF7-D53E-4087-B87F-4A0E8494193C}">
+                        <File Id="fil954C047B43BF74130D8B49D608E9FBDF" KeyPath="yes" Source="SourceDir\Textures\small_album_hover.png" />
+                    </Component>
+                    <Component Id="cmpF0440D8959C00C8764A8F0E6846E9A97" Guid="{B4C26F79-F8A9-4AB5-AB9A-0F99494C5B37}">
+                        <File Id="filEE52673FF12CF39D285552CC90A5811E" KeyPath="yes" Source="SourceDir\Textures\small_empty.png" />
+                    </Component>
+                    <Component Id="cmp2D2541E4FE905D4EF3F056A6BA080C37" Guid="{A3F540F5-8B11-4392-8AA1-76DAF8A2AD89}">
+                        <File Id="fil94F1491D2E777EB7FDA5F285ED12E614" KeyPath="yes" Source="SourceDir\Textures\stop.png" />
+                    </Component>
+                    <Component Id="cmp3BBA554E2A54230B934BAAEC08A511E4" Guid="{F387A074-6080-4A62-9BE5-56EC4CF42B56}">
+                        <File Id="fil7EE79C5EBFAC4F784A855EAC21BFD80C" KeyPath="yes" Source="SourceDir\Textures\stop_down.png" />
+                    </Component>
+                    <Component Id="cmpA144F06804DFF29C27130D93680293F2" Guid="{DCBCA087-7407-4488-BD2D-061EA0E00855}">
+                        <File Id="fil4F72873BDD943A526762D53663A52698" KeyPath="yes" Source="SourceDir\Textures\stop_hover.png" />
+                    </Component>
+                    <Component Id="cmpE266BE1C5FB21DE61416D46BE6DA493B" Guid="{A593A25B-A412-4532-BA06-FE245D41BA66}">
+                        <File Id="fil7FD2B48D65F04C90167F75605FA95D26" KeyPath="yes" Source="SourceDir\Textures\UnknownAlbum.jpg" />
+                    </Component>
+                    <Component Id="cmp725A07EB4E28C8B3240F76F3143812F4" Guid="{6097653C-667F-4940-BFC5-0BDDEFA0E236}">
+                        <File Id="fil578A783CB056C012FA1173BAAFAABF52" KeyPath="yes" Source="SourceDir\Textures\unmute.png" />
+                    </Component>
+                    <Component Id="cmp9997602BE2604529589EDA2D6246D40A" Guid="{1719E21F-72D0-491F-8206-B97F4BBA336C}">
+                        <File Id="fil7C9F1EE76B3AB060B673E1E85AF91117" KeyPath="yes" Source="SourceDir\Textures\unmute_down.png" />
+                    </Component>
+                    <Component Id="cmp017DDE70D2A0B43950BBE51D6FEB40C2" Guid="{2FE71B17-98AF-4E26-A707-610766E892A7}">
+                        <File Id="fil6A3804CB3501773D87C0CCC510EC8CAD" KeyPath="yes" Source="SourceDir\Textures\unmute_hover.png" />
+                    </Component>
+                    <Component Id="cmpB14F2FCB20B3D961F7DBED70EDCCF247" Guid="{A1DCA564-AA44-4EA0-9FD9-6890E53E1AC4}">
+                        <File Id="fil9BB6E3860B9297C4832BAC5DD3E216FF" KeyPath="yes" Source="SourceDir\Textures\up_arrow.png" />
+                    </Component>
+                    <Component Id="cmpCAB1EF5284E3046E5421983E77EFD185" Guid="{0FB023F9-44BB-4AA0-9525-7550D0F5B6CC}">
+                        <File Id="filF07B1827B632A901E1FC9A604F913228" KeyPath="yes" Source="SourceDir\Textures\white.png" />
+                    </Component>
+                    <Directory Id="dir8BA896D8A8916D3238A4AD274FBE9708" Name="backgrounds">
+                        <Component Id="cmpB70CAD3D809F3D1494D8B60E1D6845D4" Guid="{BDB3307E-9315-4305-966C-1C21905E8201}">
+                            <File Id="filB7DE278365DCD41C5A8AC5F1534630B6" KeyPath="yes" Source="SourceDir\Textures\backgrounds\guitar.jpg" />
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+</Wix>

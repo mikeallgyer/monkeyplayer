@@ -42,6 +42,8 @@ SimpleLabel::SimpleLabel(float x, float y, float width, float height, std::strin
 	mCallback = NULL;
 	mCallbackObj = NULL;
 	mRedraw = true;
+
+	mVisible = true;
 }
 SimpleLabel::~SimpleLabel()
 {

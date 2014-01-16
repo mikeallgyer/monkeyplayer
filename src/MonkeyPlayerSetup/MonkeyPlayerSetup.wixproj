@@ -1,0 +1,51 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>3.6</ProductVersion>
+    <ProjectGuid>{82258779-3820-4005-bc0f-a3ae967e1f4c}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>MonkeyPlayerSetup</OutputName>
+    <OutputType>Package</OutputType>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>Debug</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>SourceDir=$(SolutionDir)..\MonkeyPlayerSetup\Resources</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="content.wxs" />
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+  <!--
+	To modify your build process, add your task inside one of the targets below and uncomment it.
+	Other similar extension points exist, see Wix.targets.
+	-->
+  <Target Name="BeforeBuild">
+    <HeatDirectory NoLogo="$(HarvestDirectoryNoLogo)" SuppressAllWarnings="$(HarvestDirectorySuppressAllWarnings)" SuppressSpecificWarnings="$(HarvestDirectorySuppressSpecificWarnings)" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="$(HarvestDirectoryTreatWarningsAsErrors)" TreatSpecificWarningsAsErrors="$(HarvestDirectoryTreatSpecificWarningsAsErrors)" VerboseOutput="$(HarvestDirectoryVerboseOutput)" AutogenerateGuids="$(HarvestDirectoryAutogenerateGuids)" GenerateGuidsNow="$(HarvestDirectoryGenerateGuidsNow)" OutputFile="content.wxs" SuppressFragments="$(HarvestDirectorySuppressFragments)" SuppressUniqueIds="$(HarvestDirectorySuppressUniqueIds)" Transforms="%(HarvestDirectory.Transforms)" Directory="$(ProjectDir)Resources" ComponentGroupName="MP_Content" DirectoryRefId="USERSPECIFIEDDIR" KeepEmptyDirectories="false" PreprocessorVariable="var.SourceDir" SuppressCom="%(HarvestDirectory.SuppressCom)" SuppressRootDirectory="true" SuppressRegistry="%(HarvestDirectory.SuppressRegistry)">
+    </HeatDirectory>
+  </Target>
+  <!--
+	<Target Name="AfterBuild">
+	</Target>
+	-->
+  <PropertyGroup>
+    <PreBuildEvent>xcopy "$(ProjectDir)..\MonkeyPlayer\$(ConfigurationName)\MonkeyPlayer.exe" "$(ProjectDir)" /a /e /k /y
+xcopy "$(ProjectDir)..\MonkeyPlayer\$(ConfigurationName)\%2a.dll" "$(ProjectDir)" /a /e /k /y
+xcopy "$(ProjectDir)..\..\Content\%2a" "$(ProjectDir)\Resources\Content\" /a /e /k /y</PreBuildEvent>
+  </PropertyGroup>
+</Project>

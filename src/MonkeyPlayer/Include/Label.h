@@ -47,6 +47,10 @@ namespace MonkeyPlayer
 		float getWidth() { return mWidth; }
 		float getX() { return mX; }
 		float getY() { return mY; }
+		virtual void setVisible(bool vis) { mVisible = vis; }
+		virtual bool getVisible() { return mVisible; }
+
+
 		void setSizeToFit(bool fit);
 		void setCallback(void (*cb)(void* objPtr, SimpleLabel* label), void* objPtr);
 
@@ -65,6 +69,7 @@ namespace MonkeyPlayer
 		float mFontSize;
 		bool mSizeToFit;
 		bool mRedraw;
+		bool mVisible;
 
 		// callback
 		void (*mCallback)(void* ptrObj, SimpleLabel* label);

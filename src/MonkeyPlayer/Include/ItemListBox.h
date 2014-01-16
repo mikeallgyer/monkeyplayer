@@ -37,6 +37,10 @@ namespace MonkeyPlayer
 		void display() {}
 		void setPos(float x, float y, float width, float height);
 		void setPos(float x, float y, bool autoSize);
+		float getX();
+		float getY();
+		float getWidth();
+		float getHeight();
 		float getWidthToFit();
 		float getHeightToFit();
 
@@ -62,6 +66,7 @@ namespace MonkeyPlayer
 		void setSelectedIndex(int index);
 		int getSelectedIndex();
 		vector<int> getSelectedIndices();
+		void scrollToIndex(int index);
 		ListItem* getItem(int index);
 		vector<ListItem*> getItems();
 		int getNumItems();

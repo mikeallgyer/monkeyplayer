@@ -24,6 +24,7 @@ namespace MonkeyPlayer
 		static const string FILE_TYPE_MUSIC;
 		static const string FILE_TYPE_IMAGE;
 
+		static string toUpper(const std::string & s);
 		static int getAllFiles(vector<string> &matchingFiles, string &rootDir, const string &extensions,
 			bool recursive = true);
 		static std::string getContainingDirectory(std::string path);

@@ -12,10 +12,10 @@
 using namespace std;
 using namespace MonkeyPlayer;
 
-const string FileManager::FILE_TYPE_MUSIC = ".MP3.WAV";
+const string FileManager::FILE_TYPE_MUSIC = ".MP3.WMA";
 const string FileManager::FILE_TYPE_IMAGE = ".JPG.JPEG.GIF.GIFF.PNG.DDS";
 
-std::string toUpper(const std::string & s)
+std::string FileManager::toUpper(const std::string & s)
 {
     std::string ret(s.size(), char());
     for(unsigned int i = 0; i < s.size(); ++i)
@@ -124,6 +124,10 @@ std::string FileManager::getContainingDirectory(std::string path)
 {
 	if (path.length() > 0)
 	{
+		while (path.length() > 0 && (path[path.length() - 1] == '\\' || path[path.length() - 1] == '/'))
+		{
+			path = path.substr(0, path.length() - 1);
+		}
 		unsigned int slashPos = path.find_last_of('\\');
 		unsigned int backslashPos = path.find_last_of('/');
 		unsigned int startPos = std::string::npos;

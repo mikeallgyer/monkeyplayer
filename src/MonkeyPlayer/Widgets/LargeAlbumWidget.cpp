@@ -131,11 +131,12 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 
 	mTrackBox = snew TrackListBox(mX, mY, 200.0, 200.0f, listBox_callback, this);
 	mTrackBox->setUseTrackNumbers(true);
+	mTrackBox->focus();
 	mWidgets.push_back(mTrackBox);
 
 	std::string selBoxPath = FileManager::getContentAsset(std::string("Textures\\cdHighlight.png"));
 	mSelectionSprite = snew Sprite(selBoxPath.c_str(), 0, 0, 50.0f, 50.0f);
-	mSelectedThing = CollectionWindow::ALBUM;
+	mSelectedThing = CollectionWindow::TRACK;
 
 	mLargeAlbumLbl = snew SimpleLabel(0, 0, 200.0f, 30.0f, string(""), 26, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 	mLargeAlbumLbl->setSizeToFit(true);
@@ -394,6 +395,10 @@ void LargeAlbumWidget::update(float dt)
 			{
 				mSelectedThing = CollectionWindow::ARTIST;
 			}
+			else
+			{
+				mTrackBox->focus();
+			}
 		}
 		else if (gInput->keyPressed(VK_UP))
 		{
@@ -412,6 +417,10 @@ void LargeAlbumWidget::update(float dt)
 				mTrackBox->focus();
 				mTrackBox->setSelectedIndex(mTrackBox->getNumItems() - 1);
 				mSelectedThing = CollectionWindow::TRACK;
+			}
+			else
+			{
+				mTrackBox->focus();
 			}
 
 		}
@@ -435,10 +444,17 @@ void LargeAlbumWidget::update(float dt)
 
 	if (mDisplayingAlbum != (float)mAlbumIndex)
 	{
-		if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 3.0f)
+		if (mDisplayingAlbum - (float)mAlbumIndex > 3.0f)
 		{
 			scrollSpeed = REALLY_FAST_SCROLL_SPEED;
 			scrollSpeedInv = 1.0f / scrollSpeed;
+			mDisplayingAlbum = min((float)mLargeAlbums.size() - 1, mAlbumIndex + 3.0f);
+		}
+		else if (mDisplayingAlbum - (float)mAlbumIndex < -3.0f)
+		{
+			scrollSpeed = REALLY_FAST_SCROLL_SPEED;
+			scrollSpeedInv = 1.0f / scrollSpeed;
+			mDisplayingAlbum = max(0, mAlbumIndex - 3.0f);
 		}
 		else if (abs(mDisplayingAlbum - (float)mAlbumIndex) > 2.0f)
 		{
@@ -821,7 +837,33 @@ void LargeAlbumWidget::goToChar(char c)
 	int index = -1;
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
-		if (mLargeAlbums[i]->getAlbum().Artist[0] == c)
+		string caps = FileManager::toUpper(mLargeAlbums[i]->getAlbum().Artist);
+		if (caps[0] == c)
+		{
+			index = (int)i;
+			break;
+		}
+	}
+
+	if (index >= 0 && index != mAlbumIndex)
+	{
+		goToAlbum(index);
+	}
+}
+void LargeAlbumWidget::goToString(string &s)
+{
+	int index = -1;
+	unsigned int strLen = s.length();
+	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
+	{
+		string caps = FileManager::toUpper(mLargeAlbums[i]->getAlbum().Artist);
+		unsigned int albumLen = caps.length();
+		unsigned int j = 0;
+		while (j < strLen && j < albumLen && s[j] == caps[j])
+		{
+			j++;
+		}
+		if (j == strLen)
 		{
 			index = (int)i;
 			break;
@@ -1075,21 +1117,27 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 {
 	int insertIndex = 0;
 	vector<LargeAlbumItem*>::iterator iter = mLargeAlbums.begin();
+	string newArtist = FileManager::toUpper(album->Artist);
+	string newTitle = FileManager::toUpper(album->Title);
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		Album currAlbum = mLargeAlbums[i]->getAlbum();
+		string currArtist = FileManager::toUpper(currAlbum.Artist);
+		string currTitle = FileManager::toUpper(currAlbum.Title);
 		if (mLargeAlbums[i]->getAlbum().Id == album->Id)
 		{
 			insertIndex = -1;
 			break;
 		}
-		else if (currAlbum.Artist == album->Artist)
+		else if (currArtist == newArtist)
 		{
 			insertIndex = i;
-			for (unsigned int j = i; j < mLargeAlbums.size() && currAlbum.Artist == album->Artist && album->Title >= currAlbum.Title; j++)
+			for (unsigned int j = i; j < mLargeAlbums.size() && currArtist == newArtist && newTitle >= currTitle; j++)
 			{
 				currAlbum = mLargeAlbums[j]->getAlbum();
-				if (currAlbum.Title == album->Title)
+				currArtist = FileManager::toUpper(currAlbum.Artist);
+				currTitle = FileManager::toUpper(currAlbum.Title);
+				if (currTitle == newTitle)
 				{
 					insertIndex = -1;
 					break;
@@ -1098,7 +1146,7 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 			}
 			break;
 		}
-		else if (currAlbum.Artist > album->Artist)
+		else if (currArtist > newArtist)
 		{
 			insertIndex =  i;
 			break;
@@ -1134,32 +1182,23 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 
 void LargeAlbumWidget::addTrack(Track* track)
 {
-/*	CSingleLock lock(&mCritSection);
+	CSingleLock lock(&mCritSection);
 	lock.Lock();
 
 	if (track->AlbumId > 0)
 	{
 		bool foundAlbum = false;
-		for (unsigned int i = 0; i < mSmallItems.size(); i++)
+		unsigned int index = 0;
+		for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 		{
-			if (mSmallItems[i]->getAlbum().Id == track->AlbumId)
+			if (mLargeAlbums[i]->getAlbum().Id == track->AlbumId)
 			{
-				foundAlbum = true;
+				mLargeAlbums[i]->setTracksDirty();
 			}
 		}
-		if (!foundAlbum)
-		{
-			Album album;
-			DatabaseManager::instance()->getAlbum(track->AlbumId, &album);
-			if (album.Id > 0)
-			{
-				mAlbumsToAdd.push_back(snew Album(album.Id, album.NumTracks, album.Title, album.Year, album.Artist));
-			}
-		}
-		mTracksToAdd.push_back(snew Track(*track));
 	}
 	lock.Unlock();
-*/
+
 	mDoGetTracks = true;
 }
 void LargeAlbumWidget::doAddTrack(Track* track)

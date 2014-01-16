@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+  <Product Id="*" Name="Monkey Player" Language="1033" Version="0.2.0" Manufacturer="HF Technologies"
+           UpgradeCode="7F4738D5-D10C-4338-87A3-ACB12A3320C4">
+    <Package InstallerVersion="200" InstallScope="perMachine" Compressed="yes" />
+    <MediaTemplate EmbedCab="yes" />
+    <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallInitialize" />
+    </InstallExecuteSequence>
+    <Upgrade Id="7F4738D5-D10C-4338-87A3-ACB12A3320C4">
+      <UpgradeVersion
+         Minimum="0.1.0.0" Maximum="0.2.0.0"
+         Property="PREVIOUSVERSIONSINSTALLED"
+         IncludeMinimum="yes" IncludeMaximum="no" />
+    </Upgrade>
+
+    <Property Id='DiskPrompt' Value="Monkey Player Installation [1]" />
+    <Property Id="USERSPECIFIEDDIR">
+      <RegistrySearch Id='HFTechOQSRegistry' Type='raw'
+        Root='HKLM' Key='Software\HF_Technologies\Monkey Player' Name='InstallDir' />
+    </Property>
+
+    <WixVariable Id="WixUILicenseRtf" Value="EULA.rtf" />
+
+    <!--    <Icon Id="OQSIcon.exe" SourceFile="Resources\OQS.ico" />
+    <Property Id="ARPPRODUCTICON" Value="OQSIcon.exe" /> 
+    //-->
+
+    <!--
+    <PropertyRef Id="NETFRAMEWORK35"/>
+    <Condition Message="This application requires .NET Framework 3.5. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK35]]>
+    </Condition>
+    //-->
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="USERSPECIFIEDDIR" Name="Monkey Player">
+          <Directory Id="DirectXRedistDirectory" Name="DirectX9.0c">
+            <Component Id="DirectXRedist" Guid="1C0FCB16-B94D-4C17-8CB6-4FB36CDA9921">
+              <File Id="DXSETUPEXE"
+                    Source="DirectXMinInstall\dxsetup.exe"
+                    KeyPath="yes"
+                    Checksum="yes"/>
+              <File Id="dxupdate.cab"
+             Source="DirectXMinInstall\dxupdate.cab"/>
+              <File Id="dxdllreg_x86.cab"
+             Source="DirectXMinInstall\dxdllreg_x86.cab"/>
+              <File Id="dsetup32.dll"
+             Source="DirectXMinInstall\dsetup32.dll"/>
+              <File Id="dsetup.dll"
+                    Source="DirectXMinInstall\dsetup.dll"/>
+              <File Id="DEC2006_d3dx9_32_x86.cab"
+             Source="DirectXMinInstall\Jun2010_d3dx9_43_x86.cab"/>
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Monkey Player"/>
+      </Directory>
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="ManufacturerDir" Name="HF Technologies">
+          <Directory Id="MPAppDataDir" Name="Monkey Player">
+            <Component Id="AppData" Guid="C224DFC9-01DF-43BF-AD79-1178B556445D">
+              <RemoveFolder Id="RemoveAppDir" Directory="MPAppDataDir" On="uninstall"/>
+              <RemoveFolder Id="RemoveManufacturerDir" Directory="ManufacturerDir" On="uninstall"/>
+              <RegistryValue Root="HKCU" Key="Software\HF_Technologies\Monkey Player" Type="string" Value="" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="USERSPECIFIEDDIR">
+      <Component Id="MainExe" Guid="3546A989-257B-419B-AC92-F5CAB39707E4">
+        <File Id="MainExe" Name="MonkeyPlayer.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="fmodexDLL" Guid="DD1F6B92-639D-47B5-BACD-1FB81B0A6CE6">
+        <File Id="fmodexDLL" Name="fmodex.dll" />
+      </Component>
+      <Component Id="sqlite3DLL" Guid="44DF52BC-192A-4188-B83E-A599B1F401B0">
+        <File Id="sqlite3" Name="sqlite3.dll" />
+      </Component>
+      <Component Id="tagDLL" Guid="EEACFCA7-DF87-4B1A-89E4-8552D38C2EE4">
+        <File Id="tag" Name="tag.dll" />
+      </Component>
+      <Component Id="zlib1DLL" Guid="81A766B2-44D2-4E7A-B5BD-722E70F68249">
+        <File Id="zlib1" Name="zlib1.dll" />
+      </Component>
+      <Component Id="InstallDirRegistry" Guid="8B21173C-070E-4455-8C1F-8D9FBDB41557">
+        <RegistryKey Id="MPRegRoot"
+                     ForceDeleteOnUninstall="yes"
+                     Key="Software\HF_Technologies\MonkeyPlayer"
+                     Root="HKLM">
+          <RegistryValue Id="MPInstallDir"
+                         Type="string"
+                         Name="InstallDir"
+                         Value="[USERSPECIFIEDDIR]" />
+          <RegistryValue Id="MPInstallVersion"
+                         Type="string"
+                         Name="InstalledVersion"
+                         Value="[ProductVersion]" />
+        </RegistryKey>
+      </Component>
+
+    </DirectoryRef>
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="C2C097E8-4777-425E-A5D2-10110D989E46">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="Monkey Player"
+                  Description="Monkey Player - Audio Player"
+                  Target="[USERSPECIFIEDDIR]MonkeyPlayer.exe"
+                  WorkingDirectory="USERSPECIFIEDDIR" />
+<!--                  Icon="OQSIcon.exe"/>//-->
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\HF_Technologies\Monkey Player" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="DirectXRedist"
+             Title="DirectX 9.0c June 2010"
+             AllowAdvertise="no"
+      Display="hidden" Level="1">
+      <ComponentRef Id="DirectXRedist"/>
+    </Feature>
+      <Feature Id='Complete' Level='1' Title='Monkey Player Complete' Description='The complete package'
+             ConfigurableDirectory='TARGETDIR' Display='expand'>
+        <ComponentRef Id='MainExe' />
+        <ComponentRef Id='fmodexDLL' />
+        <ComponentRef Id='sqlite3DLL' />
+        <ComponentRef Id='tagDLL' />
+        <ComponentRef Id='zlib1DLL' />
+        <ComponentRef Id='ApplicationShortcut' />
+        <ComponentRef Id='AppData' />
+        <ComponentRef Id='InstallDirRegistry' />
+        <ComponentGroupRef Id='MP_Content' />
+    </Feature>
+    <!--      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="OQS 2.0">
+          <Component Id="ProgramMenuDir" Guid="6BF97AE8-839B-405E-886D-797C7C6F77F1">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="DesktopFolder" Name="Desktop" />
+      
+    <UIRef Id="WixUI_InstallDir" />
+
+-->
+    <Property Id="WIXUI_INSTALLDIR" Value="USERSPECIFIEDDIR" />
+
+    <UI Id="MyWixUI_Mondo">
+      <UIRef Id="WixUI_InstallDir" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">PREVIOUSVERSIONSINSTALLED</Publish>
+      <!--      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="DatabaseSelectionDlg" Order="4">LicenseAccepted = "1" AND NOT PREVIOUSVERSIONSINSTALLED</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="DatabaseSelectionDlg">NOT PREVIOUSVERSIONSINSTALLED</Publish>
+-->
+    </UI>
+
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <CustomAction Id="InstallDirectX"
+    FileKey="DXSETUPEXE"
+    ExeCommand="/silent"
+    Execute="deferred"
+    Impersonate="no"
+    Return="check"/>
+
+    <InstallExecuteSequence>
+      <Custom Action="InstallDirectX" Before="InstallFinalize">
+        <![CDATA[NOT REMOVE]]>
+      </Custom>
+    </InstallExecuteSequence>
+
+    <UI>
+      <ProgressText Action="InstallDirectX">Installing DirectX 9.0c</ProgressText>
+    </UI>
+  </Product>
+
+</Wix>

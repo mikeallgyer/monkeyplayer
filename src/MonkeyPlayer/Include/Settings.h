@@ -51,6 +51,8 @@ namespace MonkeyPlayer
 		// set (and save) value
 		void setValue(string name, float value);
 
+		unsigned int getSeed();
+
 		static void getAppDataPath(TCHAR* outPath, TCHAR* filename);
 		static const string WHITESPACE;
 		static const string CONTENT_DIR;
@@ -62,6 +64,7 @@ namespace MonkeyPlayer
 		static const string OPT_GO_TO_SONG;
 		static const string OPT_AUDIO_TYPES;
 		static const string LAST_ALBUM_VIEWED;
+		static const string LAST_SEED;
 	private:
 		Settings();
 		~Settings();

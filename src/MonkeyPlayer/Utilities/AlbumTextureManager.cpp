@@ -133,45 +133,45 @@ int AlbumTextureManager::getIndexToReplace()
 	AlbumTextureManager* mgr = (AlbumTextureManager*)pParam;
 	do
 	{
-		if (mgr->mTexturesToLoad.size() > 0)
+		while (mgr->mTexturesToLoad.size() > 0)
 		{
 			CSingleLock lock(&mCritSection);
 			lock.Lock();
 
-			for (set<int>::iterator iter = mgr->mTexturesToLoad.begin(); iter != mgr->mTexturesToLoad.end(); iter++)
+			set<int>::iterator iter = mgr->mTexturesToLoad.begin();
+			IDirect3DTexture9* tex = loadTexture(*iter);
+			if (tex != NULL)
 			{
-				IDirect3DTexture9* tex = loadTexture(*iter);
-				if (tex != NULL)
+				if (mgr->mTextures.size() < NUM_CACHEABLE_TEXTURES)
 				{
-					if (mgr->mTextures.size() < NUM_CACHEABLE_TEXTURES)
-					{
-						AlbumTextureManager::AlbumTexture* a = snew AlbumTextureManager::AlbumTexture();
-						a->mAlbumId = (*iter);
-						a->mWeight= 0;
-						a->mTexture = tex;
-						mgr->mTextures.push_back(a);
-						mgr->mCurrIndex = mgr->mTextures.size() - 1;
-					}
-					else
-					{
-						if (mgr->mCurrIndex >= mgr->mTextures.size()) 
-						{
-							mgr->mCurrIndex = 0;
-						}
-						int index = mgr->getIndexToReplace();
-						ReleaseCOM(mgr->mTextures[index]->mTexture);
-						mgr->mTextures[index]->mAlbumId = (*iter);
-						mgr->mTextures[index]->mWeight= MAX_WEIGHT;
-						mgr->mTextures[index]->mTexture = tex;
-					}
+					AlbumTextureManager::AlbumTexture* a = snew AlbumTextureManager::AlbumTexture();
+					a->mAlbumId = (*iter);
+					a->mWeight= 0;
+					a->mTexture = tex;
+					mgr->mTextures.push_back(a);
+					mgr->mCurrIndex = mgr->mTextures.size() - 1;
 				}
 				else
 				{
-					mgr->mBadAlbums[*iter] = true;
+					if (mgr->mCurrIndex >= mgr->mTextures.size()) 
+					{
+						mgr->mCurrIndex = 0;
+					}
+					int index = mgr->getIndexToReplace();
+					ReleaseCOM(mgr->mTextures[index]->mTexture);
+					mgr->mTextures[index]->mAlbumId = (*iter);
+					mgr->mTextures[index]->mWeight= MAX_WEIGHT;
+					mgr->mTextures[index]->mTexture = tex;
 				}
 			}
-			mgr->mTexturesToLoad.clear();
+			else
+			{
+				mgr->mBadAlbums[*iter] = true;
+			}
+			mgr->mTexturesToLoad.erase(iter);
+			//mgr->mTexturesToLoad.clear();
 			lock.Unlock();
+			Sleep(100);
 		}
 		Sleep(1000);
 

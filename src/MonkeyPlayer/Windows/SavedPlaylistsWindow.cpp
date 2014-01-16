@@ -46,6 +46,7 @@ SavedPlaylistsWindow::SavedPlaylistsWindow()
 	mWidgets.push_back(mFolderLabel);
 
 	mPlaylistWindow = NULL;
+	DatabaseManager::instance()->addPlaylistCallback(db_playlist_callback, this);
 }
 SavedPlaylistsWindow::~SavedPlaylistsWindow()
 {
@@ -216,4 +217,9 @@ void SavedPlaylistsWindow::onItemSelected(ListItem* item, int index)
 		mPlaylistWindow->setPlaylistName(playlistItem->toString());
 
 	}
+}
+
+void SavedPlaylistsWindow::onDBPlaylistEvent()
+{
+	setPlaylists();
 }

@@ -74,6 +74,10 @@ namespace MonkeyPlayer
 		void addDefault(DBDefault &def); // if name already exists, it will be overwritten!
 		void modifyDefault(DBDefault &def);  // if name doesn't exist, it's created
 
+		// callbacks
+		void addPlaylistCallback(void (*cb)(void* objPtr), void* objPtr);
+		void removePlaylistCallback(void* objPtr);
+
 	private:
 		DatabaseManager();
 		void testAndValidateDatabase();
@@ -91,6 +95,9 @@ namespace MonkeyPlayer
 		sqlite3* mDB;
 		bool mInTransaction;
 
+		std::vector<void (*)(void* ptrObj) > mPlaylistCallbacks;
+		std::vector<void*> mPlaylistCallbackObj;
+		
 		// synchronization
 		static CCriticalSection mCritSection;
 	};

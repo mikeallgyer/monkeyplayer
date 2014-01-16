@@ -13,6 +13,7 @@ const float Slider::INF_STEPS = 0;
 const int Slider::TEXTURE_UP = 0;
 const int Slider::TEXTURE_HOVER = 1;
 const int Slider::TEXTURE_DOWN = 2;
+const float Slider::MAX_STEPS = 5000.0f;
 
 Slider::Slider(float x, float y, float width, float height, float min, float max, float step,
 		void (*sliderMovedCB)(void* ptrObj, Slider* btn), void* callbackObj)
@@ -87,6 +88,11 @@ void Slider::createSteps()
 	mSteps.push_back(mMin);
 	mSteps.push_back(mMax);
 
+	float numSteps = (mMax - mMin) / mStep;
+	if (numSteps > MAX_STEPS)
+	{
+		mStep = (mMax - mMin) / MAX_STEPS;
+	}
 	for (float s = mMin + mStep; s < mMax; s += mStep)
 	{
 		mSteps.push_back(s);
@@ -166,6 +172,13 @@ void Slider::setRange(float minValue, float maxValue)
 {
 	mMin = minValue;
 	mMax = maxValue;
+	createSteps();
+}
+void Slider::setRangeAndStep(float minValue, float maxValue, float step)
+{
+	mMin = minValue;
+	mMax = maxValue;
+	mStep = step;
 	createSteps();
 }
 

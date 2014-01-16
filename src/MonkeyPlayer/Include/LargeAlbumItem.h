@@ -49,6 +49,7 @@ namespace MonkeyPlayer
 		void setDest(float x, float yRot, bool vis, float time);
 		void addDest(float x, float yRot, bool vis, float time);
 		IDirect3DTexture9* getTexture();
+		void setTracksDirty();
 
 	private:
 
@@ -63,6 +64,7 @@ namespace MonkeyPlayer
 		float mCurrTime;
 		bool mVisible;
 		bool mMoving;
+		bool mTracksDirty;
 		queue<AlbumPos> mPositions;
 		AlbumPos mCurrDestination;
 

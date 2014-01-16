@@ -275,6 +275,11 @@ void ControlWindow::update(float dt)
 		mResized = false;
 	}
 
+	if (gInput->keyPressed(VK_SPACE))
+	{
+		SoundManager::instance()->togglePaused();
+	}
+
 	mUpdateTime += dt;
 	if (mUpdateTime >= TIME_UPDATE_DELAY)
 	{
@@ -381,11 +386,11 @@ bool ControlWindow::onMouseEvent(MouseEvent ev)
 		{
 			if (SoundManager::instance()->isPlaying())
 			{
-				gWindowMgr->getToolTip()->setup(mPlayButton, "Pause", ev.getX(), ev.getY());
+				gWindowMgr->getToolTip()->setup(mPlayButton, "Pause (space)", ev.getX(), ev.getY());
 			}
 			else
 			{
-				gWindowMgr->getToolTip()->setup(mPlayButton, "Play", ev.getX(), ev.getY());
+				gWindowMgr->getToolTip()->setup(mPlayButton, "Play (space)", ev.getX(), ev.getY());
 			}
 		}
 		else if (mStopButton->isPointInside(ev.getX(), ev.getY()))
@@ -476,10 +481,11 @@ void ControlWindow::onBtnPushed(Button* btn)
 
 void ControlWindow::onSoundEvent(SoundManager::SoundEvent ev)
 {
+	float len = (float)SoundManager::instance()->getCurrLength();
 	switch (ev)
 	{
 	case SoundManager::START_EVENT:
-		mTimeSlider->setRange(0, (float)SoundManager::instance()->getCurrLength());
+		mTimeSlider->setRangeAndStep(0, len, len / 1000.0f);
 		mSpeedSlider->setValue(SoundManager::instance()->getSpeed());
 	case SoundManager::UNPAUSE_EVENT:
 		mWidgets[mPlayIndex] = mPauseButton;

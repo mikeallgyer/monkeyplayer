@@ -74,17 +74,19 @@ void D3DApp::initMainWindow()
 
 	if (!RegisterClass(&wc))
 	{
+		Logger::instance()->write("RegisterClass failed!");
 		MessageBox(0, "RegisterClass failed!", 0, 0);
 		PostQuitMessage(0);
 	}
 
-	RECT R = {0, 0, Settings::instance()->getIntValue("width", 800), Settings::instance()->getIntValue("height", 600)};
+	RECT R = {0, 0, Settings::instance()->getIntValue("width", 1024), Settings::instance()->getIntValue("height", 768)};
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE);
 	mHwnd = CreateWindow("D3DWndClassName", mCaption.c_str(), WS_OVERLAPPEDWINDOW | CS_DBLCLKS,
 		100, 100, R.right - R.left, R.bottom - R.top, 0, 0, mHAppInstance, 0);
 
 	if (!mHwnd)
 	{
+		Logger::instance()->write("CreateWindow failed!");
 		MessageBox(0, "CreateWindow failed!", 0, 0);
 		PostQuitMessage(0);
 	}

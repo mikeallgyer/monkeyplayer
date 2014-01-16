@@ -234,7 +234,7 @@ vector<string> DatabaseManager::getAllArtists()
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT DISTINCT ARTIST FROM ALBUMS ORDER BY ARTIST", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT DISTINCT ARTIST FROM ALBUMS ORDER BY ARTIST COLLATE NOCASE", -1, &stmt, NULL);
 
 	vector<string> albums;
 	int result = sqlite3_step(stmt); 
@@ -805,7 +805,7 @@ vector<Album*> DatabaseManager::getAllAlbums()
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST COLLATE NOCASE, TITLE COLLATE NOCASE", -1, &stmt, NULL);
 
 	vector<Album*> albums;
 	int result = sqlite3_step(stmt); 
@@ -917,18 +917,6 @@ vector<std::string> DatabaseManager::getAllDirs()
 	lock.Unlock();
 	return paths;
 }
-/*
-	query = "CREATE TABLE PLAYLISTS (ID INTEGER PRIMARY KEY, "
-		"NAME VARCHAR(255), "
-		"FILENAME VARCHAR(255))";
-
-	query = "CREATE TABLE PLAYLIST_TRACKS (ID INTEGER PRIMARY KEY, "
-		"TRACK INTEGER, "
-		"PLAYLIST INTEGER, "
-		"T_INDEX INTEGER, "
-		"FOREIGN KEY(TRACK) REFERENCES TRACKS(ID), "
-		"FOREIGN KEY(PLAYLIST) REFERENCES PLAYLISTS(ID))";
-*/
 
 void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool overwrite)
 {
@@ -946,6 +934,7 @@ void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool over
 
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
+	beginTransaction();
 	sqlite3_stmt* stmt = NULL;
 
 	sqlite3_prepare_v2(mDB, "INSERT INTO PLAYLISTS (NAME, FILENAME) VALUES (?, ?)", -1, &stmt, NULL);
@@ -962,17 +951,25 @@ void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool over
 		sqlite3_bind_int(stmt, 1, tracks[i]->Id);
 		sqlite3_bind_int(stmt, 2, index);
 		sqlite3_bind_int(stmt, 3, i + 1);
-		addRow(stmt);
+		int result = sqlite3_step(stmt); 
 	}
 	sqlite3_finalize(stmt);
+	endTransaction();
 	lock.Unlock();
+	for (unsigned int i = 0; i < mPlaylistCallbacks.size(); i++)
+	{
+		if (mPlaylistCallbacks[i] != NULL)
+		{
+			mPlaylistCallbacks[i](mPlaylistCallbackObj[i]);
+		}
+	}
 }
 vector<Playlist*> DatabaseManager::getAllPlaylists()
 {
 	CSingleLock lock(&mCritSection, true);
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NAME, FILENAME FROM PLAYLISTS", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NAME, FILENAME FROM PLAYLISTS ORDER BY NAME COLLATE NOCASE", -1, &stmt, NULL);
 
 	vector<Playlist*> lists;
 	int result = sqlite3_step(stmt); 
@@ -1104,6 +1101,13 @@ void DatabaseManager::deletePlaylist(int id)
 	sqlite3_step(stmt);
 
 	lock.Unlock();
+	for (unsigned int i = 0; i < mPlaylistCallbacks.size(); i++)
+	{
+		if (mPlaylistCallbacks[i] != NULL)
+		{
+			mPlaylistCallbacks[i](mPlaylistCallbackObj[i]);
+		}
+	}
 }
 
 DBDefault DatabaseManager::getDefault(string name)
@@ -1194,6 +1198,23 @@ void DatabaseManager::addDefault(DBDefault &def)
 void DatabaseManager::modifyDefault(DBDefault &def)
 {
 	addDefault(def);
+}
+
+void DatabaseManager::addPlaylistCallback(void (*cb)(void* objPtr), void* objPtr)
+{
+	mPlaylistCallbacks.push_back(cb);
+	mPlaylistCallbackObj.push_back(objPtr);
+}
+void DatabaseManager::removePlaylistCallback(void* objPtr)
+{
+	for (unsigned int i = 0; i < mPlaylistCallbacks.size(); i++)
+	{
+		if (mPlaylistCallbackObj[i] == objPtr)
+		{
+			mPlaylistCallbacks[i] = NULL;
+			mPlaylistCallbackObj[i] = NULL;
+		}
+	}
 }
 
 int DatabaseManager::addRow(sqlite3_stmt* stmt)

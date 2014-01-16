@@ -58,6 +58,7 @@ namespace MonkeyPlayer
 
 		void getDrawableRange(int &topIndex, int &bottomIndex, float &fractPart);
 		void goToChar(char c);
+		void goToString(string &s);
 		void goToSong(Album a, Track t, bool doHighlight = false);
 		int getCurrentAlbum();
 

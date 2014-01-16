@@ -7,6 +7,7 @@
 //
 // Frank Luna (C) 2005 All Rights Reserved.
 
+#include <stdlib.h>
 #include <string>
 
 #include "d3dUtil.h"
@@ -44,6 +45,9 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 	}
 	else
 	{
+		Logger::instance()->write("Creating random seed");
+		std::srand(Settings::instance()->getSeed());
+
 		mStats = snew GfxStats();
 
 		WindowManager* mgr  = snew WindowManager();
@@ -64,6 +68,7 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		PlaybackOptionsWindow* optionsWin = snew PlaybackOptionsWindow();
 		optionsWin->setX(nowPlaying->getWidth());
 		mgr->addWindow(optionsWin);
+		MusicLibrary::instance()->setPlaybackOptionsWindow(optionsWin);
 
 		mgr->addWindow(nowPlaying);
 		mgr->addWindowAboveMain(nowPlaying);
@@ -85,13 +90,7 @@ MonkeyPlayerApp::MonkeyPlayerApp(HINSTANCE hInstance, std::string caption, D3DDE
 		MusicLoader::instance()->setPlaylistWindow(pl);
 		MusicLoader::instance()->setCollectionWindow(collWin);
 	}
-	Album a;
-	Track t;
-	Genre g;
 
-	GUID guid;
-	MetadataReader::getTrackInfo("D:\\MP3s\\Ripped\\Kings of Leon\\Because of the Times\\Kings of Leon-Arizona.wma", &t, &a, &g);
-	MetadataReader::getAlbumGUID("D:\\MP3s\\Bought On Amazon\\[Fleet Foxes] - 06 - Helplessness Blues.mp3", guid);
 	mCamera = snew Camera();
 	this->onDeviceReset();
 

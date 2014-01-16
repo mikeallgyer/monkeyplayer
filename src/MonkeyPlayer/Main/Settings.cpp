@@ -4,6 +4,7 @@
 // Holds all options from a config file
 // Note, this is a singleton class
 
+#include <FileManager.h>
 #include <d3dUtil.h>
 #include "Settings.h"
 
@@ -33,6 +34,7 @@ const string Settings::OPT_STOP_AFTER_ON = "StopAfterOn";
 const string Settings::OPT_GO_TO_SONG = "GoToSong";
 const string Settings::OPT_AUDIO_TYPES = "AudioTypes";
 const string Settings::LAST_ALBUM_VIEWED = "LastAlbumIndex";
+const string Settings::LAST_SEED = "RandSeed";
 
 Settings::Settings()
 {
@@ -54,7 +56,6 @@ Settings* Settings::instance()
 {
 	if (mInstance== NULL)
 	{
-		// use "unsafe" new, so it doesn't show up in the memory dump
 		mInstance = snew Settings();
 		Logger::instance()->write("Using settings file: " + mInstance->mFilename);
 	}
@@ -159,11 +160,17 @@ void Settings::setValue(string name, float value)
 	mValues[name] = sstream.str();
 	writeValues();
 }
-
+unsigned int Settings::getSeed()
+{
+	unsigned int s = (unsigned int)getIntValue(LAST_SEED, 100);
+	setValue(LAST_SEED, (int)s + 1);
+	return s;
+}
 void Settings::loadValues()
 {
 	mValues.clear();
 
+	bool success = false;
 	try 
 	{
 		ifstream infile(mFilename.c_str());
@@ -171,7 +178,8 @@ void Settings::loadValues()
 		if (infile.good())
 		{
 			string currLine = "";
-			
+			success = true;
+
 			while (infile.good())
 			{
 				getline(infile, currLine);
@@ -196,6 +204,24 @@ void Settings::loadValues()
 		infile.close();
 	}
 	catch (...) {}
+
+	if (!success)
+	{
+		string currDir = ".";
+		char* buf;// = snew char[len];
+		_get_pgmptr(&buf);
+		string dir = FileManager::getContainingDirectory(string(buf));
+#if _DEBUG
+		string updir = FileManager::getContainingDirectory(dir);
+		string up2dir = FileManager::getContainingDirectory(updir);
+		string up3dir = FileManager::getContainingDirectory(up2dir);
+		currDir = up3dir + "\\Content";
+#else
+		currDir = dir + "\\Content";
+#endif
+		setValue(CONTENT_DIR, currDir);
+		
+	}
 }
 void Settings::writeValues()
 {

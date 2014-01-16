@@ -102,7 +102,7 @@ void NowPlayingWindow::update(float dt)
 	}
 	if (mIsPlaying)
 	{
-		mLabelX -= dt * 28.0f;
+		mLabelX -= dt * 35.0f;
 		if ((mLabelX + mLabel->getWidth()) < 0)
 		{
 			mLabelX = mWidth;

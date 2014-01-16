@@ -36,6 +36,8 @@ const int CollectionWindow::ARTIST_QUEUE_NEXT = 9;
 const int CollectionWindow::ARTIST_QUEUE_END = 10;
 const int CollectionWindow::ARTIST_REPLACE_QUEUE = 11;
 
+const float CollectionWindow::TYPED_TIME = 1.0f;
+
 // magic scroll speed
 const float CollectionWindow::SCROLL_SPEED = .2f;
 
@@ -126,6 +128,12 @@ CollectionWindow::CollectionWindow()
 	mWidgets.push_back(mSmallAlbumBtn);
 	mWidgets.push_back(mLargeAlbumBtn);
 
+	mTypedLabel = snew SimpleLabel(0, 0, 200.0f, 200.0f, string("A"), 150, DT_CENTER | DT_NOCLIP,
+		0xffffffff, D3DCOLOR_ARGB(0, 0, 0, 0), "COURIER NEW");
+	mTypedLabel->setSizeToFit(true);
+		mTypedLabel->setVisible(false);
+	mWidgets.push_back(mTypedLabel);
+
 	mCurrStyle = UNDEFINED_STYLE;
 	setDisplayStyle((DISPLAY_STYLE)displayType);
 	mMouseAlphabetStartedDown = false;
@@ -139,6 +147,7 @@ CollectionWindow::CollectionWindow()
 	Track t;
 	mLargeAlbumWidget->goToSong(album, t, false);
 	mSmallAlbumManager->goToSong(album, t, false);
+	mTypedTimer = TYPED_TIME;
 }
 CollectionWindow::~CollectionWindow()
 {
@@ -226,21 +235,22 @@ void CollectionWindow::update(float dt)
 
 		mCurrWidth = gWindowMgr->getMainContentWidth();
 		mY = (float)gWindowMgr->getMainContentTop();
-		int height = r.bottom - (int)mY - 
+		mCurrHeight = r.bottom - (int)mY - 
 			(r.bottom - gWindowMgr->getMainContentBottom());
-		mBackground->setDest(0, (int)mY, mCurrWidth, height);
+		mBackground->setDest(0, (int)mY, mCurrWidth, mCurrHeight);
 
-		mAlphabetLabel->setPos(mCurrWidth / 2.0f - 100.0f, (float)gWindowMgr->getMainContentTop(), 200.0f, 30.0f);
+		mAlphabetLabel->setPos(mCurrWidth / 2.0f - mAlphabetLabel->getWidth() / 2.0f, (float)gWindowMgr->getMainContentTop(), 200.0f, 30.0f);
 		mLetterLabel->setPos(-1000.0f, -100.0f, 80.0f, 80.0f);
 		mMagnifier->setPos(-1000.0f, -1000.0f);
 		mGoToSongChk->setPos(mCurrWidth - 200.0f, mY + 75.0f, 100.0f);
 
-		mSmallAlbumBtn->setPos(mCurrWidth - 90.0f, (float)gWindowMgr->getMainContentTop() + 20.0f);
-		mLargeAlbumBtn->setPos(mCurrWidth - 150.0f, (float)gWindowMgr->getMainContentTop() + 20.0f);
+		mSmallAlbumBtn->setPos(mCurrWidth - 90.0f, (float)gWindowMgr->getMainContentTop() + 30.0f);
+		mLargeAlbumBtn->setPos(mCurrWidth - 150.0f, (float)gWindowMgr->getMainContentTop() + 30.0f);
 
-		mSmallAlbumManager->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
-		mLargeAlbumWidget->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)height);
+		mSmallAlbumManager->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)mCurrHeight);
+		mLargeAlbumWidget->setPos(0, (float)gWindowMgr->getMainContentTop(), (float)mCurrWidth, (float)mCurrHeight);
 
+		mTypedLabel->setPos((float)mCurrWidth * .5f - mTypedLabel->getWidth() * .5f, mY + (float)mCurrHeight * .5f - mTypedLabel->getHeight() * .5f);
 		mResized = false;
 		doRedraw = true;
 	}
@@ -248,6 +258,10 @@ void CollectionWindow::update(float dt)
 
 	int cursorDelta = 0;
 
+	if (mTypedTimer >= 0)
+	{
+		mTypedTimer -= dt;
+	}
 	if (mHasFocus)
 	{
 		if (mGoToHover)
@@ -261,6 +275,45 @@ void CollectionWindow::update(float dt)
 				mLargeAlbumWidget->goToChar(mHoverChar);
 			}
 			mGoToHover = false;
+		}
+
+		for (short i = 65; i <= 90; i++)
+		{
+			if (gInput->keyPressed((unsigned char)i))
+			{
+				stringstream ss;
+				if (mTypedTimer > 0)
+				{
+					ss << mTypedLabel->getString() << (char)i;
+				}
+				else 
+				{
+					ss << (char)i;
+				}
+
+				mTypedLabel->setString(ss.str());
+				mTypedTimer = TYPED_TIME;
+				mTypedLabel->setPos((float)mCurrWidth * .5f - mTypedLabel->getWidth() * .5f,
+					mY + (float)mCurrHeight * .5f - mTypedLabel->getHeight() * .5f);
+				mTypedLabel->setVisible(true);
+
+				if (mCurrStyle == SmallAlbum)
+				{
+					mSmallAlbumManager->goToString(ss.str());
+				}
+				else if (mCurrStyle == LargeAlbum)
+				{
+					mLargeAlbumWidget->goToString(ss.str());
+				}
+			}
+		}
+	}
+	if (mTypedLabel->getVisible())
+	{
+		mTypedLabel->setTextColor(D3DCOLOR_ARGB((short)(255.0f * mTypedTimer), 255, 255, 255));
+		if (mTypedTimer < 0)
+		{
+			mTypedLabel->setVisible(false);
 		}
 	}
 	mAlphabetLabel->update(dt);
@@ -485,6 +538,7 @@ void CollectionWindow::setDrawableWidgets()
 	mWidgetsToDraw.push_back(mGoToSongChk);
 	mWidgetsToDraw.push_back(mSmallAlbumBtn);
 	mWidgetsToDraw.push_back(mLargeAlbumBtn);
+	mWidgetsToDraw.push_back(mTypedLabel);
 	lock.Unlock();
 }
 

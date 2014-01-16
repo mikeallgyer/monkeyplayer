@@ -476,6 +476,22 @@ void ItemListBox::setPos(float x, float y, bool autoSize)
 		setPos(x, y, (float)mWidth, mHeight);
 	}
 }
+float ItemListBox::getX()
+{
+	return mX;
+}
+float ItemListBox::getY()
+{
+	return mY;
+}
+float ItemListBox::getWidth()
+{
+	return mWidth;
+}
+float ItemListBox::getHeight()
+{
+	return mHeight;
+}
 float ItemListBox::getWidthToFit()
 {
 	int maxWidth = TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT;
@@ -652,18 +668,30 @@ void ItemListBox::removeItems(vector<int> items)
 	}
 	
 	vector<ListItem*> newItems;
+	int lastSel = -1;
 	for (unsigned int i = 0; i < mItems.size(); i++)
 	{
 		if (indices.find(i) == indices.end())
 		{
 			newItems.push_back(mItems[i]);
 		}
+		else
+		{
+			lastSel = (int)newItems.size();
+		}
 	}
+	
 	mItems = newItems;
 	mStartDisplayIndex = min(mStartDisplayIndex, mItems.size() - 1);
 	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
 	mSelectedIndices.clear();
 	mCurrSelection = -1;
+	if (lastSel >= 0)
+	{
+		lastSel = min(lastSel, (int)mItems.size() - 1);
+		mCurrSelection = lastSel;
+		mSelectedIndices.push_back(lastSel);
+	}
 	mMultipleSelBegin = -1;
 	mDoRedraw = true;
 	lock.Unlock();
@@ -914,6 +942,27 @@ vector<int> ItemListBox::getSelectedIndices()
 {
 	return mSelectedIndices;
 }
+void ItemListBox::scrollToIndex(int index)
+{
+	if (index < 0 || index >= mItems.size())
+	{
+		return;
+	}
+
+	if (index < mStartDisplayIndex)
+	{
+		mStartDisplayIndex = index;
+		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+		mDoRedraw = true;
+	}
+	else if (index > mEndDisplayIndex)
+	{
+		mEndDisplayIndex = index;
+		mStartDisplayIndex = max(0, mEndDisplayIndex - getNumItemsDisplayed());
+		mDoRedraw = true;
+	}
+}
+
 ListItem* ItemListBox::getItem(int index)
 {
 	CSingleLock lock(&mCritSection);
