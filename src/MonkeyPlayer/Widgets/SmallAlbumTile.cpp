@@ -491,11 +491,16 @@ int SmallAlbumTile::getItemAtPos(int x, int y)
 // does NOT take ownership
 void SmallAlbumTile::setAlbumItem(SmallAlbumItem* albumItem)
 {
-	mAlbumItem = albumItem;
-	recalculateSize();
-	if (mAlbumItem != NULL)
+	if (mAlbumItem != albumItem)
 	{
-		recreateTargets();
+		mAlbumItem = albumItem;
+		mTextureFailed = false;
+		mTryTexture = true;
+		recalculateSize();
+		if (mAlbumItem != NULL)
+		{
+			recreateTargets();
+		}
 	}
 }
 SmallAlbumItem* SmallAlbumTile::getAlbumItem()

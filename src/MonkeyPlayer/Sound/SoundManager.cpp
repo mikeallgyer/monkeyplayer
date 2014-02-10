@@ -367,6 +367,7 @@ void SoundManager::shutdown()
 	if (mInstance != NULL)
 	{
 		delete mInstance;
+		mInstance = NULL;
 	}
 }
 

@@ -151,7 +151,7 @@ void DatabaseManager::createDatabase()
 	if (error) MessageBox(0, errorMsg, "Error creating database table: ALBUMS", 0);
 
 	query = "CREATE TABLE TRACKS (ID INTEGER PRIMARY KEY, "
-		"FILENAME VARCHAR(255), "
+		"FILENAME VARCHAR(255) UNIQUE, "
 		"TITLE VARCHAR(255), "
 		"ARTIST VARCHAR(255), "
 		"VIRTUAL_ARTIST VARCHAR(255), "
@@ -475,6 +475,57 @@ vector<Track*> DatabaseManager::getTracks(string &artist)
 	lock.Unlock();
 	return tracks;
 }
+vector<ArtistWithTracks*> DatabaseManager::getAllArtistsAndTracks()
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	beginTransaction();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT A.ID, A.NUM_TRACKS, A.TITLE, A.YEAR, A.ARTIST, A.VIRTUAL_ARTIST, "
+		"T.ID, T.FILENAME, T.TITLE, T.ARTIST, T.VIRTUAL_ARTIST, T.TRACK_NUMBER, T.LENGTH, T.DATE_ADDED, "
+		"T.IGNORED, T.GENRE, T.DATE_USED, T.NUM_PLAYED FROM ALBUMS A, TRACKS T WHERE T.ALBUM = A.ID "
+		"ORDER BY A.VIRTUAL_ARTIST COLLATE NOCASE, A.TITLE COLLATE NOCASE, T.TRACK_NUMBER", -1, &stmt, NULL);
+
+	vector<ArtistWithTracks*> artists;
+	int result = sqlite3_step(stmt); 
+
+	ArtistWithTracks* artist = NULL;
+	vector<Track*> tracks;
+	while (result == SQLITE_ROW)
+	{
+		string artistStr = getStringColumn(stmt, 4);
+
+		if (artist == NULL || artist->artist != artistStr)
+		{
+			artist = snew ArtistWithTracks();
+			artist->artist = artistStr;
+			artists.push_back(artist);
+		}
+		Track* track = snew Track();
+		track->AlbumId = getIntColumn(stmt, 0);
+		track->Id = getIntColumn(stmt, 6);
+		track->Filename = getStringColumn(stmt, 7);
+		track->Title = getStringColumn(stmt, 8);
+		track->Artist = getStringColumn(stmt, 9);
+		track->VirtualArtist = getStringColumn(stmt, 10);
+		track->TrackNumber = getIntColumn(stmt, 11);
+		track->Length = getIntColumn(stmt, 12);
+		track->DateAdded = getLongColumn(stmt, 13);
+		track->Ignored = getBoolColumn(stmt, 14);
+		track->Genre = getIntColumn(stmt, 15);
+		track->DateUsed = getLongColumn(stmt, 16);
+		track->NumPlayed = getIntColumn(stmt, 17);
+
+		artist->tracks.push_back(track);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	endTransaction();
+	lock.Unlock();
+	return artists;
+}
 
 map<string, Track*> DatabaseManager::getAllTracks()
 {
@@ -564,7 +615,7 @@ void DatabaseManager::addTrack(Track& track)
 		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO TRACKS (FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
+		sqlite3_prepare_v2(mDB, "INSERT OR IGNORE INTO TRACKS (FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
 			"DATE_ADDED, IGNORED, GENRE, DATE_USED, NUM_PLAYED) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
 		
 		sqlite3_bind_text(stmt, 1, track.Filename.c_str(), -1, SQLITE_STATIC);

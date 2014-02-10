@@ -201,35 +201,35 @@ vector<Track*> PlaybackOptionsWindow::populateList()
 	}
 	else if (mOrderByCombo->getSelectedItem()->getId() == ALBUM)
 	{
-		vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
+		vector<AlbumWithTracks*> albums = DatabaseManager::instance()->getAllAlbumsAndTracks();
 		if (mRandomChk->getChecked())
 		{
 			std::random_shuffle(albums.begin(), albums.end());
 		}
 		for (unsigned int i = 0; i < albums.size(); i++)
 		{
-			vector<Track*> albumTracks = DatabaseManager::instance()->getTracks(*albums[i]);
-			for (unsigned int j = 0; j < albumTracks.size(); j++)
+			for (unsigned int j = 0; j < albums[i]->tracks.size(); j++)
 			{
-				tracks.push_back(albumTracks[j]);
+				tracks.push_back(albums[i]->tracks[j]);
 			}
+			delete albums[i]->album;
 			delete albums[i];
 		}
 	}
 	else if (mOrderByCombo->getSelectedItem()->getId() == ARTIST)
 	{
-		vector<string> artists = DatabaseManager::instance()->getAllArtists();
+		vector<ArtistWithTracks*> artists = DatabaseManager::instance()->getAllArtistsAndTracks();
 		if (mRandomChk->getChecked())
 		{
 			std::random_shuffle(artists.begin(), artists.end());
 		}
 		for (unsigned int i = 0; i < artists.size(); i++)
 		{
-			vector<Track*> artistTracks = DatabaseManager::instance()->getTracks(artists[i]);
-			for (unsigned int j = 0; j < artistTracks.size(); j++)
+			for (unsigned int j = 0; j < artists[i]->tracks.size(); j++)
 			{
-				tracks.push_back(artistTracks[j]);
+				tracks.push_back(artists[i]->tracks[j]);
 			}
+			delete artists[i];
 		}
 	}
 	return tracks;

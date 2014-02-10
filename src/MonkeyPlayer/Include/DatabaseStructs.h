@@ -131,6 +131,11 @@ struct AlbumWithTracks
 	Album* album;
 	vector<Track*> tracks;
 };
+struct ArtistWithTracks
+{
+	string artist;
+	vector<Track*> tracks;
+};
 
 struct Playlist
 {

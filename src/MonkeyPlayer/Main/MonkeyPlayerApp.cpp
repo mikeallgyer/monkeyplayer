@@ -110,11 +110,11 @@ MonkeyPlayerApp::~MonkeyPlayerApp()
 	}
 	
 	Vertex::destroyVertexDeclarations();
-	SoundManager::shutdown();
-	Settings::destroy();
 	Logger::destroy();
 	MusicLibrary::destroy();
+	SoundManager::shutdown();
 	AlbumTextureManager::destroy();
+	Settings::destroy();
 }
 
 bool MonkeyPlayerApp::checkDeviceCaps()
