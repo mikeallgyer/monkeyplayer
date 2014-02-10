@@ -29,6 +29,7 @@ namespace MonkeyPlayer
 	{
 	public:
 		LargeAlbumItem(Album album);
+		LargeAlbumItem(Album album, vector<Track*> tracks);
 		~LargeAlbumItem();
 		void onDeviceLost();
 		void onDeviceReset();

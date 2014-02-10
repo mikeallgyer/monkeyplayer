@@ -237,7 +237,7 @@ PlaybackOptionsWindow* MusicLibrary::getPlaybackOptionsWindow()
 
 void MusicLibrary::destroy()
 {
-	if (mInstance == NULL)
+	if (mInstance != NULL)
 	{
 		SoundManager::instance()->removeCallback(mInstance);
 		delete mInstance;
@@ -279,7 +279,8 @@ MusicLibrary* MusicLibrary::instance()
 {
 	if (mInstance == NULL)
 	{
-		mInstance = new MusicLibrary();
+		mInstance = snew MusicLibrary();
 	}
 	return mInstance;
 }
+

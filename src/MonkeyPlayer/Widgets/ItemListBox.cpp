@@ -68,9 +68,6 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 	mTextWidth = mWidth - (TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT);
 	mTextHeight = mHeight - (TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM);
 
-	mScrollBarWidth = 8.0f;
-	mScrollBarHeight = 30.0f;
-	
 	mAllowSingleClickSelection = false;
 	mAllowMultipleSel = false;
 	mStartedOnTop = false;
@@ -78,12 +75,6 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 	std::string whitePath = FileManager::getContentAsset(std::string("Textures\\white.png"));
 	mHighlightedSprite = snew Sprite(whitePath.c_str(), 0, 0, mWidth, mHeight, highlightColor);
 
-	std::string scrollPath = FileManager::getContentAsset(std::string("Textures\\scrollHandle.png"));
-	mScrollHandle = snew Sprite(scrollPath.c_str(), mX + mWidth - 15.0f, 0.0f, 7.0f, 14.0f);
-
-	// do this later so it's drawn on top
-	//mSprites.push_back(mScrollHandle);
-	
 	mHoverSprite = snew Sprite(whitePath.c_str(), 0, 0, mWidth, mHeight, highlightColor);
 	mCurrHoverIndex = -1;
 
@@ -98,6 +89,7 @@ ItemListBox::ItemListBox(float x, float y, float width, float height,
 	mCallbackObj = callbackObj;
 
 	mListTarget = snew RenderTarget((int)width, (int)height, bgColor, false);
+	mScrollBar = snew VerticalScrollBar(mX, mY, mHeight, scrollbar_callback, this);
 	blur();
 	mDoRedraw = true;
 }
@@ -113,6 +105,7 @@ ItemListBox::~ItemListBox()
 	delete mListTarget;
 	delete mHighlightedSprite;
 	delete mHoverSprite;
+	delete mScrollBar;
 }
 
 void ItemListBox::onDeviceLost()
@@ -125,6 +118,7 @@ void ItemListBox::onDeviceLost()
 	mListTarget->onDeviceLost();
 	mHighlightedSprite->onDeviceLost();
 	mHoverSprite->onDeviceLost();
+	mScrollBar->onDeviceLost();
 	mDoRedraw = true;
 }
 void ItemListBox::onDeviceReset()
@@ -138,6 +132,7 @@ void ItemListBox::onDeviceReset()
 	mListTarget->onDeviceReset();
 	mHighlightedSprite->onDeviceReset();
 	mHoverSprite->onDeviceReset();
+	mScrollBar->onDeviceReset();
 	recreateTargets();
 	mDoRedraw = true;
 }
@@ -147,7 +142,7 @@ void ItemListBox::recreateTargets()
 	{
 		mListSprite = snew Sprite(mListTarget->getTexture(), mX, mY, mWidth, mHeight);
 		mSprites.push_back(mListSprite);
-		mSprites.push_back(mScrollHandle);
+		setDrawables();
 	}
 	else
 	{
@@ -354,12 +349,12 @@ void ItemListBox::update(float dt)
 		if ((unsigned int)mCurrSelection < mStartDisplayIndex)
 		{
 			mStartDisplayIndex = mCurrSelection;
-			mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+			mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 		}
 		else if ((unsigned int)mCurrSelection > mEndDisplayIndex)
 		{
 			mEndDisplayIndex = mCurrSelection;
-			mStartDisplayIndex = max(0, mEndDisplayIndex - getNumItemsDisplayed());
+			mStartDisplayIndex = max(0, mEndDisplayIndex - max(0, getNumItemsDisplayed() - 1));
 		}
 		mDoRedraw = true;
 	}
@@ -379,21 +374,11 @@ void ItemListBox::update(float dt)
 
 void ItemListBox::updateScrollBar()
 {
-	float y = mY + TEXT_MARGIN_TOP;
-	if (getNumItemsDisplayed() < mItems.size())
+	if (mScrollBar->getVisible())
 	{
-		float numDisplayed = (float)(mEndDisplayIndex - mStartDisplayIndex + 1);
-		float halfDisplayed = numDisplayed * .5f;
-		float scrollHeight = (numDisplayed) * mFontHeight - mScrollBarHeight;
-		float currPos = ((float)mEndDisplayIndex + (float)mStartDisplayIndex + 1) * .5f - halfDisplayed;
-		float percent = (currPos) / ((float)mItems.size() - (float)(numDisplayed));
-		y += percent * scrollHeight;
+		float currPos = (float)mStartDisplayIndex / max(1.0f, ((float)mItems.size() - (float)getNumItemsDisplayed()));
+		mScrollBar->setHandlePosition(currPos);
 	}
-	else 
-	{
-		y = -999.0f;
-	}
-	mScrollHandle->setDest(mX + mWidth - TEXT_MARGIN_RIGHT * .5f, y, mScrollBarWidth, mScrollBarHeight);
 }
 void ItemListBox::preRender()
 {
@@ -422,13 +407,13 @@ void ItemListBox::preRender()
 				if (selected)
 				{
 					mHighlightedSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
-					gWindowMgr->drawSprite(mHighlightedSprite, mTextWidth, mTextHeight);
+					gWindowMgr->drawSprite(mHighlightedSprite, mWidth, mTextHeight);
 				}
 				else if (mHoverItems.find(i) != mHoverItems.end())
 				{
 					mHoverSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
 					mHoverSprite->setColor(D3DXVECTOR4(0.35f, 0.35f, 0.6f, mHoverItems[i] / HOVER_DURATION));
-					gWindowMgr->drawSprite(mHoverSprite, mTextWidth, mTextHeight);
+					gWindowMgr->drawSprite(mHoverSprite, mWidth, mTextHeight);
 				}
 
 				int y = TEXT_MARGIN_TOP + mFontHeight * row;
@@ -456,12 +441,15 @@ void ItemListBox::setPos(float x, float y, float width, float height)
 	mTextHeight = mHeight - (TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM);
 
 	mListTarget->setDimensions((int)width, (int)height);
+
 	recreateTargets();
+
+	mScrollBar->setPos(mX + mWidth - 10.0f, mY, mHeight);
 
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
 	
-	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	mDoRedraw = true;
 	lock.Unlock();
 }
@@ -518,7 +506,7 @@ float ItemListBox::getHeightToFit()
 
 std::vector<Sprite*> ItemListBox::getSprites()
 {
-	return mSprites;
+	return mDrawableSprites;
 }
 int ItemListBox::getNumTriangles()
 {
@@ -555,10 +543,11 @@ void ItemListBox::setItems(std::vector<ListItem*> items)
 	mItems = items;
 
 	mStartDisplayIndex = 0;
-	mEndDisplayIndex = min(mItems.size(), getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), max(0, getNumItemsDisplayed() - 1));
 
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 
 void ItemListBox::addItems(std::vector<ListItem*> items)
@@ -569,10 +558,11 @@ void ItemListBox::addItems(std::vector<ListItem*> items)
 	for (unsigned int i = 0; i < items.size(); i++)
 	{
 		mItems.push_back(items[i]);
-		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	}
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 void ItemListBox::addItem(ListItem* item)
 {
@@ -580,10 +570,11 @@ void ItemListBox::addItem(ListItem* item)
 	lock.Lock();
 	
 	mItems.push_back(item);
-	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 void ItemListBox::addItem(ListItem* item, unsigned int index)
 {
@@ -598,9 +589,10 @@ void ItemListBox::addItem(ListItem* item, unsigned int index)
 	vector<ListItem*>::iterator iter = mItems.begin() + index;
 
 	mItems.insert(iter, item);
-	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 void ItemListBox::addItems(std::vector<ListItem*> items, unsigned int index)
 {
@@ -615,9 +607,10 @@ void ItemListBox::addItems(std::vector<ListItem*> items, unsigned int index)
 	vector<ListItem*>::iterator iter = mItems.begin() + index;
 
 	mItems.insert(iter, items.begin(), items.end());
-	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 // does nothing if an item isn't already in the list
 void ItemListBox::modifyItems(std::vector<ListItem*> items)
@@ -658,7 +651,7 @@ void ItemListBox::removeItems(vector<int> items)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
-	map<int, bool> indices;
+	map<int, bool> indices; // items to delete, no copies
 	for (unsigned int i = 0; i < items.size(); i++)
 	{
 		if (indices.find(items[i]) == indices.end())
@@ -669,7 +662,8 @@ void ItemListBox::removeItems(vector<int> items)
 	
 	vector<ListItem*> newItems;
 	int lastSel = -1;
-	for (unsigned int i = 0; i < mItems.size(); i++)
+	int l=mItems.size();
+	for (unsigned int i = 0; i < l; i++)
 	{
 		if (indices.find(i) == indices.end())
 		{
@@ -677,13 +671,14 @@ void ItemListBox::removeItems(vector<int> items)
 		}
 		else
 		{
-			lastSel = (int)newItems.size();
+			lastSel = (int)newItems.size() - 1;
+			delete mItems[i];
 		}
 	}
 	
 	mItems = newItems;
 	mStartDisplayIndex = min(mStartDisplayIndex, mItems.size() - 1);
-	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 	mSelectedIndices.clear();
 	mCurrSelection = -1;
 	if (lastSel >= 0)
@@ -695,11 +690,12 @@ void ItemListBox::removeItems(vector<int> items)
 	mMultipleSelBegin = -1;
 	mDoRedraw = true;
 	lock.Unlock();
+	updateScrollbarVisibility();
 }
 
 unsigned int ItemListBox::getNumItemsDisplayed()
 {
-	return (unsigned int)max(0, floor(mTextHeight / (float)mFontHeight) - 1);
+	return (unsigned int)max(0, floor(mTextHeight / (float)mFontHeight));
 }
 
 void ItemListBox::deleteItems()
@@ -714,13 +710,19 @@ void ItemListBox::deleteItems()
 	mCurrSelection = -1;
 	mMultipleSelBegin = -1;
 	mItems.clear();
+	updateScrollbarVisibility();
 }
 
 bool ItemListBox::onMouseEvent(MouseEvent e)
 {
+	if (mScrollBar->onMouseEvent(e))
+	{
+		return true;
+	}
+
 	if (getIsFocused()) //isPointInside(e.getX(), e.getY()))
 	{
-		if (e.getEvent() == MouseEvent::MOUSEWHEEL && mItems.size() > getNumItemsDisplayed())
+		if (e.getEvent() == MouseEvent::MOUSEWHEEL && mItems.size() > max(0, getNumItemsDisplayed() - 1))
 		{
 			int scrollAmt = Settings::instance()->getIntValue("SCROLL_SPEED", NUM_SCROLLING_ITEMS);
 			CSingleLock lock(&mCritSection);
@@ -730,12 +732,12 @@ bool ItemListBox::onMouseEvent(MouseEvent e)
 			if (e.getExtraHiData() < 0)
 			{
 				mEndDisplayIndex = min(mItems.size() - 1, mEndDisplayIndex + scrollAmt);
-				mStartDisplayIndex = max(0, mEndDisplayIndex - getNumItemsDisplayed());
+				mStartDisplayIndex = max(0, mEndDisplayIndex - max(0, getNumItemsDisplayed() - 1));
 			}
 			else 
 			{
 				mStartDisplayIndex = max(0, (int)mStartDisplayIndex - scrollAmt);
-				mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+				mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 			}
 			mDoRedraw = true;
 			lock.Unlock();
@@ -952,13 +954,13 @@ void ItemListBox::scrollToIndex(int index)
 	if (index < mStartDisplayIndex)
 	{
 		mStartDisplayIndex = index;
-		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + getNumItemsDisplayed());
+		mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
 		mDoRedraw = true;
 	}
 	else if (index > mEndDisplayIndex)
 	{
 		mEndDisplayIndex = index;
-		mStartDisplayIndex = max(0, mEndDisplayIndex - getNumItemsDisplayed());
+		mStartDisplayIndex = max(0, mEndDisplayIndex - max(0, getNumItemsDisplayed() - 1));
 		mDoRedraw = true;
 	}
 }
@@ -1016,6 +1018,23 @@ int ItemListBox::getItemAtPos(int x, int y)
 
 	return itemIndex;
 }
+void ItemListBox::updateScrollbarVisibility()
+{
+	mScrollBar->setVisible(getNumItemsDisplayed() < getNumItems());
+	setDrawables();
+}
+void ItemListBox::setDrawables()
+{
+	mDrawableSprites.clear();
+	mDrawableSprites.push_back(mListSprite);
+	if (mScrollBar->getVisible())
+	{
+		for (unsigned int i = 0; i < mScrollBar->getSprites().size(); i++)
+		{
+			mDrawableSprites.push_back(mScrollBar->getSprites()[i]);
+		}
+	}
+}
 
 void ItemListBox::setAllowSingleClickSelection(bool allow)
 {
@@ -1029,4 +1048,13 @@ bool ItemListBox::getAllowSingleClickSelection()
 void ItemListBox::setAllowMultipleSelection(bool allow)
 {
 	mAllowMultipleSel = allow;
+}
+
+
+void ItemListBox::onScrollbarMoved(VerticalScrollBar* bar, float percent)
+{
+	mStartDisplayIndex = max(percent * ((float)mItems.size() - (float)getNumItemsDisplayed()), 0);
+	mEndDisplayIndex = min(mItems.size(), mStartDisplayIndex + max(0, getNumItemsDisplayed() - 1));
+
+	mDoRedraw = true;
 }

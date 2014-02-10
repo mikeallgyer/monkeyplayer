@@ -18,6 +18,9 @@ namespace MonkeyPlayer
 	class IWidget : public IDrawable
 	{
 	public:
+		IWidget() : mIsVisible(true) {
+			mIsVisible =true;
+		}
 		virtual std::vector<Sprite*> getSprites() = 0;
 		virtual std::vector<IWidget*> getWidgets() { return mEmptyWidgetList; }
 		virtual bool onMouseEvent(MouseEvent e) { return false; } 
@@ -37,12 +40,13 @@ namespace MonkeyPlayer
 		virtual float getHeight() { return 0; }
 		virtual float getWidth() { return 0; }
 		virtual bool isPointInside(int x, int y) = 0;
-		virtual void setVisible(bool vis) {}
-		virtual bool getVisible() { return true; }
+		virtual void setVisible(bool vis) { mIsVisible = vis; }
+		virtual bool getVisible() { return mIsVisible; }
 		
 		
 	protected:
 		bool mFocused;
+		bool mIsVisible;
 	private:
 		std::vector<IWidget*> mEmptyWidgetList;
 

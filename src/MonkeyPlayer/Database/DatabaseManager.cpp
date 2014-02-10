@@ -143,8 +143,9 @@ void DatabaseManager::createDatabase()
 	query = "CREATE TABLE ALBUMS (ID INTEGER PRIMARY KEY, " 
 		"NUM_TRACKS INTEGER, " 
 		"TITLE VARCHAR(100), " 
-		"YEAR INTEGER,"
-		"ARTIST VARCHAR(250))";
+		"YEAR INTEGER, "
+		"ARTIST VARCHAR(250), "
+		"VIRTUAL_ARTIST VARCHAR(250))";
 	error = sqlite3_get_table(mDB, query.c_str(), &resTable, &numRows, &numCols, &errorMsg);
 	sqlite3_free_table(resTable);
 	if (error) MessageBox(0, errorMsg, "Error creating database table: ALBUMS", 0);
@@ -153,6 +154,7 @@ void DatabaseManager::createDatabase()
 		"FILENAME VARCHAR(255), "
 		"TITLE VARCHAR(255), "
 		"ARTIST VARCHAR(255), "
+		"VIRTUAL_ARTIST VARCHAR(255), "
 		"TRACK_NUMBER INTEGER, "
 		"ALBUM INTEGER, "
 		"LENGTH INTEGER, "
@@ -332,7 +334,7 @@ void DatabaseManager::getTrack(int id, Track* track)
 	track->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ID = ?", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, id);
 
@@ -344,14 +346,15 @@ void DatabaseManager::getTrack(int id, Track* track)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 	}
 	sqlite3_finalize(stmt);
 	lock.Unlock();
@@ -364,7 +367,7 @@ void DatabaseManager::getTrack(string &filename, Track* track)
 	track->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM "
 		"TRACKS WHERE FILENAME = ?", -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, filename.c_str(), -1, SQLITE_STATIC);
@@ -377,14 +380,15 @@ void DatabaseManager::getTrack(string &filename, Track* track)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 	}
 	sqlite3_finalize(stmt);
 	lock.Unlock();
@@ -396,7 +400,7 @@ vector<Track*> DatabaseManager::getTracks(int album)
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ALBUM=? ORDER BY TRACK_NUMBER", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, album);
 
@@ -410,14 +414,15 @@ vector<Track*> DatabaseManager::getTracks(int album)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks.push_back(track);
 
@@ -437,7 +442,7 @@ vector<Track*> DatabaseManager::getTracks(string &artist)
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ARTIST=? ORDER BY ALBUM, TRACK_NUMBER", -1, &stmt, NULL);
 	
 	sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
@@ -452,14 +457,15 @@ vector<Track*> DatabaseManager::getTracks(string &artist)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks.push_back(track);
 
@@ -476,7 +482,7 @@ map<string, Track*> DatabaseManager::getAllTracks()
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS", -1, &stmt, NULL);
 
 	map<string, Track*> tracks;
@@ -489,14 +495,15 @@ map<string, Track*> DatabaseManager::getAllTracks()
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks[track->Filename] = track;
 
@@ -512,7 +519,7 @@ vector<Track*> DatabaseManager::getAllTracksVector()
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS", -1, &stmt, NULL);
 
 	vector<Track*> tracks;
@@ -525,14 +532,15 @@ vector<Track*> DatabaseManager::getAllTracksVector()
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks.push_back(track);
 
@@ -556,34 +564,35 @@ void DatabaseManager::addTrack(Track& track)
 		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO TRACKS (FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
-			"DATE_ADDED, IGNORED, GENRE, DATE_USED, NUM_PLAYED) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
+		sqlite3_prepare_v2(mDB, "INSERT INTO TRACKS (FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
+			"DATE_ADDED, IGNORED, GENRE, DATE_USED, NUM_PLAYED) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
 		
 		sqlite3_bind_text(stmt, 1, track.Filename.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(stmt, 2, track.Title.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(stmt, 3, track.Artist.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(stmt, 4, track.TrackNumber);
+		sqlite3_bind_text(stmt, 4, track.VirtualArtist.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(stmt, 5, track.TrackNumber);
 		if (track.AlbumId <= -1)
 		{
-			sqlite3_bind_null(stmt, 5);
+			sqlite3_bind_null(stmt, 6);
 		}
 		else
 		{
-			sqlite3_bind_int(stmt, 5, track.AlbumId);
+			sqlite3_bind_int(stmt, 6, track.AlbumId);
 		}
-		sqlite3_bind_int64(stmt, 6, track.Length);
-		sqlite3_bind_int64(stmt, 7, track.DateAdded);
-		sqlite3_bind_int(stmt, 8, track.Ignored ? 1: 0);
+		sqlite3_bind_int64(stmt, 7, track.Length);
+		sqlite3_bind_int64(stmt, 8, track.DateAdded);
+		sqlite3_bind_int(stmt, 9, track.Ignored ? 1: 0);
 		if (track.Genre <= DatabaseStructs::INVALID_ID)
 		{
-			sqlite3_bind_null(stmt, 9);
+			sqlite3_bind_null(stmt, 10);
 		}
 		else
 		{
-			sqlite3_bind_int(stmt, 9, track.Genre);
+			sqlite3_bind_int(stmt, 10, track.Genre);
 		}
-		sqlite3_bind_int64(stmt, 10, track.DateUsed);
-		sqlite3_bind_int(stmt, 11, track.NumPlayed);
+		sqlite3_bind_int64(stmt, 11, track.DateUsed);
+		sqlite3_bind_int(stmt, 12, track.NumPlayed);
 
 		int index = addRow(stmt);
 		sqlite3_finalize(stmt);
@@ -601,6 +610,7 @@ void DatabaseManager::addTrack(Track& track)
 		track.Filename = existing.Filename;
 		track.Title = existing.Title;
 		track.Artist = existing.Artist;
+		track.VirtualArtist = existing.VirtualArtist;
 		track.TrackNumber = existing.TrackNumber;
 		track.AlbumId = existing.AlbumId;
 		track.Length = existing.Length;
@@ -624,35 +634,36 @@ bool DatabaseManager::modifyTrack(Track& track)
 		sqlite3_stmt* stmt = NULL;
 
 		sqlite3_prepare_v2(mDB, "UPDATE TRACKS SET FILENAME=?, TITLE=?, "
-				"ARTIST=?, TRACK_NUMBER=?, ALBUM=?, LENGTH=?, DATE_ADDED=?, "
+				"ARTIST=?, VIRTUAL_ARTIST=? TRACK_NUMBER=?, ALBUM=?, LENGTH=?, DATE_ADDED=?, "
 				"IGNORED=?, GENRE=?, DATE_USED=?, NUM_PLAYED=? WHERE ID=?", -1, &stmt, NULL);
 		
 		sqlite3_bind_text(stmt, 1, track.Filename.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(stmt, 2, track.Title.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(stmt, 3, track.Artist.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(stmt, 4, track.TrackNumber);
+		sqlite3_bind_text(stmt, 4, track.VirtualArtist.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(stmt, 5, track.TrackNumber);
 		if (track.AlbumId <= DatabaseStructs::INVALID_ID) 
 		{
-			sqlite3_bind_null(stmt, 5);
+			sqlite3_bind_null(stmt, 6);
 		}
 		else
 		{
-			sqlite3_bind_int(stmt, 5, track.AlbumId);
+			sqlite3_bind_int(stmt, 6, track.AlbumId);
 		}
-		sqlite3_bind_int(stmt, 6, track.Length);
-		sqlite3_bind_int64(stmt, 7, track.DateAdded);
-		sqlite3_bind_int(stmt, 8, track.Ignored ? 1 : 0);
+		sqlite3_bind_int(stmt, 7, track.Length);
+		sqlite3_bind_int64(stmt, 8, track.DateAdded);
+		sqlite3_bind_int(stmt, 9, track.Ignored ? 1 : 0);
 		if (track.Genre <= DatabaseStructs::INVALID_ID) 
 		{
-			sqlite3_bind_null(stmt, 9);
+			sqlite3_bind_null(stmt, 10);
 		}
 		else
 		{
-			sqlite3_bind_int(stmt, 9, track.Genre);
+			sqlite3_bind_int(stmt, 10, track.Genre);
 		}
-		sqlite3_bind_int64(stmt, 10, track.DateUsed);
-		sqlite3_bind_int(stmt, 11, track.NumPlayed);
-		sqlite3_bind_int(stmt, 12, trackId);
+		sqlite3_bind_int64(stmt, 11, track.DateUsed);
+		sqlite3_bind_int(stmt, 12, track.NumPlayed);
+		sqlite3_bind_int(stmt, 13, trackId);
 		int result = sqlite3_step(stmt);
 
 		sqlite3_finalize(stmt);
@@ -677,7 +688,7 @@ vector<Track*> DatabaseManager::searchTracks(string search)
 	
 	search = "%" + search + "%";
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT ID, FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, DATE_ADDED, "
 		"IGNORED, GENRE, DATE_USED, NUM_PLAYED FROM TRACKS WHERE ARTIST LIKE ? OR TITLE LIKE ? ORDER BY "
 		"ARTIST, ALBUM, TRACK_NUMBER", -1, &stmt, NULL);
 	
@@ -694,14 +705,15 @@ vector<Track*> DatabaseManager::searchTracks(string search)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks.push_back(track);
 
@@ -719,7 +731,7 @@ void DatabaseManager::getAlbum(int id, Album* album)
 	album->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS WHERE ID=? ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT NUM_TRACKS, TITLE, YEAR, ARTIST, VIRTUAL_ARTIST FROM ALBUMS WHERE ID=? ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, id);
 
 	int result = sqlite3_step(stmt); 
@@ -731,6 +743,7 @@ void DatabaseManager::getAlbum(int id, Album* album)
 		album->Title = getStringColumn(stmt, 1);
 		album->Year = getIntColumn(stmt, 2);
 		album->Artist = getStringColumn(stmt, 3);
+		album->VirtualArtist = getStringColumn(stmt, 4);
 	}
 	sqlite3_finalize(stmt);
 	lock.Unlock();
@@ -743,7 +756,7 @@ void DatabaseManager::getAlbum(string title, int year, Album* album)
 	album->Id = DatabaseStructs::INVALID_ID;
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, ARTIST FROM ALBUMS WHERE TITLE=? AND YEAR=?", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, ARTIST, VIRTUAL_ARTIST FROM ALBUMS WHERE TITLE=? AND YEAR=?", -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_STATIC);
 	sqlite3_bind_int(stmt, 2, year);
 
@@ -756,6 +769,7 @@ void DatabaseManager::getAlbum(string title, int year, Album* album)
 		album->Title = title;
 		album->Year = year;
 		album->Artist = getStringColumn(stmt, 2);
+		album->VirtualArtist = getStringColumn(stmt, 3);
 	}
 	sqlite3_finalize(stmt);
 	lock.Unlock();
@@ -773,11 +787,12 @@ void DatabaseManager::addAlbum(Album &album)
 		lock.Lock();
 		sqlite3_stmt* stmt = NULL;
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO ALBUMS (NUM_TRACKS, TITLE, YEAR, ARTIST) VALUES (?, ?, ?, ?)", -1, &stmt, NULL);
+		sqlite3_prepare_v2(mDB, "INSERT INTO ALBUMS (NUM_TRACKS, TITLE, YEAR, ARTIST, VIRTUAL_ARTIST) VALUES (?, ?, ?, ?, ?)", -1, &stmt, NULL);
 		sqlite3_bind_int(stmt, 1, album.NumTracks);
 		sqlite3_bind_text(stmt, 2, album.Title.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_int(stmt, 3, album.Year);
 		sqlite3_bind_text(stmt, 4, album.Artist.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(stmt, 5, album.VirtualArtist.c_str(), -1, SQLITE_STATIC);
 
 		int index = addRow(stmt);
 		sqlite3_finalize(stmt);
@@ -805,7 +820,7 @@ vector<Album*> DatabaseManager::getAllAlbums()
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST FROM ALBUMS ORDER BY ARTIST COLLATE NOCASE, TITLE COLLATE NOCASE", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, ARTIST, VIRTUAL_ARTIST FROM ALBUMS ORDER BY VIRTUAL_ARTIST COLLATE NOCASE, TITLE COLLATE NOCASE", -1, &stmt, NULL);
 
 	vector<Album*> albums;
 	int result = sqlite3_step(stmt); 
@@ -818,6 +833,7 @@ vector<Album*> DatabaseManager::getAllAlbums()
 		album->Title = getStringColumn(stmt, 2);
 		album->Year = getIntColumn(stmt, 3);
 		album->Artist = getStringColumn(stmt, 4);
+		album->VirtualArtist = getStringColumn(stmt, 5);
 		
 		albums.push_back(album);
 
@@ -827,13 +843,70 @@ vector<Album*> DatabaseManager::getAllAlbums()
 	lock.Unlock();
 	return albums;
 }
+vector<AlbumWithTracks*> DatabaseManager::getAllAlbumsAndTracks()
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	beginTransaction();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT A.ID, A.NUM_TRACKS, A.TITLE, A.YEAR, A.ARTIST, A.VIRTUAL_ARTIST, "
+		"T.ID, T.FILENAME, T.TITLE, T.ARTIST, T.VIRTUAL_ARTIST, T.TRACK_NUMBER, T.LENGTH, T.DATE_ADDED, "
+		"T.IGNORED, T.GENRE, T.DATE_USED, T.NUM_PLAYED FROM ALBUMS A, TRACKS T WHERE T.ALBUM = A.ID "
+		"ORDER BY A.VIRTUAL_ARTIST COLLATE NOCASE, A.TITLE COLLATE NOCASE, T.TRACK_NUMBER", -1, &stmt, NULL);
+
+	vector<AlbumWithTracks*> albums;
+	int result = sqlite3_step(stmt); 
+
+	AlbumWithTracks* album = NULL;
+	vector<Track*> tracks;
+	while (result == SQLITE_ROW)
+	{
+		int albumId = getIntColumn(stmt, 0);
+
+		if (album == NULL || album->album->Id != albumId)
+		{
+			album = snew AlbumWithTracks();
+			album->album = snew Album();
+			album->album->Id = albumId;
+			album->album->NumTracks = getIntColumn(stmt, 1);
+			album->album->Title = getStringColumn(stmt, 2);
+			album->album->Year = getIntColumn(stmt, 3);
+			album->album->Artist = getStringColumn(stmt, 4);
+			album->album->VirtualArtist = getStringColumn(stmt, 5);
+			albums.push_back(album);
+		}
+		Track* track = snew Track();
+		track->Id = getIntColumn(stmt, 6);
+		track->Filename = getStringColumn(stmt, 7);
+		track->Title = getStringColumn(stmt, 8);
+		track->Artist = getStringColumn(stmt, 9);
+		track->VirtualArtist = getStringColumn(stmt, 10);
+		track->TrackNumber = getIntColumn(stmt, 11);
+		track->AlbumId = albumId;
+		track->Length = getIntColumn(stmt, 12);
+		track->DateAdded = getLongColumn(stmt, 13);
+		track->Ignored = getBoolColumn(stmt, 14);
+		track->Genre = getIntColumn(stmt, 15);
+		track->DateUsed = getLongColumn(stmt, 16);
+		track->NumPlayed = getIntColumn(stmt, 17);
+
+		album->tracks.push_back(track);
+
+		result = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+	endTransaction();
+	lock.Unlock();
+	return albums;
+}
 vector<Album*> DatabaseManager::getAllAlbums(string artist)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR FROM ALBUMS WHERE ARTIST=? ORDER BY ARTIST, TITLE", -1, &stmt, NULL);
+	sqlite3_prepare_v2(mDB, "SELECT ID, NUM_TRACKS, TITLE, YEAR, VIRTUAL_ARTIST FROM ALBUMS WHERE ARTIST=? ORDER BY VIRTUAL_ARTIST COLLATE NOCASE, TITLE COLLATE NOCASE", -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
 
 	vector<Album*> albums;
@@ -847,6 +920,7 @@ vector<Album*> DatabaseManager::getAllAlbums(string artist)
 		album->Title = getStringColumn(stmt, 2);
 		album->Year = getIntColumn(stmt, 3);
 		album->Artist = artist;
+		album->VirtualArtist = getStringColumn(stmt, 4);
 		
 		albums.push_back(album);
 
@@ -929,7 +1003,7 @@ void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool over
 			return;
 		}
 
-		deletePlaylist(existing.Id);
+		deletePlaylist(existing.Id, false);
 	}
 
 	CSingleLock lock(&mCritSection);
@@ -943,11 +1017,14 @@ void DatabaseManager::savePlaylist(string name, vector<Track*> tracks, bool over
 
 	int index = addRow(stmt);
 
+	sqlite3_finalize(stmt);
+	sqlite3_prepare_v2(mDB, "INSERT INTO PLAYLIST_TRACKS (TRACK, PLAYLIST, T_INDEX) VALUES (?, ?, ?)", -1, &stmt, NULL);
+
 	for (unsigned int i = 0; i < tracks.size(); i++)
 	{
 		sqlite3_clear_bindings(stmt);
+		sqlite3_reset(stmt);
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO PLAYLIST_TRACKS (TRACK, PLAYLIST, T_INDEX) VALUES (?, ?, ?)", -1, &stmt, NULL);
 		sqlite3_bind_int(stmt, 1, tracks[i]->Id);
 		sqlite3_bind_int(stmt, 2, index);
 		sqlite3_bind_int(stmt, 3, i + 1);
@@ -1049,7 +1126,7 @@ vector<Track*> DatabaseManager::getTracksInPlaylist(int id)
 	lock.Lock();
 	sqlite3_stmt* stmt = NULL;
 
-	sqlite3_prepare_v2(mDB, "SELECT T.ID, T.FILENAME, T.TITLE, T.ARTIST, T.TRACK_NUMBER, T.ALBUM, T.LENGTH, T.DATE_ADDED, "
+	sqlite3_prepare_v2(mDB, "SELECT T.ID, T.FILENAME, T.TITLE, T.ARTIST, T.VIRTUAL_ARTIST, T.TRACK_NUMBER, T.ALBUM, T.LENGTH, T.DATE_ADDED, "
 		"T.IGNORED, T.GENRE, T.DATE_USED, T.NUM_PLAYED FROM TRACKS T, PLAYLIST_TRACKS WHERE "
 		"T.ID = PLAYLIST_TRACKS.TRACK AND PLAYLIST_TRACKS.PLAYLIST = ? ORDER BY PLAYLIST_TRACKS.T_INDEX", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, id);
@@ -1064,14 +1141,15 @@ vector<Track*> DatabaseManager::getTracksInPlaylist(int id)
 		track->Filename = getStringColumn(stmt, 1);
 		track->Title = getStringColumn(stmt, 2);
 		track->Artist = getStringColumn(stmt, 3);
-		track->TrackNumber = getIntColumn(stmt, 4);
-		track->AlbumId = getIntColumn(stmt, 5);
-		track->Length = getIntColumn(stmt, 6);
-		track->DateAdded = getLongColumn(stmt, 7);
-		track->Ignored = getBoolColumn(stmt, 8);
-		track->Genre = getIntColumn(stmt, 9);
-		track->DateUsed = getLongColumn(stmt, 10);
-		track->NumPlayed = getIntColumn(stmt, 11);
+		track->VirtualArtist = getStringColumn(stmt, 4);
+		track->TrackNumber = getIntColumn(stmt, 5);
+		track->AlbumId = getIntColumn(stmt, 6);
+		track->Length = getIntColumn(stmt, 7);
+		track->DateAdded = getLongColumn(stmt, 8);
+		track->Ignored = getBoolColumn(stmt, 9);
+		track->Genre = getIntColumn(stmt, 10);
+		track->DateUsed = getLongColumn(stmt, 11);
+		track->NumPlayed = getIntColumn(stmt, 12);
 
 		tracks.push_back(track);
 
@@ -1082,7 +1160,7 @@ vector<Track*> DatabaseManager::getTracksInPlaylist(int id)
 	return tracks;
 }
 
-void DatabaseManager::deletePlaylist(int id)
+void DatabaseManager::deletePlaylist(int id, bool doCallback)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
@@ -1093,7 +1171,7 @@ void DatabaseManager::deletePlaylist(int id)
 
 	sqlite3_step(stmt);
 
-	sqlite3_clear_bindings(stmt);
+	sqlite3_finalize(stmt);
 
 	sqlite3_prepare_v2(mDB, "DELETE FROM PLAYLISTS WHERE ID = ?", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, id);
@@ -1101,11 +1179,14 @@ void DatabaseManager::deletePlaylist(int id)
 	sqlite3_step(stmt);
 
 	lock.Unlock();
-	for (unsigned int i = 0; i < mPlaylistCallbacks.size(); i++)
+	if (doCallback)
 	{
-		if (mPlaylistCallbacks[i] != NULL)
+		for (unsigned int i = 0; i < mPlaylistCallbacks.size(); i++)
 		{
-			mPlaylistCallbacks[i](mPlaylistCallbackObj[i]);
+			if (mPlaylistCallbacks[i] != NULL)
+			{
+				mPlaylistCallbacks[i](mPlaylistCallbackObj[i]);
+			}
 		}
 	}
 }

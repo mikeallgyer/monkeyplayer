@@ -28,13 +28,13 @@ SavedPlaylistsWindow::SavedPlaylistsWindow()
 	mBackground = snew Sprite(bgPath.c_str(), 50.0f, 5.0f, (float)mWidth, 300.0f, D3DXVECTOR4(0,0,0,1.0f));
 	mSprites.push_back(mBackground);
 
-	std::string playPath = FileManager::getContentAsset(std::string("Textures\\add.png"));
-	std::string playDownPath = FileManager::getContentAsset(std::string("Textures\\add_down.png"));
-	std::string playHoverPath = FileManager::getContentAsset(std::string("Textures\\add_hover.png"));
-	mAddBtn = snew Button(0, 0, 100, 100.0f, playPath, btn_callback, this);
-	mAddBtn->setDownTexture(playDownPath.c_str());
-	mAddBtn->setHoverTexture(playHoverPath.c_str());
-	mWidgets.push_back(mAddBtn);
+	std::string playPath = FileManager::getContentAsset(std::string("Textures\\delete.png"));
+	std::string playDownPath = FileManager::getContentAsset(std::string("Textures\\delete_down.png"));
+	std::string playHoverPath = FileManager::getContentAsset(std::string("Textures\\delete_hover.png"));
+	mDeleteBtn = snew Button(0, 0, 100, 100.0f, playPath, btn_callback, this);
+	mDeleteBtn->setDownTexture(playDownPath.c_str());
+	mDeleteBtn->setHoverTexture(playHoverPath.c_str());
+	mWidgets.push_back(mDeleteBtn);
 
 	mPlaylistList = snew PlaylistListBox(0, 0, 50.0f, 50.0f, listBox_callback, this);
 	mPlaylistList->setBgColor(D3DCOLOR_XRGB(50, 50, 50));
@@ -107,7 +107,7 @@ void SavedPlaylistsWindow::update(float dt)
 		mBackground->setDest(currX, currY, 
 			(int)mWidth, (int)mHeight);
 
-		mAddBtn->setPos(r.right - 50.0f, currY + mHeight - BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+		mDeleteBtn->setPos(r.right - 50.0f, currY + mHeight - BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
 		mFolderLabel->setPos((float)currX + 5.0f, currY + 2.0f, mWidth - 10.0f, 25.0);
 		mPlaylistList->setPos((float)currX + 5.0f, currY + 25.0f, mWidth - 10.0f, mHeight - (45.0f + 25.0f));
 
@@ -151,6 +151,14 @@ bool SavedPlaylistsWindow::onMouseEvent(MouseEvent ev)
 			}
 		}
 	}
+	else if (ev.getEvent() == MouseEvent::MOUSEMOVE)
+	{
+		if (mDeleteBtn->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mDeleteBtn, "Delete Playlist", ev.getX() - 110, ev.getY());
+		}
+	}
+	
 	bool consumed = false;
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{
@@ -189,6 +197,7 @@ void SavedPlaylistsWindow::setPlaylists()
 		{
 			delete tracks[j];
 		}
+		delete playlists[i];
 	}
 
 }
@@ -200,8 +209,14 @@ void SavedPlaylistsWindow::setPlaylistWindow(MonkeyPlayer::PlaylistWindow *win)
 
 void SavedPlaylistsWindow::onBtnPushed(Button* btn)
 {
-	if (btn == mAddBtn)
+	if (btn == mDeleteBtn && mPlaylistList->getSelectedIndex() >= 0)
 	{
+		vector<int> sel = mPlaylistList->getSelectedIndices();
+		for (unsigned int i = 0; i < sel.size(); i++)
+		{
+			DatabaseManager::instance()->deletePlaylist(mPlaylistList->getItem(sel[i])->getId(), false);
+		}
+		setPlaylists();
 	}
 }
 

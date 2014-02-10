@@ -12,6 +12,7 @@
 #include "Label.h"
 #include "LargeAlbumWidget.h"
 #include "SmallAlbumItem.h"
+#include "SmallAlbumTile.h"
 #include "Sprite.h"
 #include "TrackListBox.h"
 
@@ -75,6 +76,8 @@ namespace MonkeyPlayer
 		// size of artist label
 		static const float ARTIST_LABEL_SIZE;
 
+		static const int NUM_TILES;
+
 		void doAddAlbum(Album* album);
 		void doAddTrack(Track* track);
 
@@ -83,6 +86,9 @@ namespace MonkeyPlayer
 		std::vector<Sprite*> mSprites;
 		std::vector<IWidget*> mWidgets;
 		std::vector<IWidget*> mDrawableWidgets;
+
+		SmallAlbumTile** mTiles;
+		int mTileIndex;
 		std::vector<SmallAlbumItem*> mSmallItems;
 		std::vector<SimpleLabel*> mArtistLabels;
 		std::vector<Album*> mAlbumsToAdd;
@@ -99,6 +105,7 @@ namespace MonkeyPlayer
 
 		float mCurrDisplayAlbum;  // album displayed at top of this window
 		int mCurrSelAlbum;  // album containing current selection
+		int mCurrSelTrack; // selected track in selected album
 
 		float mUpDownTimer;
 		float mPageTimer;
@@ -118,7 +125,7 @@ namespace MonkeyPlayer
 
 		CollectionWindow::RIGHT_CLICKED_ITEM mRightClicked;
 		int mRightClickedTrack;
-		SmallAlbumItem* mRightClickedAlbum;
+		SmallAlbumTile* mRightClickedAlbum;
 		string mRightClickedArtist;
 
 		static void btn_callback(void* obj, Button* btn)
@@ -133,9 +140,12 @@ namespace MonkeyPlayer
 		// synchronization
 		static CCriticalSection mCritSection;
 
+		void fillTiles();
 		void moveSmallSelection(int cursorDelta);
 		void moveUpToSmallSelection();
 		void moveDownToSmallSelection();
+		int findCorrespondingTile(int smallItemIndex);
+		int findCorrespondingItem(int smallTileIndex);
 
 		void onBtnClicked(Button* btn);
 	};

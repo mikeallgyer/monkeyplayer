@@ -40,12 +40,12 @@ struct Genre
 struct Album
 {
 	Album() : Id(DatabaseStructs::INVALID_ID), Title(DatabaseStructs::DEF_EMPTY_ALBUM), 
-		Year(0), Artist(DatabaseStructs::DEF_EMPTY_ARTIST) {}
-	Album(int numTracks, string title, int year, string artist)
+		Year(0), Artist(DatabaseStructs::DEF_EMPTY_ARTIST), VirtualArtist(DatabaseStructs::DEF_EMPTY_ARTIST) {}
+	Album(int numTracks, string title, int year, string artist, string virtualArtist)
 		: Id(DatabaseStructs::INVALID_ID), NumTracks(numTracks), Title(title), 
-		Year(DatabaseStructs::DEF_EMPTY_YEAR), Artist(artist) {}
-	Album(int id, int numTracks, string title, int year, string artist)
-		: Id(id), NumTracks(numTracks), Title(title), Year(year), Artist(artist) {}
+		Year(DatabaseStructs::DEF_EMPTY_YEAR), Artist(artist), VirtualArtist(virtualArtist) {}
+	Album(int id, int numTracks, string title, int year, string artist, string virtualArtist)
+		: Id(id), NumTracks(numTracks), Title(title), Year(year), Artist(artist), VirtualArtist(virtualArtist) {}
 
 	Album(const Album& a)
 	{
@@ -54,6 +54,7 @@ struct Album
 		Title = a.Title;
 		Year = a.Year;
 		Artist = a.Artist;
+		VirtualArtist = a.VirtualArtist;
 	}
 
 	int Id;
@@ -61,20 +62,21 @@ struct Album
 	string Title;
 	int Year;
 	string Artist;
+	string VirtualArtist;
 };
 
 struct Track
 {
 	Track() : Id(DatabaseStructs::INVALID_ID), Filename(DatabaseStructs::DEF_EMPTY_STRING), Title(DatabaseStructs::DEF_EMPTY_STRING), Artist(DatabaseStructs::DEF_EMPTY_STRING), 
-		TrackNumber(DatabaseStructs::INVALID_ID), AlbumId(DatabaseStructs::INVALID_ID), Length(1), 
+		VirtualArtist(DatabaseStructs::DEF_EMPTY_ARTIST), TrackNumber(DatabaseStructs::INVALID_ID), AlbumId(DatabaseStructs::INVALID_ID), Length(1), 
 		DateAdded(DatabaseStructs::INVALID_ID), Ignored(false), Genre(0), DateUsed(DatabaseStructs::INVALID_ID), NumPlayed(0) {}
-	Track(int id, string filename, string title, string artist, int trackNumber, int albumId, 
+	Track(int id, string filename, string title, string artist, string virtualArtist, int trackNumber, int albumId, 
 		int length, int dateAdded, bool ignored, int genre, int dateUsed, int numPlayed) 
-		: Id(id), Filename(filename), Title(title), Artist(artist), TrackNumber(trackNumber), AlbumId(albumId), 
+		: Id(id), Filename(filename), Title(title), Artist(artist), VirtualArtist(virtualArtist), TrackNumber(trackNumber), AlbumId(albumId), 
 		Length(length), DateAdded(dateAdded), Ignored(ignored), Genre(genre), DateUsed(dateUsed), NumPlayed(numPlayed) {}
-	Track(string filename, string title, string artist, int trackNumber, int albumId,
+	Track(string filename, string title, string artist, string virtualArtist, int trackNumber, int albumId,
 		int length, int dateAdded, bool ignored, int genre, int dateUsed, int numPlayed)
-		: Id(DatabaseStructs::INVALID_ID), Filename(filename), Title(title), Artist(artist), TrackNumber(trackNumber), AlbumId(albumId), 
+		: Id(DatabaseStructs::INVALID_ID), Filename(filename), Title(title), Artist(artist), VirtualArtist(virtualArtist), TrackNumber(trackNumber), AlbumId(albumId), 
 		Length(length), DateAdded(dateAdded), Ignored(ignored), Genre(genre), DateUsed(dateUsed), NumPlayed(numPlayed) {}
 	Track(const Track& t)
 	{
@@ -82,6 +84,7 @@ struct Track
 		Filename = t.Filename;
 		Title = t.Title;
 		Artist = t.Artist;
+		VirtualArtist = t.VirtualArtist;
 		TrackNumber = t.TrackNumber;
 		AlbumId = t.AlbumId;
 		Length = t.Length;
@@ -97,6 +100,7 @@ struct Track
 		Filename = t.Filename;
 		Title = t.Title;
 		Artist = t.Artist;
+		VirtualArtist = t.Artist;
 		TrackNumber = t.TrackNumber;
 		AlbumId = t.AlbumId;
 		Length = t.Length;
@@ -111,6 +115,7 @@ struct Track
 	string Filename;
 	string Title;
 	string Artist;
+	string VirtualArtist;
 	int TrackNumber;
 	int AlbumId;
 	int Length;
@@ -119,6 +124,12 @@ struct Track
 	int Genre;
 	int DateUsed;
 	int NumPlayed;
+};
+
+struct AlbumWithTracks
+{
+	Album* album;
+	vector<Track*> tracks;
 };
 
 struct Playlist

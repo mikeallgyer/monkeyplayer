@@ -99,7 +99,11 @@ PlaybackOptionsWindow::~PlaybackOptionsWindow()
 	{
 		delete mWidgets[i];
 	}
-		SoundManager::instance()->removeCallback(this);
+	SoundManager::instance()->removeCallback(this);
+	for (unsigned int j = 0; j < mHiddenList.size(); j++)
+	{
+		delete mHiddenList[j];
+	}
 }
 void PlaybackOptionsWindow::initHiddenList(bool tryReadFirst)
 {
@@ -116,7 +120,7 @@ void PlaybackOptionsWindow::initHiddenList(bool tryReadFirst)
 	}
 	if (!tryReadFirst || mHiddenList.size() < 1)
 	{
-		mHiddenList = populateList();
+//		mHiddenList = populateList();
 		mHiddenListIndex = -1;
 	}
 }

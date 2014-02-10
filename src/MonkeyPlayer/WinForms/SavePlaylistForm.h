@@ -40,7 +40,7 @@ namespace MonkeyPlayer {
 			//
 			//TODO: Add the constructor code here
 			//
-			mFinished = true;
+			mFinished = false;
 		}
 
 	protected:

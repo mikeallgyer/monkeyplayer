@@ -63,7 +63,7 @@ void TrackListBox::preRender()
 				{
 					mHoverSprite->setDest(TEXT_MARGIN_LEFT, TEXT_MARGIN_TOP + mFontHeight * row, (int)mTextWidth, mFontHeight);
 					mHoverSprite->setColor(D3DXVECTOR4(0.35f, 0.35f, 0.6f, mHoverItems[i] / HOVER_DURATION));
-					gWindowMgr->drawSprite(mHoverSprite, mTextWidth, mTextHeight);
+					gWindowMgr->drawSprite(mHoverSprite, mWidth, mTextHeight);
 				}
 				currColor = (i == mHighlightedIndex) ? selColor : defColor;
 				int y = ItemListBox::TEXT_MARGIN_TOP + mFontHeight * row;

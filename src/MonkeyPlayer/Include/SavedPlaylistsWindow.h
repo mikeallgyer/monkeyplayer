@@ -83,7 +83,7 @@ namespace MonkeyPlayer
 		std::vector<Sprite*> mSprites;
 		std::vector<IWidget*> mWidgets;
 		Sprite* mBackground;
-		Button* mAddBtn;
+		Button* mDeleteBtn;
 		PlaylistListBox* mPlaylistList;
 		SimpleLabel* mFolderLabel;
 

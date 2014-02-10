@@ -149,6 +149,13 @@ bool DirectoriesWindow::onMouseEvent(MouseEvent ev)
 			}
 		}
 	}
+	else if (ev.getEvent() == MouseEvent::MOUSEMOVE)
+	{
+		if (mAddBtn->isPointInside(ev.getX(), ev.getY()))
+		{
+			gWindowMgr->getToolTip()->setup(mAddBtn, "Add music directory", ev.getX() - 160, ev.getY());
+		}
+	}
 	bool consumed = false;
 	for (unsigned int i = 0; i < mWidgets.size(); i++)
 	{

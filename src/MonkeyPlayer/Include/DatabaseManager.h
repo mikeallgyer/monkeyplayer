@@ -52,6 +52,7 @@ namespace MonkeyPlayer
 		void getAlbum(string title, int year, Album* album);
 		void addAlbum(Album &album);
 		vector<Album*> getAllAlbums();
+		vector<AlbumWithTracks*> getAllAlbumsAndTracks();
 		vector<Album*> getAllAlbums(string artist);
 
 		// directories
@@ -66,7 +67,7 @@ namespace MonkeyPlayer
 		vector<PlaylistTrack*> getPlaylistTracks(string name);
 		vector<PlaylistTrack*> getPlaylistTracks(int id);
 		vector<Track*> getTracksInPlaylist(int id);
-		void deletePlaylist(int id);
+		void deletePlaylist(int id, bool doCallback = true);
 
 		// DB defaults
 		DBDefault getDefault(string name);

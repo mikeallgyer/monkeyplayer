@@ -219,6 +219,11 @@ bool Slider::onMouseEvent(MouseEvent e)
 		{
 			updateValue(e.getX());
 		}
+		if (mStartedOnTop && !gInput->isMouseButtonDown(MonkeyInput::MOUSE1))
+		{
+			mStartedOnTop = false;
+			mHandleSprite->setTextureIndex(TEXTURE_UP);
+		}
 	}
 	else if (!e.getConsumed() && e.getEvent() == MouseEvent::LBUTTONDOWN &&
 		isPointInside(e.getX(), e.getY()))

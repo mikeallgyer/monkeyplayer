@@ -114,7 +114,7 @@ UINT MusicLoader::loaderThread(LPVOID pParam)
 			}
 			else // new file
 			{
-				currTrack = snew Track(-1, loader->mFiles[i], "", "", -1, -1, -1, -1, false, -1, 0, 0);
+				currTrack = snew Track(-1, loader->mFiles[i], "", "", "", -1, -1, -1, -1, false, -1, 0, 0);
 //				DatabaseManager::instance()->addTrack(*currTrack); // do this later
 			}
 

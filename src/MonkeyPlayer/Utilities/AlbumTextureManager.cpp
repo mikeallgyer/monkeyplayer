@@ -11,13 +11,16 @@
 #include "AlbumTextureManager.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
+#include "Logger.h"
 #include "MetadataReader.h"
 
 using namespace std;
 
 using namespace MonkeyPlayer;
 
-const int AlbumTextureManager::NUM_CACHEABLE_TEXTURES = 10;
+//#define TEXTURE_MGR_DBG 1
+
+const int AlbumTextureManager::NUM_CACHEABLE_TEXTURES = 30;
 const int AlbumTextureManager::MAX_WEIGHT = 5;
 AlbumTextureManager* AlbumTextureManager::mInstance = NULL;
 
@@ -54,6 +57,13 @@ AlbumTextureManager::~AlbumTextureManager()
 {
 	if (mInstance != NULL)
 	{
+		mInstance->mStopping = true;
+		int i = 6; // max 3 seconds
+		while (!mInstance->mThreadStopped && i > 0)
+		{
+			Sleep(500);
+			i--;
+		}
 		delete mInstance;
 		mInstance = NULL;
 	}
@@ -80,6 +90,9 @@ IDirect3DTexture9* AlbumTextureManager::getTexture(int albumId, bool &usedDefaul
 	{
 		CSingleLock lock(&mCritSection);
 		lock.Lock();
+#ifdef TEXTURE_MGR_DBG
+		Logger::instance()->write(string("AlbumTextureManager::getTexture() LOCK"));
+#endif
 		if (mBadAlbums.find(albumId) == mBadAlbums.end())
 		{
 			for (unsigned int i = 0; i < mTextures.size(); i++)
@@ -96,8 +109,11 @@ IDirect3DTexture9* AlbumTextureManager::getTexture(int albumId, bool &usedDefaul
 			{
 				mTexturesToLoad.insert(albumId);
 			}
-			lock.Unlock();
 		}
+#ifdef TEXTURE_MGR_DBG
+		Logger::instance()->write(string("AlbumTextureManager::getTexture() UNLOCK"));
+#endif
+		lock.Unlock();
 	}
 	return tex;
 }
@@ -105,24 +121,32 @@ void AlbumTextureManager::update(float dt)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
+#ifdef TEXTURE_MGR_DBG
+		Logger::instance()->write(string("AlbumTextureManager::Update() LOCK"));
+#endif
 
 	for (unsigned int i = 0; i < mTextures.size(); i++)
 	{
 		mTextures[i]->mWeight= max(0, mTextures[i]->mWeight- 1);
 	}
 
+#ifdef TEXTURE_MGR_DBG
+		Logger::instance()->write(string("AlbumTextureManager::Update() UNLOCK"));
+#endif
 	lock.Unlock();
+
 }
 int AlbumTextureManager::getIndexToReplace()
 {
-	int index = 0;
+	int index = mCurrIndex;
 	int minWeight = MAX_WEIGHT;
 	for (unsigned int i = 0; i < mTextures.size(); i++)
 	{
-		if (mTextures[i]->mWeight < minWeight)
+		int index = (i + mCurrIndex) % mTextures.size();
+		if (mTextures[index]->mWeight < minWeight)
 		{
-			index = i;
-			minWeight = mTextures[i]->mWeight;
+			index = index;
+			minWeight = mTextures[index]->mWeight;
 		}
 	}
 	return index;
@@ -137,7 +161,9 @@ int AlbumTextureManager::getIndexToReplace()
 		{
 			CSingleLock lock(&mCritSection);
 			lock.Lock();
-
+#ifdef TEXTURE_MGR_DBG
+			Logger::instance()->write(string("AlbumTextureManager::loaderThread() LOCK"));
+#endif
 			set<int>::iterator iter = mgr->mTexturesToLoad.begin();
 			IDirect3DTexture9* tex = loadTexture(*iter);
 			if (tex != NULL)
@@ -153,11 +179,13 @@ int AlbumTextureManager::getIndexToReplace()
 				}
 				else
 				{
+					int index = mgr->getIndexToReplace();
+					mgr->mCurrIndex = index + 2;
+
 					if (mgr->mCurrIndex >= mgr->mTextures.size()) 
 					{
-						mgr->mCurrIndex = 0;
+						mgr->mCurrIndex = 1;
 					}
-					int index = mgr->getIndexToReplace();
 					ReleaseCOM(mgr->mTextures[index]->mTexture);
 					mgr->mTextures[index]->mAlbumId = (*iter);
 					mgr->mTextures[index]->mWeight= MAX_WEIGHT;
@@ -170,6 +198,9 @@ int AlbumTextureManager::getIndexToReplace()
 			}
 			mgr->mTexturesToLoad.erase(iter);
 			//mgr->mTexturesToLoad.clear();
+#ifdef TEXTURE_MGR_DBG
+		Logger::instance()->write(string("AlbumTextureManager::loaderThread() UNLOCK"));
+#endif
 			lock.Unlock();
 			Sleep(100);
 		}

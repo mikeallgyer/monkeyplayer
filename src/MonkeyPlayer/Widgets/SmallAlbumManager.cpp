@@ -26,6 +26,8 @@ const float SmallAlbumManager::BUTTON_REPEAT_DELAY = .5f;
 const int SmallAlbumManager::NUM_PAGING_ITEMS = 10;
 const float SmallAlbumManager::ARTIST_LABEL_SIZE = 26.0f;
 
+const int SmallAlbumManager::NUM_TILES = 10;
+
 // used for synchronization
 CCriticalSection SmallAlbumManager::mCritSection;
 
@@ -53,11 +55,12 @@ SmallAlbumManager::SmallAlbumManager()
 
 	mHasFocus = false;
 
-	std::vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
+	vector<AlbumWithTracks*> albums = DatabaseManager::instance()->getAllAlbumsAndTracks();
 	
 	for (unsigned int i = 0; i < albums.size(); i++)
 	{
-		mSmallItems.push_back(snew SmallAlbumItem(0, 150, *albums[i]));
+		mSmallItems.push_back(snew SmallAlbumItem(0, 150, *albums[i]->album, albums[i]->tracks));
+		delete albums[i]->album;
 		delete albums[i];
 	}
 
@@ -82,6 +85,12 @@ SmallAlbumManager::SmallAlbumManager()
 	mAlbumsChanged = false;
 
 	mSelectedThing = CollectionWindow::ALBUM;
+
+	mTiles = snew SmallAlbumTile*[NUM_TILES];
+	for (int i = 0; i < NUM_TILES; i++)
+	{
+		mTiles[i] = snew SmallAlbumTile(0, 0, NULL, NULL);
+	}
 }
 SmallAlbumManager::~SmallAlbumManager()
 {
@@ -101,6 +110,12 @@ SmallAlbumManager::~SmallAlbumManager()
 	{
 		delete mArtistLabels[i];
 	}
+	for (int i = 0; i < NUM_TILES; i++)
+	{
+		delete mTiles[i];
+	}
+	delete[] mTiles;
+
 	delete mSearchBtn;
 	lock.Unlock();
 }
@@ -114,9 +129,9 @@ void SmallAlbumManager::onDeviceLost()
 	{
 		mSprites[i]->onDeviceLost();
 	}
-	for (unsigned int i = 0; i < mSmallItems.size(); i++)
+	for (unsigned int i = 0; i < NUM_TILES; i++)
 	{
-		mSmallItems[i]->onDeviceLost();
+		mTiles[i]->onDeviceLost();
 	}
 	for (unsigned int i = 0; i < mArtistLabels.size(); i++)
 	{
@@ -134,9 +149,9 @@ void SmallAlbumManager::onDeviceReset()
 	{
 		mSprites[i]->onDeviceReset();
 	}
-	for (unsigned int i = 0; i < mSmallItems.size(); i++)
+	for (unsigned int i = 0; i < NUM_TILES; i++)
 	{
-		mSmallItems[i]->onDeviceReset();
+		mTiles[i]->onDeviceReset();
 	}
 	for (unsigned int i = 0; i < mArtistLabels.size(); i++)
 	{
@@ -420,8 +435,11 @@ void SmallAlbumManager::update(float dt)
 				}
 				else
 				{
-					SoundManager::instance()->playFile(
-						mSmallItems[mCurrSelAlbum]->getSelectedTrack()->Filename.c_str());
+					Track *t = mSmallItems[mCurrSelAlbum]->getSelectedTrack();
+					if (t != NULL)
+					{
+						SoundManager::instance()->playFile(t->Filename.c_str());
+					}
 				}
 			}
 		}
@@ -534,6 +552,8 @@ void SmallAlbumManager::moveSmallSelection(int cursorDelta)
 	{
 		moveDownToSmallSelection();
 	}
+
+	mDoRedraw = true;
 }
 
 void SmallAlbumManager::moveUpToSmallSelection()
@@ -593,6 +613,40 @@ void SmallAlbumManager::moveDownToSmallSelection()
 			mCurrDisplayAlbum = newDisplayAlbum;
 		}
 	}
+}
+int SmallAlbumManager::findCorrespondingTile(int smallItemIndex)
+{
+	if (smallItemIndex < 0 || smallItemIndex >= mSmallItems.size())
+	{
+		return -1;
+	}
+	int retVal = -1;
+	for (unsigned int i = 0; i < NUM_TILES; i++)
+	{
+		if (mSmallItems[smallItemIndex] == mTiles[i]->getAlbumItem())
+		{
+			retVal = i;
+			break;
+		}
+	}
+	return retVal;
+}
+int SmallAlbumManager::findCorrespondingItem(int smallTileIndex)
+{
+	if (smallTileIndex < 0 || smallTileIndex >= NUM_TILES)
+	{
+		return -1;
+	}
+	int retVal = -1;
+	for (unsigned int i = 0; i < mSmallItems.size(); i++)
+	{
+		if (mSmallItems[i] == mTiles[smallTileIndex]->getAlbumItem())
+		{
+			retVal = i;
+			break;
+		}
+	}
+	return retVal;
 }
 void SmallAlbumManager::display()
 {
@@ -676,19 +730,20 @@ bool SmallAlbumManager::onMouseEvent(MouseEvent ev)
 			{
 				try 
 				{
-					SmallAlbumItem* clickedItem = dynamic_cast<SmallAlbumItem*>(mWidgets[i]);
+					SmallAlbumTile* clickedItem = dynamic_cast<SmallAlbumTile*>(mWidgets[i]);
 					if (clickedItem != NULL)
 					{
+						int itemIndex = 0;
 						// find clicked item in our list
-						for (int j  = (int)mCurrDisplayAlbum; j < (int)mSmallItems.size(); j++)
+						for (int j  = 0; j < NUM_TILES; j++)
 						{
-							if (mSmallItems[j] == clickedItem && j != mCurrSelAlbum)
+							if (mTiles[j] == clickedItem && (itemIndex = findCorrespondingItem(j)) != mCurrSelAlbum)
 							{
 								if (mCurrSelAlbum != -1)
 								{
 									mSmallItems[mCurrSelAlbum]->selectNone();
 								}
-								mCurrSelAlbum = j;
+								mCurrSelAlbum = itemIndex;
 							}
 						}
 						if (ev.getEvent() == MouseEvent::LBUTTONDBLCLK)
@@ -868,7 +923,10 @@ void SmallAlbumManager::updateSmallDisplay()
 		float currY = mCurrY;
 		std::string currArtist = "";
 		int currLabelIndex = 0;
-		for (int i = topIndex; i <= bottomIndex; i++)
+		int tileIndex = 0;
+		int sel = mCurrSelAlbum > -1 ? mSmallItems[mCurrSelAlbum]->getSelectedIndex() : -1;
+		bool isAlbumSel = mCurrSelAlbum > -1 ? mSmallItems[mCurrSelAlbum]->getAlbumSelected() : false;
+		for (int i = topIndex; i <= bottomIndex && tileIndex < NUM_TILES; i++)
 		{
 			if (mSmallItems[i]->getTracks().size() > 0)
 			{
@@ -897,9 +955,21 @@ void SmallAlbumManager::updateSmallDisplay()
 				{
 					currY -= mSmallItems[i]->getHeight() * fractPart;
 				}
-				mSmallItems[i]->setPos(currX, currY);
-				mWidgets.insert(mWidgets.begin(), mSmallItems[i]);
+				mTiles[tileIndex]->setAlbumItem(mSmallItems[i]);
+				mTiles[tileIndex]->setPos(currX, currY);
+
+				if (i == mCurrSelAlbum)
+				{
+					mTiles[tileIndex]->setSelectedIndex(sel);
+					mTiles[tileIndex]->setAlbumSelected(isAlbumSel);
+				}
+				else// if (mTiles[tileIndex]->getSelectedIndex() >= 0)
+				{
+					mTiles[tileIndex]->selectNone();
+				}
+				mWidgets.insert(mWidgets.begin(), mTiles[tileIndex]);
 				currY += mSmallItems[i]->getHeight();
+				tileIndex++;
 			}
 		}
 	}
@@ -998,7 +1068,7 @@ void SmallAlbumManager::addAlbum(Album *album)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
-	mAlbumsToAdd.push_back(snew Album(album->Id, album->NumTracks, album->Title, album->Year, album->Artist));
+	mAlbumsToAdd.push_back(snew Album(album->Id, album->NumTracks, album->Title, album->Year, album->Artist, album->VirtualArtist));
 	lock.Unlock();
 }
 void SmallAlbumManager::doAddAlbum(Album *album)
@@ -1041,7 +1111,7 @@ void SmallAlbumManager::doAddAlbum(Album *album)
 
 	if (insertIndex >= 0)
 	{
-		mSmallItems.insert(iter, snew SmallAlbumItem(0, 150, *album));
+		mSmallItems.insert(iter, snew SmallAlbumItem(0, 150, *album, DatabaseManager::instance()->getTracks(album->Id)));
 	}
 
 	mAlbumsChanged = true; 
@@ -1068,7 +1138,7 @@ void SmallAlbumManager::addTrack(Track* track)
 			DatabaseManager::instance()->getAlbum(track->AlbumId, &album);
 			if (album.Id > 0)
 			{
-				mAlbumsToAdd.push_back(snew Album(album.Id, album.NumTracks, album.Title, album.Year, album.Artist));
+				mAlbumsToAdd.push_back(snew Album(album.Id, album.NumTracks, album.Title, album.Year, album.Artist, album.VirtualArtist));
 			}
 		}
 		mTracksToAdd.push_back(snew Track(*track));
@@ -1090,7 +1160,14 @@ void SmallAlbumManager::doAddTrack(Track* track)
 	if (insertIndex >= 0)
 	{
 		mSmallItems[insertIndex]->addTrack(track);
-		mSmallItems[insertIndex]->onDeviceReset();
+
+		int tileIndex = findCorrespondingTile(insertIndex);
+
+		if (tileIndex != -1)
+		{
+			mTiles[tileIndex]->addTrack(track);
+			mTiles[tileIndex]->onDeviceReset();
+		}
 	}
 }
 void SmallAlbumManager::onBtnClicked(Button* btn)

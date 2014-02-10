@@ -342,6 +342,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Widgets\SmallAlbumTile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Sound\SoundManager.cpp"
 				>
 			</File>
@@ -355,6 +359,10 @@
 			</File>
 			<File
 				RelativePath=".\Main\Vertex.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Widgets\VerticalScrollBar.cpp"
 				>
 			</File>
 			<File
@@ -543,6 +551,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\SmallAlbumTile.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Include\SoundManager.h"
 				>
 			</File>
@@ -564,6 +576,10 @@
 			</File>
 			<File
 				RelativePath=".\Include\Vertex.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\VerticalScrollBar.h"
 				>
 			</File>
 			<File

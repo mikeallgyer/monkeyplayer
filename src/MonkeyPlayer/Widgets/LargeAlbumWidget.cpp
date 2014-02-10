@@ -90,14 +90,16 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	mDisplayingAlbum = 0;
 	mScrollingDuration = 0;
 	mTotScrollingDuration = 0;
-	vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
+	vector<AlbumWithTracks*> albums = DatabaseManager::instance()->getAllAlbumsAndTracks();
 
 	for (unsigned int i = 0; i < albums.size(); i++)
 	{
-		mLargeAlbums.push_back(snew LargeAlbumItem(*albums[i]));
+		mLargeAlbums.push_back(snew LargeAlbumItem(*albums[i]->album, albums[i]->tracks));
 		mLargeAlbums[i]->setPosition(mPositions[mPositions.size() - 1].xPos, mPositions[mPositions.size() - 1].yRotation);
-		delete albums[i];
+		delete albums[i]->album;
+		delete albums[i]; // vector is owned by LargeAlbumItem
 	}
+
 	unsigned int midPos = mPositions.size() / 2;
 
 	for (unsigned int i = 0; i < mPositions.size(); i++)
@@ -856,7 +858,7 @@ void LargeAlbumWidget::goToString(string &s)
 	unsigned int strLen = s.length();
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
-		string caps = FileManager::toUpper(mLargeAlbums[i]->getAlbum().Artist);
+		string caps = FileManager::toUpper(mLargeAlbums[i]->getAlbum().VirtualArtist);
 		unsigned int albumLen = caps.length();
 		unsigned int j = 0;
 		while (j < strLen && j < albumLen && s[j] == caps[j])
@@ -1093,6 +1095,8 @@ void LargeAlbumWidget::setTracks()
 	else
 	{
 	}
+
+//	vector<Album*> albums = DatabaseManager::instance()->getAllAlbums();
 }
 void LargeAlbumWidget::focus()
 {
@@ -1110,21 +1114,24 @@ void LargeAlbumWidget::addAlbum(Album *album)
 {
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
-	mAlbumsToAdd.push_back(snew Album(album->Id, album->NumTracks, album->Title, album->Year, album->Artist));
+	mAlbumsToAdd.push_back(snew Album(album->Id, album->NumTracks, album->Title, album->Year, album->Artist, album->VirtualArtist));
 	lock.Unlock();
 }
 void LargeAlbumWidget::doAddAlbum(Album *album)
 {
 	int insertIndex = 0;
 	vector<LargeAlbumItem*>::iterator iter = mLargeAlbums.begin();
-	string newArtist = FileManager::toUpper(album->Artist);
+	string newArtist = FileManager::toUpper(album->VirtualArtist);
 	string newTitle = FileManager::toUpper(album->Title);
+	if(newArtist=="BLACK KEYS"){
+		newArtist[0]='B';
+	}
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		Album currAlbum = mLargeAlbums[i]->getAlbum();
-		string currArtist = FileManager::toUpper(currAlbum.Artist);
+		string currArtist = FileManager::toUpper(currAlbum.VirtualArtist);
 		string currTitle = FileManager::toUpper(currAlbum.Title);
-		if (mLargeAlbums[i]->getAlbum().Id == album->Id)
+		if (mLargeAlbums[i]->getAlbum().Id == album->Id) // already contains id
 		{
 			insertIndex = -1;
 			break;
@@ -1135,7 +1142,7 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 			for (unsigned int j = i; j < mLargeAlbums.size() && currArtist == newArtist && newTitle >= currTitle; j++)
 			{
 				currAlbum = mLargeAlbums[j]->getAlbum();
-				currArtist = FileManager::toUpper(currAlbum.Artist);
+				currArtist = FileManager::toUpper(currAlbum.VirtualArtist);
 				currTitle = FileManager::toUpper(currAlbum.Title);
 				if (currTitle == newTitle)
 				{
@@ -1144,6 +1151,7 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 				}
 				insertIndex++;
 			}
+			insertIndex--;
 			break;
 		}
 		else if (currArtist > newArtist)
@@ -1177,7 +1185,6 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 		}
 	}
 	mDoGetTracks = true;
-
 }
 
 void LargeAlbumWidget::addTrack(Track* track)

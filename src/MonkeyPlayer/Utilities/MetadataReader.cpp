@@ -183,6 +183,7 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 
 	// TRACK
 	t->Artist = DatabaseStructs::DEF_EMPTY_ARTIST;
+	t->VirtualArtist = DatabaseStructs::DEF_EMPTY_ARTIST;
 	t->DateAdded = DatabaseStructs::DEF_EMPTY_DATE;
 	t->Title = sansPath;
 	t->Genre = DatabaseStructs::INVALID_ID;
@@ -195,6 +196,7 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 	a->Year = DatabaseStructs::DEF_EMPTY_YEAR;
 	a->NumTracks = 1;
 	a->Artist = DatabaseStructs::DEF_EMPTY_ARTIST;
+	a->VirtualArtist = DatabaseStructs::DEF_EMPTY_ARTIST;
 
 	// GENRE
 	g->Title = DatabaseStructs::DEF_EMPTY_GENRE;
@@ -210,6 +212,24 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 		success = getTrackInfoWMA(filename, t, a, g);
 	}
 
+	if (success)
+	{
+		string virtualArtist = t->Artist;
+		if (virtualArtist.size() > 4 && FileManager::toUpper(virtualArtist.substr(0, 4)) == "THE ")
+		{
+			virtualArtist = virtualArtist.substr(4);
+		}
+		else if (virtualArtist.size() > 3 && FileManager::toUpper(virtualArtist.substr(0, 2)) == "A ")
+		{
+			virtualArtist = virtualArtist.substr(2);
+		}
+		else if (virtualArtist.size() > 2 && FileManager::toUpper(virtualArtist.substr(0, 3)) == "AN ")
+		{
+			virtualArtist = virtualArtist.substr(3);
+		}
+		a->VirtualArtist = virtualArtist;
+		t->VirtualArtist = virtualArtist;
+	}
 	if (!success)
 	{
 	}

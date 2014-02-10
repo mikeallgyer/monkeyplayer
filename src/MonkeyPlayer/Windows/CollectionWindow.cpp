@@ -176,6 +176,7 @@ CollectionWindow::~CollectionWindow()
 	delete mLargeAlbumWidget;
 	delete mSmallAlbumBtn;
 	delete mLargeAlbumBtn;
+	delete mTypedLabel;
 }
 
 void CollectionWindow::onDeviceLost()

@@ -13,6 +13,7 @@
 #include "ListItem.h"
 #include "RenderTarget.h"
 #include "Sprite.h"
+#include "VerticalScrollBar.h"
 
 namespace MonkeyPlayer
 {
@@ -78,6 +79,18 @@ namespace MonkeyPlayer
 		bool isPointInside(int x, int y);
 		int getItemAtPos(int x, int y);
 
+		virtual void updateScrollbarVisibility();
+		void setDrawables();
+
+		static void scrollbar_callback(void* obj, VerticalScrollBar* scrollbar, float percent)
+		{
+			ItemListBox* b = static_cast<ItemListBox*>(obj);
+			if (b)
+			{
+				b->onScrollbarMoved(scrollbar, percent);
+			}
+		}
+
 	protected:
 	// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
 		static const float BUTTON_REPEAT_TIME;
@@ -96,10 +109,10 @@ namespace MonkeyPlayer
 		static const float HOVER_DURATION;
 
 		std::vector<Sprite*> mSprites; 
+		std::vector<Sprite*> mDrawableSprites; 
 		std::vector<ListItem*> mItems;
 		map<int, float> mHoverItems;
 		int mCurrHoverIndex;
-		Sprite* mScrollbar;
 
 		ID3DXFont* mFont;
 		D3DXCOLOR mFontColor;
@@ -120,10 +133,7 @@ namespace MonkeyPlayer
 		Sprite* mHighlightedSprite;
 		Sprite* mHoverSprite;
 
-		// scrolling area
-		Sprite* mScrollHandle;
-		float mScrollBarWidth;
-		float mScrollBarHeight;
+		VerticalScrollBar* mScrollBar;
 
 		int mFontHeight; 
 		float mUpDownTimer;
@@ -136,7 +146,9 @@ namespace MonkeyPlayer
 
 		void deleteItems();
 		void updateScrollBar();
-		
+	
+		void onScrollbarMoved(VerticalScrollBar* bar, float percent);
+
 		// callback
 		void (*mCallback)(void* ptrObj, ItemListBox* listBox);
 		void *mCallbackObj;
