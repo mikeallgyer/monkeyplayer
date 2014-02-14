@@ -134,7 +134,7 @@ void DatabaseManager::createDatabase()
 	error = sqlite3_get_table(mDB, query.c_str(), &resTable, &numRows, &numCols, &errorMsg);
 	sqlite3_free_table(resTable);
 
-	query = "CREATE TABLE GENRES (ID INTEGER PRIMARY KEY, TITLE VARCHAR(100), STANDARD_ID INTEGER)";
+	query = "CREATE TABLE GENRES (ID INTEGER PRIMARY KEY, TITLE VARCHAR(100) UNIQUE, STANDARD_ID INTEGER)";
 	error = sqlite3_get_table(mDB, query.c_str(), &resTable, &numRows, &numCols, &errorMsg);
 	sqlite3_free_table(resTable);
 	if (error) MessageBox(0, errorMsg, "Error creating database table: GENRES", 0);
@@ -145,7 +145,8 @@ void DatabaseManager::createDatabase()
 		"TITLE VARCHAR(100), " 
 		"YEAR INTEGER, "
 		"ARTIST VARCHAR(250), "
-		"VIRTUAL_ARTIST VARCHAR(250))";
+		"VIRTUAL_ARTIST VARCHAR(250), "
+		"UNIQUE (TITLE, YEAR) ON CONFLICT IGNORE)";
 	error = sqlite3_get_table(mDB, query.c_str(), &resTable, &numRows, &numCols, &errorMsg);
 	sqlite3_free_table(resTable);
 	if (error) MessageBox(0, errorMsg, "Error creating database table: ALBUMS", 0);
@@ -274,6 +275,33 @@ void DatabaseManager::getGenre(int id, Genre* genre)
 	sqlite3_finalize(stmt);
 	lock.Unlock();
 }
+vector<Genre*> DatabaseManager::getAllGenres()
+{
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+
+	vector<Genre*> genres;
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "SELECT ID, TITLE, STANDARD_ID FROM GENRES", -1, &stmt, NULL);
+
+	int result = sqlite3_step(stmt); 
+
+	while (result == SQLITE_ROW)
+	{
+		Genre* genre = snew Genre();
+		genre->Id = getIntColumn(stmt, 0);
+		genre->Title = getStringColumn(stmt, 1);
+		genre->StandardId = getIntColumn(stmt, 2);
+		genres.push_back(genre);
+		result = sqlite3_step(stmt); 
+	}
+	sqlite3_finalize(stmt);
+	lock.Unlock();
+
+	return genres;
+}
+
 void DatabaseManager::getGenre(string title, Genre* genre)
 {
 	CSingleLock lock(&mCritSection);
@@ -295,36 +323,20 @@ void DatabaseManager::getGenre(string title, Genre* genre)
 	sqlite3_finalize(stmt);
 	lock.Unlock();
 }
-// this will fill in the id of new (or existing) genre 
+
 void DatabaseManager::addGenre(Genre &genre)
 {
-	Genre existing;
-	getGenre(genre.Title, &existing);
-	
-	// only add if it doesn't exist
-	if (existing.Id == DatabaseStructs::INVALID_ID)
-	{
-		CSingleLock lock(&mCritSection);
-		lock.Lock();
-		sqlite3_stmt* stmt = NULL;
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO GENRES (TITLE, STANDARD_ID) VALUES (?, ?)", -1, &stmt, NULL);
-		sqlite3_bind_text(stmt, 1, genre.Title.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(stmt, 2, genre.StandardId);
+	sqlite3_prepare_v2(mDB, "INSERT OR IGNORE INTO GENRES (TITLE, STANDARD_ID) VALUES (?, ?)", -1, &stmt, NULL);
+	sqlite3_bind_text(stmt, 1, genre.Title.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_int(stmt, 2, genre.StandardId);
 
-		int index = addRow(stmt); 
-
-		if (index != DatabaseStructs::INVALID_ID)
-		{
-			genre.Id = index;
-		}
-		sqlite3_finalize(stmt);
-		lock.Unlock();
-	}
-	else 
-	{
-		genre.Id = existing.Id;
-	}
+	int result = sqlite3_step(stmt); 
+	sqlite3_finalize(stmt);
+	lock.Unlock();
 }
 
 void DatabaseManager::getTrack(int id, Track* track)
@@ -605,67 +617,44 @@ vector<Track*> DatabaseManager::getAllTracksVector()
 // this will fill in the id of new (or existing) track
 void DatabaseManager::addTrack(Track& track)
 {
-	Track existing;
-	getTrack(track.Filename, &existing);
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
+
+	sqlite3_prepare_v2(mDB, "INSERT OR IGNORE INTO TRACKS (FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
+		"DATE_ADDED, IGNORED, GENRE, DATE_USED, NUM_PLAYED) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
 	
-	// only add if it doesn't exist
-	if (existing.Id == DatabaseStructs::INVALID_ID)
+	sqlite3_bind_text(stmt, 1, track.Filename.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 2, track.Title.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 3, track.Artist.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 4, track.VirtualArtist.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_int(stmt, 5, track.TrackNumber);
+	if (track.AlbumId <= -1)
 	{
-		CSingleLock lock(&mCritSection);
-		lock.Lock();
-		sqlite3_stmt* stmt = NULL;
-
-		sqlite3_prepare_v2(mDB, "INSERT OR IGNORE INTO TRACKS (FILENAME, TITLE, ARTIST, VIRTUAL_ARTIST, TRACK_NUMBER, ALBUM, LENGTH, "
-			"DATE_ADDED, IGNORED, GENRE, DATE_USED, NUM_PLAYED) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
-		
-		sqlite3_bind_text(stmt, 1, track.Filename.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_text(stmt, 2, track.Title.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_text(stmt, 3, track.Artist.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_text(stmt, 4, track.VirtualArtist.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(stmt, 5, track.TrackNumber);
-		if (track.AlbumId <= -1)
-		{
-			sqlite3_bind_null(stmt, 6);
-		}
-		else
-		{
-			sqlite3_bind_int(stmt, 6, track.AlbumId);
-		}
-		sqlite3_bind_int64(stmt, 7, track.Length);
-		sqlite3_bind_int64(stmt, 8, track.DateAdded);
-		sqlite3_bind_int(stmt, 9, track.Ignored ? 1: 0);
-		if (track.Genre <= DatabaseStructs::INVALID_ID)
-		{
-			sqlite3_bind_null(stmt, 10);
-		}
-		else
-		{
-			sqlite3_bind_int(stmt, 10, track.Genre);
-		}
-		sqlite3_bind_int64(stmt, 11, track.DateUsed);
-		sqlite3_bind_int(stmt, 12, track.NumPlayed);
-
-		int index = addRow(stmt);
-		sqlite3_finalize(stmt);
-
-		lock.Unlock();
-
-		if (index != DatabaseStructs::INVALID_ID)
-		{
-			track.Id = index;
-		}
+		sqlite3_bind_null(stmt, 6);
 	}
-	else 
+	else
 	{
-		track.Id = existing.Id;
-		track.Filename = existing.Filename;
-		track.Title = existing.Title;
-		track.Artist = existing.Artist;
-		track.VirtualArtist = existing.VirtualArtist;
-		track.TrackNumber = existing.TrackNumber;
-		track.AlbumId = existing.AlbumId;
-		track.Length = existing.Length;
+		sqlite3_bind_int(stmt, 6, track.AlbumId);
 	}
+	sqlite3_bind_int64(stmt, 7, track.Length);
+	sqlite3_bind_int64(stmt, 8, track.DateAdded);
+	sqlite3_bind_int(stmt, 9, track.Ignored ? 1: 0);
+	if (track.Genre <= DatabaseStructs::INVALID_ID)
+	{
+		sqlite3_bind_null(stmt, 10);
+	}
+	else
+	{
+		sqlite3_bind_int(stmt, 10, track.Genre);
+	}
+	sqlite3_bind_int64(stmt, 11, track.DateUsed);
+	sqlite3_bind_int(stmt, 12, track.NumPlayed);
+
+	int result = sqlite3_step(stmt);
+	sqlite3_finalize(stmt);
+
+	lock.Unlock();
 }
 // tries to update according to id, then by path.
 bool DatabaseManager::modifyTrack(Track& track)
@@ -825,44 +814,23 @@ void DatabaseManager::getAlbum(string title, int year, Album* album)
 	sqlite3_finalize(stmt);
 	lock.Unlock();
 }
-// this will fill in the id of new (or existing) album
 void DatabaseManager::addAlbum(Album &album)
 {
-	Album existing;
-	getAlbum(album.Title, album.Year, &existing);
-	
-	// only add if it doesn't exist
-	if (existing.Id == DatabaseStructs::INVALID_ID)
-	{
-		CSingleLock lock(&mCritSection);
-		lock.Lock();
-		sqlite3_stmt* stmt = NULL;
+	CSingleLock lock(&mCritSection);
+	lock.Lock();
+	sqlite3_stmt* stmt = NULL;
 
-		sqlite3_prepare_v2(mDB, "INSERT INTO ALBUMS (NUM_TRACKS, TITLE, YEAR, ARTIST, VIRTUAL_ARTIST) VALUES (?, ?, ?, ?, ?)", -1, &stmt, NULL);
-		sqlite3_bind_int(stmt, 1, album.NumTracks);
-		sqlite3_bind_text(stmt, 2, album.Title.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(stmt, 3, album.Year);
-		sqlite3_bind_text(stmt, 4, album.Artist.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_text(stmt, 5, album.VirtualArtist.c_str(), -1, SQLITE_STATIC);
+	sqlite3_prepare_v2(mDB, "INSERT OR IGNORE INTO ALBUMS (NUM_TRACKS, TITLE, YEAR, ARTIST, VIRTUAL_ARTIST) VALUES (?, ?, ?, ?, ?)", -1, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, album.NumTracks);
+	sqlite3_bind_text(stmt, 2, album.Title.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_int(stmt, 3, album.Year);
+	sqlite3_bind_text(stmt, 4, album.Artist.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 5, album.VirtualArtist.c_str(), -1, SQLITE_STATIC);
 
-		int index = addRow(stmt);
-		sqlite3_finalize(stmt);
+	int result = sqlite3_step(stmt); 
+	sqlite3_finalize(stmt);
 
-		lock.Unlock();
-
-		if (index != DatabaseStructs::INVALID_ID)
-		{
-			album.Id = index;
-		}
-	}
-	else 
-	{
-		album.Id = existing.Id;
-		album.NumTracks = existing.NumTracks;
-		album.Title = existing.Title;
-		album.Year = existing.Year;
-		album.Artist = existing.Artist;
-	}
+	lock.Unlock();
 }
 
 vector<Album*> DatabaseManager::getAllAlbums()

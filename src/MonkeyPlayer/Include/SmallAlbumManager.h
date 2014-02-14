@@ -65,6 +65,7 @@ namespace MonkeyPlayer
 
 		void addAlbum(Album* album);
 		void addTrack(Track* track);
+		void reloadAll();
 		void onContextMenuSelected(ItemListBox* menu);
 	private:
 		// when holding up/down/pgUp/pgDn, it won't repeat until this interval passes (seconds)
@@ -102,6 +103,7 @@ namespace MonkeyPlayer
 		bool mResized;
 		bool mDoRedraw;
 		bool mAlbumsChanged;
+		bool mReloadAll;
 
 		float mCurrDisplayAlbum;  // album displayed at top of this window
 		int mCurrSelAlbum;  // album containing current selection

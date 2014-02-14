@@ -31,6 +31,7 @@ namespace MonkeyPlayer
 		vector<string> getAllArtists();
 		
 		// genres
+		vector<Genre*> getAllGenres();
 		void getGenre(int id, Genre* genre);
 		void getGenre(string title, Genre *genre);
 		void addGenre(Genre &genre);

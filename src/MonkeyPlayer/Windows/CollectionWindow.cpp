@@ -504,6 +504,11 @@ void CollectionWindow::addTrack(Track* track)
 	mSmallAlbumManager->addTrack(track);
 	mLargeAlbumWidget->addTrack(track);
 }
+void CollectionWindow::reloadAll()
+{
+	mSmallAlbumManager->reloadAll();
+	mLargeAlbumWidget->reloadAll();
+}
 void CollectionWindow::setDrawableWidgets()
 {
 	CSingleLock lock(&mCritSection);

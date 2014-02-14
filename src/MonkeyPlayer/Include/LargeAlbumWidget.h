@@ -65,6 +65,7 @@ namespace MonkeyPlayer
 
 		void addAlbum(Album* album);
 		void addTrack(Track* track);
+		void reloadAll();
 
 		static void listBox_callback(void* obj, ItemListBox* listBox)
 		{
@@ -119,6 +120,7 @@ namespace MonkeyPlayer
 		int mPlayingTrack;
 		int mPlayingAlbum;
 		bool mDoGetTracks;
+		bool mReloadAll;
 		CollectionWindow::SELECTED_THING mSelectedThing;
 
 		CollectionWindow::RIGHT_CLICKED_ITEM mRightClicked;

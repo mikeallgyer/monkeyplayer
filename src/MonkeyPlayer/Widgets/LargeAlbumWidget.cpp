@@ -99,7 +99,6 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 		delete albums[i]->album;
 		delete albums[i]; // vector is owned by LargeAlbumItem
 	}
-
 	unsigned int midPos = mPositions.size() / 2;
 
 	for (unsigned int i = 0; i < mPositions.size(); i++)
@@ -176,6 +175,7 @@ LargeAlbumWidget::LargeAlbumWidget(float x, float y, float width, float height)
 	setTracks();
 	mPlayingAlbum = -1;
 	mPlayingTrack = -1;
+	mReloadAll = false;
 	createBuffers();
 }
 LargeAlbumWidget::~LargeAlbumWidget()
@@ -279,11 +279,49 @@ void LargeAlbumWidget::update(float dt)
 	mTracksToAdd.clear();
 
 	lock.Unlock();
-	
+
 	if (mDoGetTracks)
 	{
 		setTracks();
 		mDoGetTracks = false;;
+	}
+	
+	if (mReloadAll)
+	{
+		for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
+		{
+			delete mLargeAlbums[i];
+		}
+		mLargeAlbums.clear();
+
+		vector<AlbumWithTracks*> albums = DatabaseManager::instance()->getAllAlbumsAndTracks();
+
+		for (unsigned int i = 0; i < albums.size(); i++)
+		{
+			mLargeAlbums.push_back(snew LargeAlbumItem(*albums[i]->album, albums[i]->tracks));
+			mLargeAlbums[i]->setPosition(mPositions[mPositions.size() - 1].xPos, mPositions[mPositions.size() - 1].yRotation);
+			delete albums[i]->album;
+			delete albums[i]; // vector is owned by LargeAlbumItem
+		}
+		unsigned int midPos = mPositions.size() / 2;
+
+		for (unsigned int i = 0; i < mPositions.size(); i++)
+		{
+			int index = (int)mDisplayingAlbum - midPos + i;
+			if (index >= 0 && index < (int)mLargeAlbums.size())
+			{
+				float xPos = mPositions[i].xPos;
+				float yRot = mPositions[i].yRotation;
+				mLargeAlbums[index]->setPosition(xPos, yRot);
+				mLargeAlbums[index]->setVisible(true);
+			}
+		}
+		if (mAlbumIndex >= mLargeAlbums.size())
+		{
+			mAlbumIndex = 0;
+			setTracks();
+		}
+		mReloadAll = false;
 	}
 	int selTrack = mTrackBox->getSelectedIndex();
 
@@ -1123,9 +1161,7 @@ void LargeAlbumWidget::doAddAlbum(Album *album)
 	vector<LargeAlbumItem*>::iterator iter = mLargeAlbums.begin();
 	string newArtist = FileManager::toUpper(album->VirtualArtist);
 	string newTitle = FileManager::toUpper(album->Title);
-	if(newArtist=="BLACK KEYS"){
-		newArtist[0]='B';
-	}
+
 	for (unsigned int i = 0; i < mLargeAlbums.size(); i++)
 	{
 		Album currAlbum = mLargeAlbums[i]->getAlbum();
@@ -1227,6 +1263,11 @@ void LargeAlbumWidget::doAddTrack(Track* track)
 	}
 */
 }
+void LargeAlbumWidget::reloadAll()
+{
+	mReloadAll = true;
+}
+
 void LargeAlbumWidget::onItemSelected(ListItem* item, int index)
 {
 	TrackListItem* trackItem = static_cast<TrackListItem*>(item);

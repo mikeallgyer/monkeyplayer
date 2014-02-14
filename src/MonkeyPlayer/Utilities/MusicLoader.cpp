@@ -98,76 +98,91 @@ UINT MusicLoader::loaderThread(LPVOID pParam)
 		std::map<std::string, Track*> existing = DatabaseManager::instance()->getAllTracks();
 
 		gWindowMgr->getProgressBar()->setVisible(true);
-		gWindowMgr->getProgressBar()->setMaxValue((float)(loader->mFiles.size() * 3));
+		gWindowMgr->getProgressBar()->setMaxValue((float)(loader->mFiles.size()) * 2.0f);
 		gWindowMgr->getProgressBar()->setCurrentValue(0);
 
-		std::vector<Track*> tracks;
+		std::vector<TrackExtended*> tracks;
 		std::vector<bool> trackIsNew;
+		DatabaseManager::instance()->beginTransaction();
 		for (unsigned int i = 0; i < loader->mFiles.size() && !loader->mTerminateRequested; i++)
 		{
-			Track* currTrack;
+			Track* currTrack = snew Track(-1, loader->mFiles[i], "", "", "", -1, -1, -1, -1, false, -1, 0, 0);
 			
-			// already in db
-			if (existing.find(loader->mFiles[i]) != existing.end())
-			{
-				currTrack = snew Track(*existing[loader->mFiles[i]]);
-			}
-			else // new file
-			{
-				currTrack = snew Track(-1, loader->mFiles[i], "", "", "", -1, -1, -1, -1, false, -1, 0, 0);
-//				DatabaseManager::instance()->addTrack(*currTrack); // do this later
-			}
+			Album* currAlbum = snew Album();
+			Genre* currGenre = snew Genre();
+			MetadataReader::getTrackInfo(loader->mFiles[i].c_str(), currTrack, currAlbum, currGenre);
+			DatabaseManager::instance()->addAlbum(*currAlbum);
+			DatabaseManager::instance()->addGenre(*currGenre);
 
-			trackIsNew.push_back(currTrack->Length == -1);
+			trackIsNew.push_back(false);
 
-			tracks.push_back(currTrack);
+			TrackExtended* trackE = snew TrackExtended();
+			trackE->t = currTrack;
+			trackE->a = currAlbum;
+			trackE->g = currGenre;
+			tracks.push_back(trackE);
 
 			gWindowMgr->getProgressBar()->setCurrentValue(gWindowMgr->getProgressBar()->getCurrentValue() + 1.0f);
 			
-//			loader->mPlaylistWindow->addItem(tracks[i]);
 		}
-		for (std::map<std::string, Track*>::iterator i = existing.begin(); i != existing.end(); ++i)
-		{
-			delete (*i).second;
-		}
-		existing.clear();
 
-		// get album and genre...THIS is the bottleneck!
-		for (unsigned int i = 0; i < tracks.size() && !loader->mTerminateRequested; i++)
-		{
-			if (trackIsNew[i])
-			{
-				Album currAlbum;
-				Genre currGenre;
-				MetadataReader::getTrackInfo(tracks[i]->Filename.c_str(), tracks[i], &currAlbum, &currGenre);
-				DatabaseManager::instance()->addAlbum(currAlbum); // this will add or get existing
-				DatabaseManager::instance()->addGenre(currGenre); // this will add or get existing
-				tracks[i]->AlbumId = currAlbum.Id;
-				tracks[i]->Genre = currGenre.Id;
+		DatabaseManager::instance()->endTransaction();
 
-				loader->mCollectionWindow->addAlbum(&currAlbum);
-			}
-			gWindowMgr->getProgressBar()->setCurrentValue(gWindowMgr->getProgressBar()->getCurrentValue() + 1.0f);
-		}
+		vector<Album*> allAlbums = DatabaseManager::instance()->getAllAlbums();
+		vector<Genre*> allGenres = DatabaseManager::instance()->getAllGenres();
 		DatabaseManager::instance()->beginTransaction();
 
-		// now get song info...stop if requested
-		int newCount = 0;
 		for (unsigned int i = 0; i < tracks.size() && !loader->mTerminateRequested; i++)
 		{
-			if (trackIsNew[i])
+			// if we wait til the end it becomes unresponsive
+			if (i > 0 && 0 == i % 100)
 			{
-//				loader->mPlaylistWindow->modifyItem(tracks[i]);
-				DatabaseManager::instance()->addTrack(*tracks[i]);
-				loader->mCollectionWindow->addTrack(tracks[i]);
-				newCount++;
+				DatabaseManager::instance()->endTransaction();
+				DatabaseManager::instance()->beginTransaction();
+			}		
+			for (unsigned int j = 0; j < allAlbums.size(); j++)
+			{
+				if (allAlbums[j]->Year == tracks[i]->a->Year && allAlbums[j]->Title == tracks[i]->a->Title)
+				{
+					tracks[i]->t->AlbumId = allAlbums[j]->Id;
+					break;
+				}
 			}
+			for (unsigned int j = 0; j < allGenres.size(); j++)
+			{
+				if (allGenres[j]->Title == tracks[i]->g->Title)
+				{
+					tracks[i]->t->Genre = allGenres[j]->Id;
+					break;
+				}
+			}
+
+			DatabaseManager::instance()->addTrack(*tracks[i]->t);
 			gWindowMgr->getProgressBar()->setCurrentValue(gWindowMgr->getProgressBar()->getCurrentValue() + 1.0f);
 		}
-		gWindowMgr->getProgressBar()->setVisible(false);
-		sprintf_s(buf, 35, "Finished loading %i files.", newCount);
-		Logger::instance()->write(buf);
 		DatabaseManager::instance()->endTransaction();
+		for (unsigned int i = 0; i < tracks.size() && !loader->mTerminateRequested; i++)
+		{
+			delete tracks[i]->t;
+			delete tracks[i];
+		}
+			loader->mCollectionWindow->reloadAll();
+		for (unsigned int j = 0; j < allAlbums.size(); j++)
+		{
+			//loader->mCollectionWindow->addAlbum(allAlbums[j]);
+		}
+		for (unsigned int j = 0; j < allAlbums.size(); j++)
+		{
+			delete allAlbums[j];
+		}
+		for (unsigned int j = 0; j < allGenres.size(); j++)
+		{
+			delete allGenres[j];
+		}
+
+		gWindowMgr->getProgressBar()->setVisible(false);
+		sprintf_s(buf, 35, "Finished loading %i files.", tracks.size());
+		Logger::instance()->write(buf);
 	}
 
 	loader->mFinished = true;

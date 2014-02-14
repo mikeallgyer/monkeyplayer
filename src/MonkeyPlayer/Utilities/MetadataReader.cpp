@@ -6,6 +6,7 @@
 //
 
 #include <fstream>
+#include <mp4file.h>
 #include <privateframe.h>
 #include <sstream>
 #include <time.h>
@@ -21,6 +22,7 @@ using namespace MonkeyPlayer;
 const int MetadataReader::HEADER_LENGTH = 39;
 const string MetadataReader::WMA_FILE_EXT = "WMA";
 const string MetadataReader::MP3_FILE_EXT = "MP3";
+const string MetadataReader::MP4_FILE_EXT = "M4A";
 
 /*static*/ std::string getString(TagLib::String s)
 {
@@ -207,6 +209,10 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 	{
 		success = getTrackInfoMP3(filename, t, a, g);
 	}
+	else if (ftype == MonkeyPlayer::MetadataReader::MP4)
+	{
+		success = getTrackInfoMP4(filename, t, a, g);
+	}
 	else if (ftype == MonkeyPlayer::MetadataReader::WMA)
 	{
 		success = getTrackInfoWMA(filename, t, a, g);
@@ -268,6 +274,40 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 	return false;
 }
 
+/*static*/ bool MetadataReader::getTrackInfoMP4(const char *filename, Track* t, Album* a, Genre* g)
+{
+/*	TagLib::MP4::File f(filename);
+	//TagLib::MP4::Tag* tag = f.tag();
+	//TagLib:::FileRef f(filename);
+	if (f.tag())
+	{
+		// TRACK
+		t->Title = getString(f.tag()->title());
+		t->Artist = getString(f.tag()->artist());;
+		t->TrackNumber = f.tag()->track();
+		if (f.audioProperties() != NULL)
+		{
+			t->Length = f.audioProperties()->length();
+		}
+		t->DateAdded = (long)time(NULL);
+		t->Ignored = false;
+
+		t->DateUsed = DatabaseStructs::DEF_EMPTY_DATE;
+		t->NumPlayed = 0;
+
+		// ALBUM
+		a->Title = getString(f.tag()->album());
+		a->Year = getYear(f.tag()->year());
+		a->NumTracks = DatabaseStructs::INVALID_ID;
+		a->Artist = t->Artist;
+
+		// GENRE
+		g->Title = getGenre(f.tag()->genre());
+		g->StandardId = 0;
+		return true;
+	}
+*/	return false;
+}
 /*static*/ bool MetadataReader::getTrackInfoWMA(const char *filename, Track* t, Album* a, Genre* g)
 {
 	GUID guid;
@@ -656,6 +696,10 @@ const string MetadataReader::MP3_FILE_EXT = "MP3";
 		else if (ext == MetadataReader::MP3_FILE_EXT)
 		{
 			retVal = MetadataReader::MP3;
+		}
+		else if (ext == MetadataReader::MP4_FILE_EXT)
+		{
+			retVal = MetadataReader::MP4;
 		}
 	}
 	return retVal;

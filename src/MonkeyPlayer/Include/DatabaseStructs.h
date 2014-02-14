@@ -126,6 +126,12 @@ struct Track
 	int NumPlayed;
 };
 
+struct TrackExtended
+{
+	Track* t;
+	Genre* g;
+	Album* a;
+};
 struct AlbumWithTracks
 {
 	Album* album;

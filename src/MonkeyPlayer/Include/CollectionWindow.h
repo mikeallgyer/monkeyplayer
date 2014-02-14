@@ -82,6 +82,7 @@ namespace MonkeyPlayer
 
 		void addAlbum(Album* album);
 		void addTrack(Track* track);
+		void reloadAll();
 		void goToSong(string file);
 
 		static void btn_callback(void* obj, Button* btn)

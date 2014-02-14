@@ -43,14 +43,16 @@ namespace MonkeyPlayer
 	class MetadataReader
 	{
 	public:
-		enum FILE_TYPE { MP3, WMA, UNKNOWN };
+		enum FILE_TYPE { MP3, MP4, WMA, UNKNOWN };
 		static const string WMA_FILE_EXT;
 		static const string MP3_FILE_EXT;
+		static const string MP4_FILE_EXT;
 
 		static const int HEADER_LENGTH;
 		
 		static void getTrackInfo(const char* filename, Track* t, Album* a, Genre *g);
 		static bool getTrackInfoMP3(const char* filename, Track* t, Album* a, Genre *g);
+		static bool getTrackInfoMP4(const char* filename, Track* t, Album* a, Genre *g);
 		static bool getTrackInfoWMA(const char* filename, Track* t, Album* a, Genre *g);
 		static bool getTrackInfoWMA(const char *filename, Track* t, Album* a, Genre* g, GUID &guidOut, bool guidOnly);
 		static string readWMAString(char **ptr, int length);

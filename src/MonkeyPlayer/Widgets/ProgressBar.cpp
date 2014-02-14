@@ -10,7 +10,7 @@
 using namespace MonkeyPlayer;
 
 int ProgressBar::DEFAULT_NUM_TICKS = 40;
-float ProgressBar::TICK_MARGIN_PERCENT = .2f;
+float ProgressBar::TICK_MARGIN_PERCENT = 0.0f;
 
 ProgressBar::ProgressBar(float x, float y, float width, float height)
 {
@@ -23,7 +23,8 @@ ProgressBar::ProgressBar(float x, float y, float width, float height)
 	mMaxValue = 100.0f;
 	mCurrValue = 55.0f;
 
-	mBackgroundSprite = snew Sprite(FileManager::getContentAsset(std::string("Textures\\white.png")).c_str(), mX, mY, mWidth, mHeight, D3DXVECTOR4(0, 0, 0, 1.0f));
+	mBackgroundSprite = snew Sprite(FileManager::getContentAsset(std::string("Textures\\white.png")).c_str(), 
+		mX, mY, mWidth, mHeight, D3DXVECTOR4(0.2f, 0.2f, 0.2, 1.0f));
 	mTickSprite = snew Sprite(mBackgroundSprite->getTexture(), mX, mY, mWidth, mHeight);
 	mTickSprite->setColor(D3DXVECTOR4(0, 1.0f, 0, 1.0f));
 	mTickSprite->setTextureOwned(false);
@@ -68,7 +69,7 @@ void ProgressBar::update(float dt)
 {
 	if (mVisible || mNeedsRecreated)
 	{
-		Logger::instance()->write("LOCK update");
+		//Logger::instance()->write("LOCK update");
 		CSingleLock lock(&mCritSection);
 		lock.Lock();
 
@@ -107,6 +108,10 @@ void ProgressBar::update(float dt)
 			int i = 1;
 			while (cursor < mBarWidth)
 			{
+				if (i >= mSprites.size())
+				{
+					break;
+				}
 				if ((cursor + mTickWidth) > mBarWidth)
 				{
 					float remaining = mBarWidth - cursor;
@@ -123,7 +128,7 @@ void ProgressBar::update(float dt)
 			}
 		}
 		lock.Unlock();
-		Logger::instance()->write("UNLOCK");
+		//Logger::instance()->write("UNLOCK");
 	}
 }
 
@@ -177,7 +182,7 @@ void ProgressBar::setVisible(bool visible)
 
 void ProgressBar::setNumTicks(int ticks)
 {
-	Logger::instance()->write("LOCK setNumTicks");
+	//Logger::instance()->write("ProgressBar LOCK setNumTicks");
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
 	mNumTicks = ticks;
@@ -197,7 +202,7 @@ void ProgressBar::setNumTicks(int ticks)
 		mSprites[mSprites.size() - 1]->setTextureOwned(false);
 	}
 	lock.Unlock();
-	Logger::instance()->write("UNLOCK");
+	//Logger::instance()->write("ProgressBar UNLOCK");
 }
 
 bool ProgressBar::isPointInside(int x, int y)
@@ -210,12 +215,12 @@ bool ProgressBar::isPointInside(int x, int y)
 
 void ProgressBar::recalculateSizes()
 {
-	Logger::instance()->write("LOCK recalculateSizes");
+	//Logger::instance()->write("ProgressBar LOCK recalculateSizes");
 	CSingleLock lock(&mCritSection);
 	lock.Lock();
 	mTickWidth = mWidth / ((float)mNumTicks + (float)(mNumTicks - 1) * TICK_MARGIN_PERCENT);
 	mMarginWidth = mTickWidth * TICK_MARGIN_PERCENT;
 
 	lock.Unlock();
-	Logger::instance()->write("UNLOCK");
+	//Logger::instance()->write("ProgressBar UNLOCK");
 }

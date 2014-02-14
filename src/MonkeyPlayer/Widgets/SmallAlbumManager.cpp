@@ -91,6 +91,8 @@ SmallAlbumManager::SmallAlbumManager()
 	{
 		mTiles[i] = snew SmallAlbumTile(0, 0, NULL, NULL);
 	}
+
+	mReloadAll = false;
 }
 SmallAlbumManager::~SmallAlbumManager()
 {
@@ -207,6 +209,37 @@ void SmallAlbumManager::update(float dt)
 	mTracksToAdd.clear();
 	lock.Unlock();
 
+	if (mReloadAll)
+	{
+		for (unsigned int i = 0; i < mSmallItems.size(); i++)
+		{
+			delete mSmallItems[i];
+		}
+
+		mSmallItems.clear();
+
+		vector<AlbumWithTracks*> albums = DatabaseManager::instance()->getAllAlbumsAndTracks();
+	
+		for (unsigned int i = 0; i < albums.size(); i++)
+		{
+			mSmallItems.push_back(snew SmallAlbumItem(0, 150, *albums[i]->album, albums[i]->tracks));
+			delete albums[i]->album;
+			delete albums[i];
+		}
+
+		if (mCurrDisplayAlbum >= mSmallItems.size())
+		{
+			mCurrDisplayAlbum = 0;
+		}
+		if (mCurrSelAlbum >= mSmallItems.size())
+		{
+			mCurrSelAlbum = 0;
+		}
+
+		mReloadAll = false;
+		doRedraw = true;
+	}
+
 	if (mResized)
 	{
 		mResized = false;
@@ -220,8 +253,8 @@ void SmallAlbumManager::update(float dt)
 	{
 		for (unsigned int i = 0; i < mSmallItems.size(); i++)
 		{
-			if (mSmallItems[i]->getAlbum().Artist.length() > 0 &&
-				mSmallItems[i]->getAlbum().Artist[0] == mChar)
+			if (mSmallItems[i]->getAlbum().VirtualArtist.length() > 0 &&
+				mSmallItems[i]->getAlbum().VirtualArtist[0] == mChar)
 			{
 				mUpDownTimer = 0;
 				if (mCurrSelAlbum >= 0 && mCurrSelAlbum < ((int)mSmallItems.size()))
@@ -861,7 +894,7 @@ void SmallAlbumManager::goToString(string &s)
 	unsigned int strLen = s.length();
 	for (unsigned int i = 0; i < mSmallItems.size(); i++)
 	{
-		string caps = FileManager::toUpper(mSmallItems[i]->getAlbum().Artist);
+		string caps = FileManager::toUpper(mSmallItems[i]->getAlbum().VirtualArtist);
 		unsigned int albumLen = caps.length();
 		unsigned int j = 0;
 		while (j < strLen && j < albumLen && s[j] == caps[j])
@@ -1170,6 +1203,11 @@ void SmallAlbumManager::doAddTrack(Track* track)
 		}
 	}
 }
+void SmallAlbumManager::reloadAll()
+{
+	mReloadAll = true;
+}
+
 void SmallAlbumManager::onBtnClicked(Button* btn)
 {
 	gWindowMgr->openSearch();
